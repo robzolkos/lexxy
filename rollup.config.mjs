@@ -13,12 +13,12 @@ export default [
     input: "./src/index.js",
     output: [
       {
-        file: "./dist/actiontext-lexical.js",
+        file: "./app/assets/javascript/actiontext-lexical.js",
         format: "esm"
       },
 
       {
-        file: "./dist/actiontext-lexical.min.js",
+        file: "./app/assets/javascript/actiontext-lexical.min.js",
         format: "esm",
         plugins: [ terser() ]
       }
