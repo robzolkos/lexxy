@@ -1,1 +1,2 @@
-console.debug("INDEX 2! ");
+import "./elements/toolbar"
+import "./elements/editor"
