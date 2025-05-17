@@ -1,0 +1,19 @@
+{
+  "name": "actiontext-lexical",
+  "version": "0.0.1",
+  "description": "Action text 🤝 Lexical",
+  "main": "dist/actiontext-lexical.js",
+  "repository": "https://github.com/jorgemanrubia/actiontext-lexical.git",
+  "author": "Jorge Manrubia <jorge@37signals.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.40.2",
+    "rollup-plugin-gzip": "^4.0.1"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -wc"
+  }
+}
