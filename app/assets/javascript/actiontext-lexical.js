@@ -3894,20 +3894,69 @@ class UploadedImageNode extends gi {
     super(key);
     this.file = file;
     this.uploadUrl = uploadUrl;
-    this.status = "uploading"; // uploading | success | error
+    this.status = "uploading";
     this.src = null;
     this.editor = editor;
     this._progress = 0;
-
-    this.#startUpload();
   }
 
-  #startUpload() {
-    const key = this.getKey();
+  createDOM() {
+    const figure = document.createElement("figure");
+    figure.className = "uploaded-image";
+    figure.contentEditable = "false";
 
+    if (this.file && this.status === "uploading") {
+      // 1. <img> preview
+      const img = document.createElement("img");
+      img.alt = this.file.name;
+      img.style.maxWidth = "100%";
+      img.style.display = "block";
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(this.file);
+
+      // 2. <progress> bar
+      const progress = document.createElement("progress");
+      progress.max = 100;
+      progress.value = this._progress || 0;
+      progress.style.width = "100%";
+      progress.style.marginTop = "0.5em";
+
+      figure.appendChild(img);
+      figure.appendChild(progress);
+
+      // Save reference for updates
+      this._progressBar = progress;
+
+      this.#startUpload(progress);
+    } else if (this.status === "error") {
+      const error = document.createElement("div");
+      error.className = "upload-error";
+      error.innerText = `Error uploading ${this.file.name}`;
+      figure.appendChild(error);
+    } else if (this.status === "success") {
+      const img = document.createElement("img");
+      img.src = this.src;
+      img.alt = this.file?.name ?? "";
+      img.style.maxWidth = "100%";
+      img.style.display = "block";
+      figure.appendChild(img);
+    }
+
+    return figure
+  }
+
+  decorate() {
+    return null
+  }
+
+  #startUpload(progressBar) {
+    const key = this.getKey();
     const upload = new DirectUpload(this.file, this.uploadUrl, this);
 
-    // Listen to progress via XHR
     upload.delegate = {
       directUploadWillStoreFileWithXHR: (request) => {
         request.upload.addEventListener("progress", (event) => {
@@ -3929,7 +3978,7 @@ class UploadedImageNode extends gi {
     upload.create((error, blob) => {
       if (error) {
         this.status = "error";
-        this.editor.update(() => {}); // trigger rerender
+        this.editor.update(() => {}); // trigger DOM update
         return
       }
 
@@ -3945,65 +3994,8 @@ class UploadedImageNode extends gi {
     });
   }
 
-  createDOM() {
-    const figure = document.createElement("figure");
-    figure.className = "uploaded-image";
-    return figure
-  }
-
-  decorate() {
-    const figure = document.createElement("div");
-    figure.className = "uploaded-image";
-
-    if (this.status === "uploading") {
-      // 1. <img> preview
-      const img = document.createElement("img");
-      img.alt = this.file.name;
-      img.style.maxWidth = "100%";
-      img.style.display = "block";
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(this.file);
-
-      figure.appendChild(img);
-
-      // 2. <progress> bar
-      const progress = document.createElement("progress");
-      progress.max = 100;
-      progress.value = this._progress || 0;
-      progress.style.width = "100%";
-      progress.style.marginTop = "0.5em";
-
-      figure.appendChild(progress);
-
-      this._progressBar = progress;
-
-      return figure
-    }
-
-    if (this.status === "error") {
-      const error = document.createElement("div");
-      error.className = "upload-error";
-      error.innerText = `Error uploading ${this.file.name}`;
-      return error
-    }
-
-    // Default/fallback display
-    const img = document.createElement("img");
-    img.src = this.src;
-    img.alt = this.file.name;
-    img.style.maxWidth = "100%";
-    img.style.display = "block";
-
-    figure.appendChild(img);
-    return figure
-  }
-
   updateDOM() {
-    return false
+    return false // We don't want Lexical to patch DOM — we own it
   }
 
   exportJSON() {
