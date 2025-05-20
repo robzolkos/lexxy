@@ -10,6 +10,7 @@ import { TRANSFORMERS, registerMarkdownShortcuts } from "@lexical/markdown"
 
 import theme from "../config/theme"
 import { ImageNode } from "../nodes/image_node"
+import { UploadedImageNode } from "../nodes/uploaded_image_node"
 import { CommandDispatcher } from "../editor/command_dispatcher"
 
 export default class LexicalEditorElement extends HTMLElement {
@@ -36,6 +37,10 @@ export default class LexicalEditorElement extends HTMLElement {
   get toolbarElement() {
     const toolbarId = this.getAttribute("toolbar")
     return document.getElementById(toolbarId)
+  }
+
+  get directUploadUrl() {
+    return this.dataset.directUploadUrl
   }
 
   disconnectedCallback() {
@@ -85,7 +90,9 @@ export default class LexicalEditorElement extends HTMLElement {
         TableCellNode,
         TableRowNode,
         LinkNode,
-        ImageNode
+
+        ImageNode,
+        UploadedImageNode
       ]
     })
 
@@ -189,4 +196,7 @@ customElements.define("lexical-editor", LexicalEditorElement)
 //
 //   return { element }
 // }
+
+
+
 

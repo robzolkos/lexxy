@@ -1,16 +1,4 @@
 <%= form_with(model: post) do |form| %>
-  <% if post.errors.any? %>
-    <div style="color: red">
-      <h2><%= pluralize(post.errors.count, "error") %> prohibited this post from being saved:</h2>
-
-      <ul>
-        <% post.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
-
   <div>
     <%= form.label :title, style: "display: block" %>
     <%= form.text_field :title %>
@@ -18,7 +6,26 @@
 
   <div>
     <%= form.label :body, style: "display: block" %>
-    <%= form.rich_text_area :body %>
+
+    <lexical-toolbar id="the-toolbar">
+      <!-- Inline formatting -->
+      <button data-command="bold">Bold</button>
+      <button data-command="italic">Italic</button>
+
+      <!-- Block-level formatting -->
+      <button data-command="formatElement" data-payload="h1">Heading</button>
+      <button data-command="formatElement" data-payload="quote">Quote</button>
+      <button data-command="insertCodeBlock">Code Block</button>
+
+      <!-- Tables -->
+      <button data-command="insertTable">Table</button>
+
+      <!-- Lists -->
+      <button data-command="insertUnorderedList">• Bullet List</button>
+      <button data-command="insertOrderedList">1. Numbered List</button>
+    </lexical-toolbar>
+
+    <%= form.rich_text_area :body, toolbar: "the-toolbar" %>
   </div>
 
   <div>

@@ -13,7 +13,7 @@ import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text"
 import { $createTableNodeWithDimensions } from '@lexical/table'
 import { CodeNode } from "@lexical/code"
 
-import { ImageNode } from "../nodes/image_node"
+import { UploadedImageNode } from "../nodes/uploaded_image_node"
 
 const COMMANDS = [
   "bold",
@@ -32,34 +32,28 @@ export class CommandDispatcher {
 
   constructor(editor) {
     this.editor = editor
+    this.editorElement = this.editor.getRootElement().closest("lexical-editor")
     this.#registerCommands()
-
   }
 
   dispatchPaste(event) {
     const clipboardData = event.clipboardData
     if (!clipboardData) return false
 
-    const items = clipboardData.items
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i]
-      if (item.type.startsWith("image/")) {
-        const file = item.getAsFile()
-        if (file) {
-          const reader = new FileReader()
-          reader.onload = (loadEvent) => {
-            const src = loadEvent.target.result
+    for (const item of clipboardData.items) {
+      if (!item.type.startsWith("image/")) continue
+      const file = item.getAsFile()
+      if (!file) continue
 
-            this.editor.update(() => {
-              const imageNode = new ImageNode(src)
-              const root = $getRoot()
-              root.append(imageNode)
-            })
-          }
-          reader.readAsDataURL(file)
-          return true
-        }
-      }
+      const uploadUrl = this.editorElement.directUploadUrl
+      console.debug("YAY", uploadUrl);
+
+      this.editor.update(() => {
+        const uploadedImageNode = new UploadedImageNode(file, uploadUrl, this.editor)
+        $getRoot().append(uploadedImageNode)
+      })
+
+      return true
     }
 
     return false

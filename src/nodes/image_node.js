@@ -19,7 +19,10 @@ export class ImageNode extends DecoratorNode {
   }
 
   decorate() {
-    return null // or you could return a DOM element / React element
+    console.debug("CALLED!!");
+    const content = document.createElement('span')
+    content.innerText = "WHAT!"
+    return content
   }
 
   createDOM() {
