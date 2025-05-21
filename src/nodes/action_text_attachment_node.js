@@ -16,16 +16,15 @@ export class ActionTextAttachmentNode extends DecoratorNode {
       "action-text-attachment": (attachment) => {
         return {
           conversion: () => ({ node: new ActionTextAttachmentNode({
-              sgid: attachment.getAttribute("sgid"),
-              src: attachment.getAttribute("url"),
-              altText: attachment.getAttribute("filename"),
-              contentType: attachment.getAttribute("content-type"),
-              fileName: attachment.getAttribute("filename"),
-              fileSize: attachment.getAttribute("filesize"),
-              width: attachment.getAttribute("width"),
-              height: attachment.getAttribute("height")
-            })
-          }),
+            sgid: attachment.getAttribute("sgid"),
+            src: attachment.getAttribute("url"),
+            altText: attachment.getAttribute("filename"),
+            contentType: attachment.getAttribute("content-type"),
+            fileName: attachment.getAttribute("filename"),
+            fileSize: attachment.getAttribute("filesize"),
+            width: attachment.getAttribute("width"),
+            height: attachment.getAttribute("height")
+          })}),
           priority: 1
         }
       }

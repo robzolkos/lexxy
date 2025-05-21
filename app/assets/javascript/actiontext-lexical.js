@@ -3834,16 +3834,15 @@ class ActionTextAttachmentNode extends gi {
       "action-text-attachment": (attachment) => {
         return {
           conversion: () => ({ node: new ActionTextAttachmentNode({
-              sgid: attachment.getAttribute("sgid"),
-              src: attachment.getAttribute("url"),
-              altText: attachment.getAttribute("filename"),
-              contentType: attachment.getAttribute("content-type"),
-              fileName: attachment.getAttribute("filename"),
-              fileSize: attachment.getAttribute("filesize"),
-              width: attachment.getAttribute("width"),
-              height: attachment.getAttribute("height")
-            })
-          }),
+            sgid: attachment.getAttribute("sgid"),
+            src: attachment.getAttribute("url"),
+            altText: attachment.getAttribute("filename"),
+            contentType: attachment.getAttribute("content-type"),
+            fileName: attachment.getAttribute("filename"),
+            fileSize: attachment.getAttribute("filesize"),
+            width: attachment.getAttribute("width"),
+            height: attachment.getAttribute("height")
+          })}),
           priority: 1
         }
       }
@@ -3873,16 +3872,6 @@ class ActionTextAttachmentNode extends gi {
 
   updateDOM() {
     return false
-  }
-
-  exportJSON() {
-    return {
-      type: "action_text_attachment",
-      version: 1,
-      src: this.src,
-      altText: this.altText,
-      contentType: this.contentType
-    }
   }
 
   exportDOM() {
@@ -3945,12 +3934,6 @@ class ActionTextAttachmentUploadNode extends gi {
     return new ActionTextAttachmentUploadNode(node.file, node.uploadUrl, node.editor, node.__key)
   }
 
-  static importJSON(serializedNode) {
-    const node = new ActionTextAttachmentUploadNode();
-    node.src = serializedNode.src;
-    return node
-  }
-
   constructor(file, uploadUrl, editor, key) {
     super(key);
     this.file = file;
@@ -3973,14 +3956,6 @@ class ActionTextAttachmentUploadNode extends gi {
 
   updateDOM() {
     return false
-  }
-
-  exportJSON() {
-    return {
-      type: "action_text_attachment_upload",
-      version: 1,
-      src: this.src,
-    }
   }
 
   exportDOM() {
