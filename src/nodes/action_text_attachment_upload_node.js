@@ -1,20 +1,20 @@
 import { DecoratorNode, $getNodeByKey } from "lexical"
 import { DirectUpload } from "@rails/activestorage"
-import { ImageNode } from "./image_node"
+import { ActionTextAttachmentNode } from "./action_text_attachment_node"
 import { createElement, createFigureWithImage } from "../helpers/html_helper";
 import { loadFileIntoImage } from "../helpers/upload_helper";
 
-export class UploadedImageNode extends DecoratorNode {
+export class ActionTextAttachmentUploadNode extends DecoratorNode {
   static getType() {
-    return "uploaded_image"
+    return "action_text_attachment_upload"
   }
 
   static clone(node) {
-    return new UploadedImageNode(node.file, node.uploadUrl, node.editor, node.__key)
+    return new ActionTextAttachmentUploadNode(node.file, node.uploadUrl, node.editor, node.__key)
   }
 
   static importJSON(serializedNode) {
-    const node = new UploadedImageNode()
+    const node = new ActionTextAttachmentUploadNode()
     node.src = serializedNode.src
     return node
   }
@@ -45,7 +45,7 @@ export class UploadedImageNode extends DecoratorNode {
 
   exportJSON() {
     return {
-      type: "uploaded_image",
+      type: "action_text_attachment_upload",
       version: 1,
       src: this.src,
     }
@@ -97,7 +97,7 @@ export class UploadedImageNode extends DecoratorNode {
     this.editor.update(() => {
       const latest = $getNodeByKey(this.getKey())
       if (latest) {
-        latest.replace(new ImageNode(this.src, blob.filename, blob.content_type))
+        latest.replace(new ActionTextAttachmentNode({ src: this.src, altText: blob.filename, contentType: blob.content_type }))
       }
     })
   }

@@ -3822,17 +3822,13 @@ function createFigureWithImage(properties) {
   return { figure, image }
 }
 
-class ImageNode extends gi {
+class ActionTextAttachmentNode extends gi {
   static getType() {
-    return "image"
+    return "action_text_attachment"
   }
 
   static clone(node) {
-    return new ImageNode(node.src, node.altText, node.contentType, node.__key)
-  }
-
-  static importJSON(serializedNode) {
-    return new ImageNode(serializedNode.src, serializedNode.altText)
+    return new ActionTextAttachmentNode({ node }, node.__key)
   }
 
   static importDOM() {
@@ -3840,13 +3836,13 @@ class ImageNode extends gi {
       figure: (figure) => {
         const image = figure.querySelector("img");
         if (image instanceof HTMLImageElement) {
-          return { conversion: () => ({ node: new ImageNode(image.src, image.alt) }), priority: 1 }
+          return { conversion: () => ({ node: new ActionTextAttachmentNode({ src: image.src, altText: image.altText }) }), priority: 1 }
         }
       }
     }
   }
 
-  constructor(src, altText, contentType, key) {
+  constructor({ src, altText, contentType }, key) {
     super(key);
     this.src = src;
     this.altText = altText;
@@ -3854,7 +3850,8 @@ class ImageNode extends gi {
   }
 
   createDOM() {
-    return this.#createFigureWithImage()
+    const { figure } = createFigureWithImage({ image: { src: this.src, alt: this.altText }, "data-content-type": this.contentType });
+    return figure
   }
 
   updateDOM() {
@@ -3863,25 +3860,29 @@ class ImageNode extends gi {
 
   exportJSON() {
     return {
-      type: "image",
+      type: "action_text_attachment",
       version: 1,
       src: this.src,
       altText: this.altText,
+      contentType: this.contentType
     }
   }
 
   exportDOM() {
-    const figure = this.#createFigureWithImage();
-    return { element: figure }
+    const attachment = createElement("action-text-attachment", {
+      sgid: "",
+      url: "",
+      "content-type": "",
+      filname: "",
+      filesize: "",
+      width: "",
+      presentation: "gallery"
+    });
+    return { element: attachment }
   }
 
   decorate() {
     return null
-  }
-
-  #createFigureWithImage() {
-    const { figure } = createFigureWithImage({ image: { src: this.src, alt: this.altText }, "data-content-type": this.contentType });
-    return figure
   }
 }
 
@@ -3893,17 +3894,17 @@ function loadFileIntoImage(file, image) {
   reader.readAsDataURL(file);
 }
 
-class UploadedImageNode extends gi {
+class ActionTextAttachmentUploadNode extends gi {
   static getType() {
-    return "uploaded_image"
+    return "action_text_attachment_upload"
   }
 
   static clone(node) {
-    return new UploadedImageNode(node.file, node.uploadUrl, node.editor, node.__key)
+    return new ActionTextAttachmentUploadNode(node.file, node.uploadUrl, node.editor, node.__key)
   }
 
   static importJSON(serializedNode) {
-    const node = new UploadedImageNode();
+    const node = new ActionTextAttachmentUploadNode();
     node.src = serializedNode.src;
     return node
   }
@@ -3934,7 +3935,7 @@ class UploadedImageNode extends gi {
 
   exportJSON() {
     return {
-      type: "uploaded_image",
+      type: "action_text_attachment_upload",
       version: 1,
       src: this.src,
     }
@@ -3946,7 +3947,6 @@ class UploadedImageNode extends gi {
       img.src = this.src;
     }
     img.alt = this.altText;
-    img.className = "wtf-image";
     return { element: img }
   }
 
@@ -3987,7 +3987,7 @@ class UploadedImageNode extends gi {
     this.editor.update(() => {
       const latest = as(this.getKey());
       if (latest) {
-        latest.replace(new ImageNode(this.src, blob.filename, blob.content_type));
+        latest.replace(new ActionTextAttachmentNode({ src: this.src, altText: blob.filename, contentType: blob.content_type }));
       }
     });
   }
@@ -4202,7 +4202,7 @@ class CommandDispatcher {
     const uploadUrl = this.editorElement.directUploadUrl;
 
     this.editor.update(() => {
-      const uploadedImageNode = new UploadedImageNode(file, uploadUrl, this.editor);
+      const uploadedImageNode = new ActionTextAttachmentUploadNode(file, uploadUrl, this.editor);
       _s().append(uploadedImageNode);
     });
   }
@@ -4290,8 +4290,8 @@ class LexicalEditorElement extends HTMLElement {
         Oe,
         g$1,
 
-        ImageNode,
-        UploadedImageNode
+        ActionTextAttachmentNode,
+        ActionTextAttachmentUploadNode
       ]
     });
 

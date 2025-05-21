@@ -9,8 +9,8 @@ import { CodeHighlightNode, CodeNode, registerCodeHighlighting, } from "@lexical
 import { TRANSFORMERS, registerMarkdownShortcuts } from "@lexical/markdown"
 
 import theme from "../config/theme"
-import { ImageNode } from "../nodes/image_node"
-import { UploadedImageNode } from "../nodes/uploaded_image_node"
+import { ActionTextAttachmentNode } from "../nodes/action_text_attachment_node"
+import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { CommandDispatcher } from "../editor/command_dispatcher"
 
 export default class LexicalEditorElement extends HTMLElement {
@@ -91,8 +91,8 @@ export default class LexicalEditorElement extends HTMLElement {
         TableRowNode,
         LinkNode,
 
-        ImageNode,
-        UploadedImageNode
+        ActionTextAttachmentNode,
+        ActionTextAttachmentUploadNode
       ]
     })
 

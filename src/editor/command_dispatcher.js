@@ -13,7 +13,7 @@ import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text"
 import { $createTableNodeWithDimensions } from '@lexical/table'
 import { CodeNode } from "@lexical/code"
 
-import { UploadedImageNode } from "../nodes/uploaded_image_node"
+import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { createElement } from "../helpers/html_helper"
 
 const COMMANDS = [
@@ -225,7 +225,7 @@ export class CommandDispatcher {
     const uploadUrl = this.editorElement.directUploadUrl
 
     this.editor.update(() => {
-      const uploadedImageNode = new UploadedImageNode(file, uploadUrl, this.editor)
+      const uploadedImageNode = new ActionTextAttachmentUploadNode(file, uploadUrl, this.editor)
       $getRoot().append(uploadedImageNode)
     })
   }
