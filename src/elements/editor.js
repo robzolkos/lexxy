@@ -115,7 +115,7 @@ export default class LexicalEditorElement extends HTMLElement {
     this.editor.registerUpdateListener(({ editorState }) => {
       editorState.read(() => {
         const html = $generateHtmlFromNodes(this.editor, null)
-        this.internals.setFormValue(html) // <== this is the missing part
+        this.internals.setFormValue(html)
       })
     })
   }
@@ -145,53 +145,6 @@ export default class LexicalEditorElement extends HTMLElement {
 
 customElements.define("lexical-editor", LexicalEditorElement)
 
-// ParagraphNode.prototype.exportDOM = function () {
-//   return {
-//     element: document.createElement("p"), // no span wrapping
-//   }
-// }
-//
-// TextNode.prototype.exportDOM = function () {
-//   const text = this.__text
-//
-//   // Determine format
-//   const isBold = this.hasFormat("bold")
-//   const isItalic = this.hasFormat("italic")
-//   const isUnderline = this.hasFormat("underline")
-//   const isStrikethrough = this.hasFormat("strikethrough")
-//   const isCode = this.hasFormat("code")
-//
-//   let element = document.createTextNode(text)
-//
-//   // Wrap in formatting elements from innermost to outermost
-//   if (isCode) {
-//     const code = document.createElement("code")
-//     code.appendChild(element)
-//     element = code
-//   }
-//   if (isStrikethrough) {
-//     const s = document.createElement("s")
-//     s.appendChild(element)
-//     element = s
-//   }
-//   if (isUnderline) {
-//     const u = document.createElement("u")
-//     u.appendChild(element)
-//     element = u
-//   }
-//   if (isItalic) {
-//     const em = document.createElement("em")
-//     em.appendChild(element)
-//     element = em
-//   }
-//   if (isBold) {
-//     const strong = document.createElement("strong")
-//     strong.appendChild(element)
-//     element = strong
-//   }
-//
-//   return { element }
-// }
 
 
 
