@@ -102,65 +102,6 @@ export class CommandDispatcher {
     })
   }
 
-  dispatchInsertTable() {
-    this.editor.update(() => {
-      const selection = $getSelection()
-      if (!$isRangeSelection(selection)) return
-
-      // Create a new table with 3x3 dimensions
-      const tableNode = $createTableNodeWithDimensions(3, 3)
-
-      if (!selection.isCollapsed()) {
-        // If text is selected, extract the nodes
-        const nodes = selection.extract()
-
-        const focusNode = selection.focus.getNode()
-        const anchorNode = selection.anchor.getNode()
-        const insertionPoint = (focusNode && focusNode.getParent()) ||
-          (anchorNode && anchorNode.getParent())
-
-        if (insertionPoint && insertionPoint.getParent()) {
-          // Insert the table before the insertion point
-          insertionPoint.insertBefore(tableNode)
-
-          // Remove the insertion point if it's empty
-          if (insertionPoint.getTextContent().trim() === '') {
-            insertionPoint.remove()
-          }
-        } else {
-          // If no valid insertion point, append to root
-          $getRoot().append(tableNode)
-        }
-      } else {
-        // If selection is collapsed (no text selected)
-        const focusNode = selection.focus.getNode()
-
-        if (focusNode) {
-          const parent = focusNode.getParent()
-
-          // Check if we're in an empty paragraph
-          if (parent && parent.getTextContent().trim() === '' && parent.getParent()) {
-            // Replace the empty paragraph with the table
-            parent.insertBefore(tableNode)
-            parent.remove()
-          } else if (parent && parent.getParent()) {
-            // Insert after the parent if it's not a root node
-            parent.insertAfter(tableNode)
-          } else if (focusNode.getParent()) {
-            // Insert after the focus node if it's not a root node
-            focusNode.insertAfter(tableNode)
-          } else {
-            // Append to root as last resort
-            $getRoot().append(tableNode)
-          }
-        } else {
-          // If no focus node, append to root
-          $getRoot().append(tableNode)
-        }
-      }
-    })
-  }
-
   dispatchFormatElement(type) {
     this.editor.update(() => {
       const selection = $getSelection()
