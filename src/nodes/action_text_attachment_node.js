@@ -57,16 +57,6 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     return false
   }
 
-  exportJSON() {
-    return {
-      type: "action_text_attachment",
-      version: 1,
-      src: this.src,
-      altText: this.altText,
-      contentType: this.contentType
-    }
-  }
-
   exportDOM() {
     const attachment = createElement("action-text-attachment", {
       sgid: this.sgid,

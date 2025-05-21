@@ -13,12 +13,6 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
     return new ActionTextAttachmentUploadNode(node.file, node.uploadUrl, node.editor, node.__key)
   }
 
-  static importJSON(serializedNode) {
-    const node = new ActionTextAttachmentUploadNode()
-    node.src = serializedNode.src
-    return node
-  }
-
   constructor(file, uploadUrl, editor, key) {
     super(key)
     this.file = file
@@ -41,14 +35,6 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
 
   updateDOM() {
     return false
-  }
-
-  exportJSON() {
-    return {
-      type: "action_text_attachment_upload",
-      version: 1,
-      src: this.src,
-    }
   }
 
   exportDOM() {
