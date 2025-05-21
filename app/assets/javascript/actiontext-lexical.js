@@ -4029,12 +4029,7 @@ class CommandDispatcher {
       const file = item.getAsFile();
       if (!file) continue
 
-      const uploadUrl = this.editorElement.directUploadUrl;
-
-      this.editor.update(() => {
-        const uploadedImageNode = new UploadedImageNode(file, uploadUrl, this.editor);
-        _s().append(uploadedImageNode);
-      });
+      this.#uploadFile(file);
     }
   }
 
@@ -4067,7 +4062,7 @@ class CommandDispatcher {
         const focusNode = selection.focus.getNode();
         const anchorNode = selection.anchor.getNode();
         const insertionPoint = (focusNode && focusNode.getParent()) ||
-                              (anchorNode && anchorNode.getParent());
+          (anchorNode && anchorNode.getParent());
 
         for (const node of nodes) {
           if (node.getParent()) {
@@ -4105,7 +4100,7 @@ class CommandDispatcher {
         const focusNode = selection.focus.getNode();
         const anchorNode = selection.anchor.getNode();
         const insertionPoint = (focusNode && focusNode.getParent()) ||
-                              (anchorNode && anchorNode.getParent());
+          (anchorNode && anchorNode.getParent());
 
         if (insertionPoint && insertionPoint.getParent()) {
           // Insert the table before the insertion point
@@ -4188,14 +4183,9 @@ class CommandDispatcher {
         const files = Array.from(target.files);
         if (!files.length) return
 
-        const uploadUrl = this.editorElement?.directUploadUrl;
-
-        this.editor.update(() => {
-          for (const file of files) {
-            const uploadedImageNode = new UploadedImageNode(file, uploadUrl, this.editor);
-            _s().append(uploadedImageNode);
-          }
-        });
+        for (const file of files) {
+          this.#uploadFile(file);
+        }
       }
     }).click();
   }
@@ -4211,6 +4201,15 @@ class CommandDispatcher {
 
   #registerCommandHandler(command, priority, handler) {
     this.editor.registerCommand(command, handler, priority);
+  }
+
+  #uploadFile(file) {
+    const uploadUrl = this.editorElement.directUploadUrl;
+
+    this.editor.update(() => {
+      const uploadedImageNode = new UploadedImageNode(file, uploadUrl, this.editor);
+      _s().append(uploadedImageNode);
+    });
   }
 }
 
