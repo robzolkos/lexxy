@@ -15,28 +15,32 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     return {
       "action-text-attachment": (attachment) => {
         return {
-          conversion: () => ({ node: new ActionTextAttachmentNode({
-            sgid: attachment.getAttribute("sgid"),
-            src: attachment.getAttribute("url"),
-            altText: attachment.getAttribute("filename"),
-            contentType: attachment.getAttribute("content-type"),
-            fileName: attachment.getAttribute("filename"),
-            fileSize: attachment.getAttribute("filesize"),
-            width: attachment.getAttribute("width"),
-            height: attachment.getAttribute("height")
-          })}),
+          conversion: () => ({
+            node: new ActionTextAttachmentNode({
+              sgid: attachment.getAttribute("sgid"),
+              src: attachment.getAttribute("url"),
+              altText: attachment.getAttribute("fiçlename"),
+              caption: attachment.getAttribute("caption"),
+              contentType: attachment.getAttribute("content-type"),
+              fileName: attachment.getAttribute("filename"),
+              fileSize: attachment.getAttribute("filesize"),
+              width: attachment.getAttribute("width"),
+              height: attachment.getAttribute("height")
+            })
+          }),
           priority: 1
         }
       }
     }
   }
 
-  constructor({ sgid, src, altText, contentType, fileName, fileSize, width, height }, key) {
+  constructor({ sgid, src, altText, caption, contentType, fileName, fileSize, width, height }, key) {
     super(key)
 
     this.sgid = sgid
     this.src = src
     this.altText = altText
+    this.caption = caption
     this.contentType = contentType || ""
     this.fileName = fileName
     this.fileSize = fileSize
