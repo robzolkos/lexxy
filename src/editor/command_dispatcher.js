@@ -10,7 +10,6 @@ import {
 
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list"
 import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text"
-import { $createTableNodeWithDimensions } from '@lexical/table'
 import { CodeNode } from "@lexical/code"
 
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
@@ -23,7 +22,6 @@ const COMMANDS = [
   "insertUnorderedList",
   "insertOrderedList",
   "insertCodeBlock",
-  "insertTable",
   "uploadAttachments"
 ]
 

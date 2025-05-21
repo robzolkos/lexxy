@@ -4,7 +4,6 @@ import { ListNode, ListItemNode, registerList } from "@lexical/list"
 import { LinkNode } from "@lexical/link"
 import { registerRichText, QuoteNode, HeadingNode } from "@lexical/rich-text"
 import { $generateNodesFromDOM, $generateHtmlFromNodes } from "@lexical/html"
-import { TableNode, TableCellNode, TableRowNode } from '@lexical/table';
 import { CodeHighlightNode, CodeNode, registerCodeHighlighting, } from "@lexical/code"
 import { TRANSFORMERS, registerMarkdownShortcuts } from "@lexical/markdown"
 
@@ -86,9 +85,6 @@ export default class LexicalEditorElement extends HTMLElement {
         ListItemNode,
         CodeNode,
         CodeHighlightNode,
-        TableNode,
-        TableCellNode,
-        TableRowNode,
         LinkNode,
 
         ActionTextAttachmentNode,
