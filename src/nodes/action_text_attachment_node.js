@@ -12,10 +12,20 @@ export class ActionTextAttachmentNode extends DecoratorNode {
 
   static importDOM() {
     return {
-      figure: (figure) => {
-        const image = figure.querySelector("img")
-        if (image instanceof HTMLImageElement) {
-          return { conversion: () => ({ node: new ActionTextAttachmentNode({ src: image.src, altText: image.altText }) }), priority: 1 }
+      "action-text-attachment": (attachment) => {
+        return {
+          conversion: () => ({ node: new ActionTextAttachmentNode({
+              sgid: attachment.getAttribute("sgid"),
+              src: attachment.getAttribute("url"),
+              altText: attachment.getAttribute("filename"),
+              contentType: attachment.getAttribute("content-type"),
+              fileName: attachment.getAttribute("filename"),
+              fileSize: attachment.getAttribute("filesize"),
+              width: attachment.getAttribute("width"),
+              height: attachment.getAttribute("height")
+            })
+          }),
+          priority: 1
         }
       }
     }
@@ -35,8 +45,11 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   createDOM() {
-    const { figure } = createFigureWithImage({ image: { src: this.src, alt: this.altText }, "data-content-type": this.contentType })
-    return figure
+    if (this.#isImage) {
+      return this.#createDOMForImage()
+    } else {
+      return this.#createDOMForNotImage()
+    }
   }
 
   updateDOM() {
@@ -70,5 +83,28 @@ export class ActionTextAttachmentNode extends DecoratorNode {
 
   decorate() {
     return null
+  }
+
+  get #isImage() {
+    return this.contentType.startsWith("image/")
+  }
+
+  #createDOMForImage() {
+    const { figure } = createFigureWithImage({ image: { src: this.src, alt: this.altText }, "data-content-type": this.contentType })
+    return figure
+  }
+
+  #createDOMForNotImage() {
+    const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType })
+    const figcaption = createElement("figcaption", { className: "attachment__caption" })
+
+    const nameSpan = createElement("span", { className: "attachment__name", textContent: this.fileName })
+    const sizeSpan = createElement("span", { className: "attachment__size", textContent: this.fileSize })
+
+    figcaption.appendChild(nameSpan)
+    figcaption.appendChild(sizeSpan)
+    figure.appendChild(figcaption)
+
+    return figure
   }
 }

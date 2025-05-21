@@ -2,7 +2,11 @@ PATH
   remote: .
   specs:
     actiontext-lexical (0.1.0)
+      capybara
+      cuprite
+      image_processing
       rails (>= 8.0.2)
+      selenium-webdriver
 
 GEM
   remote: https://rubygems.org/
@@ -288,14 +292,10 @@ PLATFORMS
 
 DEPENDENCIES
   actiontext-lexical!
-  capybara
-  cuprite
-  image_processing
   importmap-rails
   propshaft
   puma
   rubocop-rails-omakase
-  selenium-webdriver
   sqlite3
 
 BUNDLED WITH
