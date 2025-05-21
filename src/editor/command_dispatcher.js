@@ -3,9 +3,13 @@ import {
   $createParagraphNode,
   $getSelection,
   $isRangeSelection,
+  $isNodeSelection,
   PASTE_COMMAND,
+  KEY_DELETE_COMMAND,
+  KEY_BACKSPACE_COMMAND,
   COMMAND_PRIORITY_LOW,
-  FORMAT_TEXT_COMMAND
+  FORMAT_TEXT_COMMAND,
+  SELECTION_CHANGE_COMMAND, $setSelection
 } from "lexical"
 
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list"
@@ -46,6 +50,18 @@ export class CommandDispatcher {
 
       this.#uploadFile(file)
     }
+  }
+
+  dispatchDeleteNodes() {
+    this.editor.update(() => {
+      if ($isNodeSelection(this.currentSelection)) {
+        this.currentSelection.getNodes().forEach((node) => {
+          node.remove()
+        })
+        $setSelection(null)
+        this.editor.focus()
+      }
+    });
   }
 
   dispatchBold() {
@@ -147,11 +163,19 @@ export class CommandDispatcher {
       this.#registerCommandHandler(command, 0, this[methodName].bind(this))
     }
 
+    this.editor.registerCommand(SELECTION_CHANGE_COMMAND, this.#refreshCurrentSelection.bind(this), COMMAND_PRIORITY_LOW);
+
     this.#registerCommandHandler(PASTE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchPaste.bind(this))
+    this.#registerCommandHandler(KEY_DELETE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchDeleteNodes.bind(this))
+    this.#registerCommandHandler(KEY_BACKSPACE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchDeleteNodes.bind(this))
   }
 
   #registerCommandHandler(command, priority, handler) {
     this.editor.registerCommand(command, handler, priority)
+  }
+
+  #refreshCurrentSelection() {
+    this.currentSelection = $getSelection()
   }
 
   #uploadFile(file) {

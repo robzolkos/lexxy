@@ -3869,6 +3869,11 @@ class ActionTextAttachmentNode extends gi {
   createDOM() {
     const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType });
 
+    figure.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+      this.#select(figure);
+    }, true);
+
     if (this.#isImage) {
       figure.appendChild(this.#createDOMForImage());
     } else {
@@ -3927,6 +3932,14 @@ class ActionTextAttachmentNode extends gi {
     figcaption.appendChild(sizeSpan);
 
     return figcaption
+  }
+
+  #select(figure) {
+    const event = new CustomEvent("lexical:node-selected", {
+      detail: { key: this.getKey() },
+      bubbles: true,
+    });
+    figure.dispatchEvent(event);
   }
 }
 
@@ -4066,6 +4079,18 @@ class CommandDispatcher {
     }
   }
 
+  dispatchDeleteNodes() {
+    this.editor.update(() => {
+      if (ur(this.currentSelection)) {
+        this.currentSelection.getNodes().forEach((node) => {
+          node.remove();
+        });
+        ys(null);
+        this.editor.focus();
+      }
+    });
+  }
+
   dispatchBold() {
     this.editor.dispatchCommand(me, "bold");
   }
@@ -4165,11 +4190,19 @@ class CommandDispatcher {
       this.#registerCommandHandler(command, 0, this[methodName].bind(this));
     }
 
+    this.editor.registerCommand(le, this.#refreshCurrentSelection.bind(this), Ii);
+
     this.#registerCommandHandler(ge, Ii, this.dispatchPaste.bind(this));
+    this.#registerCommandHandler(De, Ii, this.dispatchDeleteNodes.bind(this));
+    this.#registerCommandHandler(Ae, Ii, this.dispatchDeleteNodes.bind(this));
   }
 
   #registerCommandHandler(command, priority, handler) {
     this.editor.registerCommand(command, handler, priority);
+  }
+
+  #refreshCurrentSelection() {
+    this.currentSelection = Nr();
   }
 
   #uploadFile(file) {
@@ -4203,6 +4236,7 @@ class LexicalEditorElement extends HTMLElement {
     this.#loadInitialValue();
     this.#updateInternalValueOnChange();
     this.#registerComponents();
+    this.#listenForCustomEvents();
     this.#attachDebugHooks();
     this.#attachToolbar();
   }
@@ -4299,6 +4333,20 @@ class LexicalEditorElement extends HTMLElement {
     Tt$2(this.editor);
     yt$1(this.editor);
     et(this.editor, Bt);
+  }
+
+  #listenForCustomEvents() {
+    this.editor.getRootElement().addEventListener("lexical:node-selected", (event) => {
+      const { key } = event.detail;
+      this.editor.update(() => {
+        const node = as(key);
+        if (node) {
+          const selection = kr();
+          selection.add(node.getKey());
+          ys(selection);
+        }
+      });
+    });
   }
 
   #attachDebugHooks() {

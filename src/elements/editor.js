@@ -1,5 +1,5 @@
 
-import { createEditor, $getRoot, ParagraphNode, TextNode, } from "lexical"
+import { createEditor, $getRoot, $getNodeByKey, $createNodeSelection, $setSelection, $getSelection, $isNodeSelection, $addUpdateTag, SKIP_DOM_SELECTION_TAG } from "lexical"
 import { ListNode, ListItemNode, registerList } from "@lexical/list"
 import { LinkNode } from "@lexical/link"
 import { registerRichText, QuoteNode, HeadingNode } from "@lexical/rich-text"
@@ -29,6 +29,7 @@ export default class LexicalEditorElement extends HTMLElement {
     this.#loadInitialValue()
     this.#updateInternalValueOnChange()
     this.#registerComponents()
+    this.#listenForCustomEvents()
     this.#attachDebugHooks()
     this.#attachToolbar()
   }
@@ -125,6 +126,20 @@ export default class LexicalEditorElement extends HTMLElement {
     registerList(this.editor)
     registerCodeHighlighting(this.editor)
     registerMarkdownShortcuts(this.editor, TRANSFORMERS)
+  }
+
+  #listenForCustomEvents() {
+    this.editor.getRootElement().addEventListener("lexical:node-selected", (event) => {
+      const { key } = event.detail
+      this.editor.update(() => {
+        const node = $getNodeByKey(key)
+        if (node) {
+          const selection = $createNodeSelection()
+          selection.add(node.getKey())
+          $setSelection(selection)
+        }
+      })
+    })
   }
 
   #attachDebugHooks() {

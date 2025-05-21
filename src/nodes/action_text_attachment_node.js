@@ -1,5 +1,5 @@
 import { DecoratorNode } from "lexical"
-import { createElement, createFigureWithImage } from "../helpers/html_helper";
+import { createElement } from "../helpers/html_helper";
 import { bytesToHumanSize } from "../helpers/storage_helper";
 
 export class ActionTextAttachmentNode extends DecoratorNode {
@@ -50,6 +50,11 @@ export class ActionTextAttachmentNode extends DecoratorNode {
 
   createDOM() {
     const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType })
+
+    figure.addEventListener("mousedown", (event) => {
+      event.preventDefault()
+      this.#select(figure)
+    }, true)
 
     if (this.#isImage) {
       figure.appendChild(this.#createDOMForImage())
@@ -109,5 +114,13 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     figcaption.appendChild(sizeSpan)
 
     return figcaption
+  }
+
+  #select(figure) {
+    const event = new CustomEvent("lexical:node-selected", {
+      detail: { key: this.getKey() },
+      bubbles: true,
+    })
+    figure.dispatchEvent(event)
   }
 }
