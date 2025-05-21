@@ -2,8 +2,6 @@ module ActionText
   module Lexical
     module TagHelper
       def rich_textarea_tag(name, value = nil, options = {})
-        Rails.logger.info "*** name = #{name}"
-
         options = options.symbolize_keys
         form = options.delete(:form)
 
