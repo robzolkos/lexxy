@@ -57,7 +57,6 @@ export class UploadedImageNode extends DecoratorNode {
       img.src = this.src
     }
     img.alt = this.altText
-    img.className = "wtf-image"
     return { element: img }
   }
 
