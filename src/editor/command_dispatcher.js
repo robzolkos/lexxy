@@ -14,15 +14,17 @@ import { $createTableNodeWithDimensions } from '@lexical/table'
 import { CodeNode } from "@lexical/code"
 
 import { UploadedImageNode } from "../nodes/uploaded_image_node"
+import { createElement } from "../helpers/html_helper"
 
 const COMMANDS = [
   "bold",
+  "formatElement",
   "italic",
   "insertUnorderedList",
   "insertOrderedList",
   "insertCodeBlock",
   "insertTable",
-  "formatElement"
+  "uploadAttachments"
 ]
 
 export class CommandDispatcher {
@@ -46,37 +48,28 @@ export class CommandDispatcher {
       if (!file) continue
 
       const uploadUrl = this.editorElement.directUploadUrl
-      console.debug("YAY", uploadUrl);
 
       this.editor.update(() => {
         const uploadedImageNode = new UploadedImageNode(file, uploadUrl, this.editor)
         $getRoot().append(uploadedImageNode)
       })
-
-      return true
     }
-
-    return false
   }
 
   dispatchBold() {
     this.editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold")
-    return true
   }
 
   dispatchItalic() {
     this.editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic")
-    return true
   }
 
   dispatchInsertUnorderedList() {
     this.editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)
-    return true
   }
 
   dispatchInsertOrderedList() {
     this.editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)
-    return true
   }
 
   dispatchInsertCodeBlock() {
@@ -113,7 +106,6 @@ export class CommandDispatcher {
         $getRoot().append(codeNode)
       }
     })
-    return true
   }
 
   dispatchInsertTable() {
@@ -173,7 +165,6 @@ export class CommandDispatcher {
         }
       }
     })
-    return true
   }
 
   dispatchFormatElement(type) {
@@ -204,7 +195,27 @@ export class CommandDispatcher {
         wrapper.append(node)
       }
     })
-    return true
+  }
+
+  dispatchUploadAttachments() {
+    createElement("input", {
+      type: "file",
+      accept: "image/*",
+      multiple: true,
+      onchange: ({ target }) => {
+        const files = Array.from(target.files)
+        if (!files.length) return
+
+        const uploadUrl = this.editorElement?.directUploadUrl
+
+        this.editor.update(() => {
+          for (const file of files) {
+            const uploadedImageNode = new UploadedImageNode(file, uploadUrl, this.editor)
+            $getRoot().append(uploadedImageNode)
+          }
+        })
+      }
+    }).click()
   }
 
   #registerCommands() {

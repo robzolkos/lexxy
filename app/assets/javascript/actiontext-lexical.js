@@ -3863,7 +3863,7 @@ class ImageNode extends gi {
   }
 
   updateDOM() {
-    return false // No need to re-render
+    return false
   }
 
   exportJSON() {
@@ -4000,12 +4000,13 @@ class UploadedImageNode extends gi {
 
 const COMMANDS = [
   "bold",
+  "formatElement",
   "italic",
   "insertUnorderedList",
   "insertOrderedList",
   "insertCodeBlock",
   "insertTable",
-  "formatElement"
+  "uploadAttachments"
 ];
 
 class CommandDispatcher {
@@ -4029,37 +4030,28 @@ class CommandDispatcher {
       if (!file) continue
 
       const uploadUrl = this.editorElement.directUploadUrl;
-      console.debug("YAY", uploadUrl);
 
       this.editor.update(() => {
         const uploadedImageNode = new UploadedImageNode(file, uploadUrl, this.editor);
         _s().append(uploadedImageNode);
       });
-
-      return true
     }
-
-    return false
   }
 
   dispatchBold() {
     this.editor.dispatchCommand(me, "bold");
-    return true
   }
 
   dispatchItalic() {
     this.editor.dispatchCommand(me, "italic");
-    return true
   }
 
   dispatchInsertUnorderedList() {
     this.editor.dispatchCommand(_t$2, undefined);
-    return true
   }
 
   dispatchInsertOrderedList() {
     this.editor.dispatchCommand(yt$3, undefined);
-    return true
   }
 
   dispatchInsertCodeBlock() {
@@ -4096,7 +4088,6 @@ class CommandDispatcher {
         _s().append(codeNode);
       }
     });
-    return true
   }
 
   dispatchInsertTable() {
@@ -4156,7 +4147,6 @@ class CommandDispatcher {
         }
       }
     });
-    return true
   }
 
   dispatchFormatElement(type) {
@@ -4187,7 +4177,27 @@ class CommandDispatcher {
         wrapper.append(node);
       }
     });
-    return true
+  }
+
+  dispatchUploadAttachments() {
+    createElement("input", {
+      type: "file",
+      accept: "image/*",
+      multiple: true,
+      onchange: ({ target }) => {
+        const files = Array.from(target.files);
+        if (!files.length) return
+
+        const uploadUrl = this.editorElement?.directUploadUrl;
+
+        this.editor.update(() => {
+          for (const file of files) {
+            const uploadedImageNode = new UploadedImageNode(file, uploadUrl, this.editor);
+            _s().append(uploadedImageNode);
+          }
+        });
+      }
+    }).click();
   }
 
   #registerCommands() {
