@@ -42,7 +42,7 @@ export class ImageNode extends DecoratorNode {
   }
 
   updateDOM() {
-    return false // No need to re-render
+    return false
   }
 
   exportJSON() {
