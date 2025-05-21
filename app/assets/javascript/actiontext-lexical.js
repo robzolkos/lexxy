@@ -3819,13 +3819,11 @@ class ImageNode extends gi {
   }
 
   decorate() {
-    console.debug("CALLED!!");
-    const content = document.createElement('span');
-    content.innerText = "WHAT!";
-    return content
+    return null
   }
 
   createDOM() {
+    const figure = document.createElement("figure");
     const img = document.createElement("img");
     img.src = this.src;
     img.alt = this.altText;
@@ -3833,7 +3831,8 @@ class ImageNode extends gi {
     img.style.maxWidth = "100%";
     img.style.display = "block";
     img.style.margin = "1em 0";
-    return img
+    figure.appendChild(img);
+    return figure
   }
 
   updateDOM() {
@@ -3865,15 +3864,52 @@ class ImageNode extends gi {
         }
         return null
       },
+      figure: (domNode) => {
+        const img = domNode.querySelector('img');
+        if (img instanceof HTMLImageElement) {
+          return {
+            conversion: () =>
+              new ImageNode(img.src, img.alt),
+            priority: 1,
+          }
+        }
+        return null
+      }
     }
   }
 
   exportDOM() {
+    const figure = document.createElement("figure");
     const img = document.createElement("img");
     img.src = this.src;
     img.alt = this.altText;
-    return img
+    figure.appendChild(img);
+    return { element: figure }
   }
+}
+
+function createElement(name, properties) {
+  const element = document.createElement(name);
+  for (const [key, value] of Object.entries(properties)) {
+    element[key] = value;
+  }
+  return element
+}
+
+function createFigureWithImage() {
+  const figure = createElement("figure", { class: "attachment", contentEditable: false });
+  const image = createElement("image", { parent: figure });
+  figure.appendChild(image);
+
+  return { figure, image }
+}
+
+function loadFileIntoImage(file, image) {
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    image.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 class UploadedImageNode extends gi {
@@ -3890,112 +3926,34 @@ class UploadedImageNode extends gi {
     )
   }
 
+  static importJSON(serializedNode) {
+    const node = new UploadedImageNode();
+    node.src = serializedNode.src;
+    return node
+  }
+
   constructor(file, uploadUrl, editor, key) {
     super(key);
     this.file = file;
     this.uploadUrl = uploadUrl;
-    this.status = "uploading";
     this.src = null;
     this.editor = editor;
-    this._progress = 0;
   }
 
   createDOM() {
-    const figure = document.createElement("figure");
-    figure.className = "uploaded-image";
-    figure.contentEditable = "false";
+    const { figure, image } = createFigureWithImage();
 
-    if (this.file && this.status === "uploading") {
-      // 1. <img> preview
-      const img = document.createElement("img");
-      img.alt = this.file.name;
-      img.style.maxWidth = "100%";
-      img.style.display = "block";
+    const progressBar = createElement("progress", { value: 0, max: 100 });
+    figure.appendChild(progressBar);
+    loadFileIntoImage(this.file, image);
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(this.file);
-
-      // 2. <progress> bar
-      const progress = document.createElement("progress");
-      progress.max = 100;
-      progress.value = this._progress || 0;
-      progress.style.width = "100%";
-      progress.style.marginTop = "0.5em";
-
-      figure.appendChild(img);
-      figure.appendChild(progress);
-
-      // Save reference for updates
-      this._progressBar = progress;
-
-      this.#startUpload(progress);
-    } else if (this.status === "error") {
-      const error = document.createElement("div");
-      error.className = "upload-error";
-      error.innerText = `Error uploading ${this.file.name}`;
-      figure.appendChild(error);
-    } else if (this.status === "success") {
-      const img = document.createElement("img");
-      img.src = this.src;
-      img.alt = this.file?.name ?? "";
-      img.style.maxWidth = "100%";
-      img.style.display = "block";
-      figure.appendChild(img);
-    }
+    this.#startUpload(progressBar, figure);
 
     return figure
   }
 
-  decorate() {
-    return null
-  }
-
-  #startUpload(progressBar) {
-    const key = this.getKey();
-    const upload = new DirectUpload(this.file, this.uploadUrl, this);
-
-    upload.delegate = {
-      directUploadWillStoreFileWithXHR: (request) => {
-        request.upload.addEventListener("progress", (event) => {
-          if (event.lengthComputable) {
-            const percent = Math.round((event.loaded / event.total) * 100);
-            this._progress = percent;
-
-            this.editor.update(() => {
-              const latest = as(key);
-              if (latest && latest._progressBar) {
-                latest._progressBar.value = percent;
-              }
-            });
-          }
-        });
-      }
-    };
-
-    upload.create((error, blob) => {
-      if (error) {
-        this.status = "error";
-        this.editor.update(() => {}); // trigger DOM update
-        return
-      }
-
-      this.status = "success";
-      this.src = `/rails/active_storage/blobs/redirect/${blob.signed_id}/${blob.filename}`;
-
-      this.editor.update(() => {
-        const latest = as(key);
-        if (latest) {
-          latest.replace(new ImageNode(this.src, this.file.name));
-        }
-      });
-    });
-  }
-
   updateDOM() {
-    return false // We don't want Lexical to patch DOM — we own it
+    return false
   }
 
   exportJSON() {
@@ -4003,15 +3961,59 @@ class UploadedImageNode extends gi {
       type: "uploaded_image",
       version: 1,
       src: this.src,
-      status: this.status,
     }
   }
 
-  static importJSON(serializedNode) {
-    const node = new UploadedImageNode(null, null, null);
-    node.src = serializedNode.src;
-    node.status = serializedNode.status;
-    return node
+  exportDOM() {
+    const img = document.createElement("img");
+    if (this.src) {
+      img.src = this.src;
+    }
+    img.alt = this.altText;
+    img.className = "wtf-image";
+    return { element: img }
+  }
+
+  decorate() {
+    return null
+  }
+
+  #startUpload(progressBar, figure) {
+    const upload = new DirectUpload(this.file, this.uploadUrl, this);
+
+    upload.delegate = {
+      directUploadWillStoreFileWithXHR: (request) => {
+        request.upload.addEventListener("progress", (event) => {
+          this.editor.update(() => {
+            progressBar.value = Math.round((event.loaded / event.total) * 100);
+          });
+        });
+      }
+    };
+
+    upload.create((error, blob) => {
+      if (error) {
+        this.#handleUploadError(figure);
+      } else {
+        this.src = `/rails/active_storage/blobs/redirect/${blob.signed_id}/${blob.filename}`;
+        this.#showUploadedImage();
+      }
+    });
+  }
+
+  #handleUploadError(figure) {
+    figure.innerHTML = "";
+    figure.classList.add("attachment--error");
+    figure.appendChild(createElement("div", { innerText: `Error uploading ${this.file?.name ?? "image"}` }));
+  }
+
+  #showUploadedImage() {
+    this.editor.update(() => {
+      const latest = as(this.getKey());
+      if (latest) {
+        latest.replace(new ImageNode(this.src, this.file.name));
+      }
+    });
   }
 }
 

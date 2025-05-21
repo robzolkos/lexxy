@@ -19,13 +19,11 @@ export class ImageNode extends DecoratorNode {
   }
 
   decorate() {
-    console.debug("CALLED!!");
-    const content = document.createElement('span')
-    content.innerText = "WHAT!"
-    return content
+    return null
   }
 
   createDOM() {
+    const figure = document.createElement("figure")
     const img = document.createElement("img")
     img.src = this.src
     img.alt = this.altText
@@ -33,7 +31,8 @@ export class ImageNode extends DecoratorNode {
     img.style.maxWidth = "100%"
     img.style.display = "block"
     img.style.margin = "1em 0"
-    return img
+    figure.appendChild(img)
+    return figure
   }
 
   updateDOM() {
@@ -65,13 +64,26 @@ export class ImageNode extends DecoratorNode {
         }
         return null
       },
+      figure: (domNode) => {
+        const img = domNode.querySelector('img')
+        if (img instanceof HTMLImageElement) {
+          return {
+            conversion: () =>
+              new ImageNode(img.src, img.alt),
+            priority: 1,
+          }
+        }
+        return null
+      }
     }
   }
 
   exportDOM() {
+    const figure = document.createElement("figure")
     const img = document.createElement("img")
     img.src = this.src
     img.alt = this.altText
-    return img
+    figure.appendChild(img)
+    return { element: figure }
   }
 }
