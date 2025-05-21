@@ -30,15 +30,15 @@ export class ImageNode extends DecoratorNode {
     }
   }
 
-  constructor(src, altText, key) {
+  constructor(src, altText, contentType, key) {
     super(key)
     this.src = src
     this.altText = altText
+    this.contentType = contentType
   }
 
   createDOM() {
-    const { figure } = createFigureWithImage({ image: { src: this.src, alt: this.alt } })
-    return figure
+    return this.#createFigureWithImage()
   }
 
   updateDOM() {
@@ -55,11 +55,16 @@ export class ImageNode extends DecoratorNode {
   }
 
   exportDOM() {
-    const { figure } = createFigureWithImage({ image: { src: this.src, alt: this.alt } })
+    const figure = this.#createFigureWithImage()
     return { element: figure }
   }
 
   decorate() {
     return null
+  }
+
+  #createFigureWithImage() {
+    const { figure } = createFigureWithImage({ image: { src: this.src, alt: this.altText }, "data-content-type": this.contentType })
+    return figure
   }
 }

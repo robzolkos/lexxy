@@ -1,7 +1,13 @@
 export function createElement(name, properties) {
+  console.debug("INVOKED", name, properties);
   const element = document.createElement(name)
   for (const [key, value] of Object.entries(properties)) {
-    element[key] = value
+    if (key in element) {
+      element[key] = value
+    } else {
+      element.setAttribute(key, value)
+      console.debug("SETTING ", key, value, element)
+    }
   }
   return element
 }

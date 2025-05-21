@@ -83,7 +83,7 @@ export class UploadedImageNode extends DecoratorNode {
         this.#handleUploadError(figure)
       } else {
         this.src = `/rails/active_storage/blobs/redirect/${blob.signed_id}/${blob.filename}`
-        this.#showUploadedImage()
+        this.#showUploadedImage(blob)
       }
     })
   }
@@ -94,11 +94,11 @@ export class UploadedImageNode extends DecoratorNode {
     figure.appendChild(createElement("div", { innerText: `Error uploading ${this.file?.name ?? "image"}` }))
   }
 
-  #showUploadedImage() {
+  #showUploadedImage(blob) {
     this.editor.update(() => {
       const latest = $getNodeByKey(this.getKey())
       if (latest) {
-        latest.replace(new ImageNode(this.src, this.file.name))
+        latest.replace(new ImageNode(this.src, blob.filename, blob.content_type))
       }
     })
   }
