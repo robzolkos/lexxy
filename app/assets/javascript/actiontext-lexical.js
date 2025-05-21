@@ -4118,7 +4118,7 @@ class CommandDispatcher {
         this.selection.current.getNodes().forEach((node) => {
           node.remove();
         });
-        ys(null);
+        this.selection.clear();
         this.editor.focus();
       }
     });
@@ -4249,16 +4249,73 @@ function capitalize(str) {
 class NodesSelection {
   constructor(editor) {
     this.editor = editor;
+    this.previouslySelectedKeys = new Set();
 
     this.#listenForNodeSelections();
     this.#processSelectionChangeCommands();
+  }
+
+  clear() {
+    ys(null);
+  }
+
+  set current(selection) {
+    if (ur(selection)) {
+      this._current = Nr();
+      this.#syncSelectedClasses();
+    }
+  }
+
+  get current() {
+    return this._current
   }
 
   #processSelectionChangeCommands() {
     this.editor.registerCommand(le, () => {
       this.current = Nr();
     }, Ii);
+  }
 
+  #syncSelectedClasses() {
+    this.editor.update(() => {
+      this.#clearPreviouslyHighlightedItems();
+      this.#highlightNewItems();
+
+      this.previouslySelectedKeys = this.#currentlySelectedKeys;
+      this._currentlySelectedKeys = null;
+    });
+  }
+
+  #clearPreviouslyHighlightedItems() {
+    for (const key of this.previouslySelectedKeys) {
+      if (!this.#currentlySelectedKeys.has(key)) {
+        const dom = this.editor.getElementByKey(key);
+        if (dom) dom.classList.remove("node--selected");
+      }
+    }
+  }
+
+  #highlightNewItems() {
+    for (const key of this.#currentlySelectedKeys) {
+      if (!this.previouslySelectedKeys.has(key)) {
+        const nodeElement = this.editor.getElementByKey(key);
+        if (nodeElement) nodeElement.classList.add("node--selected");
+      }
+    }
+  }
+
+  get #currentlySelectedKeys() {
+    if (this._currentlySelectedKeys) { return this._currentlySelectedKeys }
+
+    this._currentlySelectedKeys = new Set();
+
+    if (this.current) {
+      for (const node of this.current.getNodes()) {
+        this._currentlySelectedKeys.add(node.getKey());
+      }
+    }
+
+    return this._currentlySelectedKeys
   }
 
   #listenForNodeSelections() {

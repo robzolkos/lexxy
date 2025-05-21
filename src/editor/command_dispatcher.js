@@ -62,7 +62,7 @@ export class CommandDispatcher {
         this.selection.current.getNodes().forEach((node) => {
           node.remove()
         })
-        $setSelection(null)
+        this.selection.clear()
         this.editor.focus()
       }
     })
