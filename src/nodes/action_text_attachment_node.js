@@ -1,12 +1,6 @@
 import { DecoratorNode } from "lexical"
 import { createElement, createFigureWithImage } from "../helpers/html_helper";
 
-const PROPERTIES = [
-  "src",
-  "altText",
-  "contentType"
-]
-
 export class ActionTextAttachmentNode extends DecoratorNode {
   static getType() {
     return "action_text_attachment"
@@ -27,11 +21,17 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     }
   }
 
-  constructor({ src, altText, contentType }, key) {
+  constructor({ sgid, src, altText, contentType, fileName, fileSize, width, height }, key) {
     super(key)
+
+    this.sgid = sgid
     this.src = src
     this.altText = altText
     this.contentType = contentType || ""
+    this.fileName = fileName
+    this.fileSize = fileSize
+    this.width = width
+    this.height = height
   }
 
   createDOM() {
@@ -55,14 +55,16 @@ export class ActionTextAttachmentNode extends DecoratorNode {
 
   exportDOM() {
     const attachment = createElement("action-text-attachment", {
-      sgid: "",
-      url: "",
-      "content-type": "",
-      filname: "",
-      filesize: "",
-      width: "",
+      sgid: this.sgid,
+      url: this.src,
+      "content-type": this.contentType,
+      filename: this.fileName,
+      filesize: this.fileSize,
+      width: this.width,
+      height: this.height,
       presentation: "gallery"
     })
+
     return { element: attachment }
   }
 

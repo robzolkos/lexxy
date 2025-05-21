@@ -3842,11 +3842,17 @@ class ActionTextAttachmentNode extends gi {
     }
   }
 
-  constructor({ src, altText, contentType }, key) {
+  constructor({ sgid, src, altText, contentType, fileName, fileSize, width, height }, key) {
     super(key);
+
+    this.sgid = sgid;
     this.src = src;
     this.altText = altText;
     this.contentType = contentType || "";
+    this.fileName = fileName;
+    this.fileSize = fileSize;
+    this.width = width;
+    this.height = height;
   }
 
   createDOM() {
@@ -3870,14 +3876,16 @@ class ActionTextAttachmentNode extends gi {
 
   exportDOM() {
     const attachment = createElement("action-text-attachment", {
-      sgid: "",
-      url: "",
-      "content-type": "",
-      filname: "",
-      filesize: "",
-      width: "",
+      sgid: this.sgid,
+      url: this.src,
+      "content-type": this.contentType,
+      filename: this.fileName,
+      filesize: this.fileSize,
+      width: this.width,
+      height: this.height,
       presentation: "gallery"
     });
+
     return { element: attachment }
   }
 
@@ -3972,7 +3980,7 @@ class ActionTextAttachmentUploadNode extends gi {
         this.#handleUploadError(figure);
       } else {
         this.src = `/rails/active_storage/blobs/redirect/${blob.signed_id}/${blob.filename}`;
-        this.#showUploadedImage(blob);
+        this.#showUploadedImage(figure, blob);
       }
     });
   }
@@ -3983,11 +3991,21 @@ class ActionTextAttachmentUploadNode extends gi {
     figure.appendChild(createElement("div", { innerText: `Error uploading ${this.file?.name ?? "image"}` }));
   }
 
-  #showUploadedImage(blob) {
+  #showUploadedImage(figure, blob) {
+    const image = figure.querySelector("img");
     this.editor.update(() => {
       const latest = as(this.getKey());
       if (latest) {
-        latest.replace(new ActionTextAttachmentNode({ src: this.src, altText: blob.filename, contentType: blob.content_type }));
+        latest.replace(new ActionTextAttachmentNode({
+          sgid: blob.attachable_sgid,
+          src: this.src,
+          altText: blob.filename,
+          contentType: blob.content_type,
+          fileName: blob.filename,
+          fileSize: blob.byte_size,
+          width: image.width,
+          height: image.height
+        }));
       }
     });
   }

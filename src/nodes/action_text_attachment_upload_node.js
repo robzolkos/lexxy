@@ -82,7 +82,7 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
         this.#handleUploadError(figure)
       } else {
         this.src = `/rails/active_storage/blobs/redirect/${blob.signed_id}/${blob.filename}`
-        this.#showUploadedImage(blob)
+        this.#showUploadedImage(figure, blob)
       }
     })
   }
@@ -93,11 +93,21 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
     figure.appendChild(createElement("div", { innerText: `Error uploading ${this.file?.name ?? "image"}` }))
   }
 
-  #showUploadedImage(blob) {
+  #showUploadedImage(figure, blob) {
+    const image = figure.querySelector("img")
     this.editor.update(() => {
       const latest = $getNodeByKey(this.getKey())
       if (latest) {
-        latest.replace(new ActionTextAttachmentNode({ src: this.src, altText: blob.filename, contentType: blob.content_type }))
+        latest.replace(new ActionTextAttachmentNode({
+          sgid: blob.attachable_sgid,
+          src: this.src,
+          altText: blob.filename,
+          contentType: blob.content_type,
+          fileName: blob.filename,
+          fileSize: blob.byte_size,
+          width: image.width,
+          height: image.height
+        }))
       }
     })
   }
