@@ -10,6 +10,11 @@ module Actiontext
           ActionText::TagHelper.prepend(ActionText::Lexical::TagHelper)
         end
       end
+
+      initializer "actiontext-lexical.assets" do |app|
+        app.config.assets.paths << root.join("app/assets/stylesheets")
+        app.config.assets.paths << root.join("app/javascript")
+      end
     end
   end
 end

@@ -1,0 +1,4 @@
+/* Node selection */
+.node--selected {
+  border: 2px solid blue;
+}
