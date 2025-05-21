@@ -3828,7 +3828,7 @@ class ImageNode extends gi {
   }
 
   static clone(node) {
-    return new ImageNode(node.src, node.altText, node.__key)
+    return new ImageNode(node.src, node.altText, node.contentType, node.__key)
   }
 
   static importJSON(serializedNode) {
@@ -3840,7 +3840,7 @@ class ImageNode extends gi {
       figure: (figure) => {
         const image = figure.querySelector("img");
         if (image instanceof HTMLImageElement) {
-          return { conversion: () => { new ImageNode(image.src, image.alt); }, priority: 1 }
+          return { conversion: () => ({ node: new ImageNode(image.src, image.alt) }), priority: 1 }
         }
       }
     }
