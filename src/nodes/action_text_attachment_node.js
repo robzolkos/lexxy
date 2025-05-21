@@ -117,6 +117,14 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     return true
   }
 
+  isInline() {
+    return false
+  }
+
+  isTopLevel() {
+    return true
+  }
+
   get #isImage() {
     return this.contentType.startsWith("image/")
   }
