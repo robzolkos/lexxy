@@ -4,6 +4,7 @@ import {
   $getSelection,
   $isRangeSelection,
   $isNodeSelection,
+  $insertNodes,
   PASTE_COMMAND,
   KEY_DELETE_COMMAND,
   KEY_BACKSPACE_COMMAND,
@@ -59,11 +60,26 @@ export class CommandDispatcher {
   dispatchDeleteNodes() {
     this.editor.update(() => {
       if ($isNodeSelection(this.selection.current)) {
+        let nodesWereRemoved = false
         this.selection.current.getNodes().forEach((node) => {
+          const parent = node.getParent()
+
           node.remove()
+
+          if (parent && parent.getChildrenSize() === 0) {
+            parent.remove()
+          }
+
+          nodesWereRemoved = true
         })
-        this.selection.clear()
-        this.editor.focus()
+
+        if (nodesWereRemoved) {
+          console.debug("CALLED WERE!");
+          this.selection.clear()
+          this.editor.focus()
+
+          return true
+        }
       }
     })
   }
@@ -180,8 +196,10 @@ export class CommandDispatcher {
     const uploadUrl = this.editorElement.directUploadUrl
 
     this.editor.update(() => {
+      const paragraph = $createParagraphNode()
       const uploadedImageNode = new ActionTextAttachmentUploadNode(file, uploadUrl, this.editor)
-      $getRoot().append(uploadedImageNode)
+      paragraph.append(uploadedImageNode)
+      $insertNodes([paragraph])
     }, { tag: HISTORY_MERGE_TAG })
   }
 }

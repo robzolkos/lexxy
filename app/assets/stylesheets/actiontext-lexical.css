@@ -1,3 +1,7 @@
+.lexical-editor__content {
+  padding: 1rem 0.5rem;
+}
+
 /* Node selection */
 .node--selected {
   border: 2px solid blue;

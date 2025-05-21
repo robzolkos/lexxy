@@ -11,12 +11,15 @@ export default class NodesSelection {
 
   clear() {
     $setSelection(null)
+    this.current = null
   }
 
   set current(selection) {
     if ($isNodeSelection(selection)) {
       this._current = $getSelection()
       this.#syncSelectedClasses()
+    } else {
+      this._current = null
     }
   }
 

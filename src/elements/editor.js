@@ -1,18 +1,17 @@
-
-import { createEditor, $getRoot, $getNodeByKey, $createNodeSelection, $setSelection, $getSelection, $isNodeSelection, $addUpdateTag, SKIP_DOM_SELECTION_TAG } from "lexical"
+import { createEditor, $getRoot, $isParagraphNode, $getNodeByKey } from "lexical"
 import { ListNode, ListItemNode, registerList } from "@lexical/list"
 import { LinkNode } from "@lexical/link"
 import { registerRichText, QuoteNode, HeadingNode } from "@lexical/rich-text"
 import { $generateNodesFromDOM, $generateHtmlFromNodes } from "@lexical/html"
 import { CodeHighlightNode, CodeNode, registerCodeHighlighting, } from "@lexical/code"
 import { TRANSFORMERS, registerMarkdownShortcuts } from "@lexical/markdown"
-import { registerHistory, createEmptyHistoryState } from '@lexical/history';
+import { registerHistory, createEmptyHistoryState } from '@lexical/history'
 
 import theme from "../config/theme"
 import { ActionTextAttachmentNode } from "../nodes/action_text_attachment_node"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { CommandDispatcher } from "../editor/command_dispatcher"
-import Selection from "../editor/selection";
+import Selection from "../editor/selection"
 
 export default class LexicalEditorElement extends HTMLElement {
   static formAssociated = true
