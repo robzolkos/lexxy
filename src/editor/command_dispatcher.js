@@ -164,7 +164,6 @@ export class CommandDispatcher {
     }
 
     this.editor.registerCommand(SELECTION_CHANGE_COMMAND, this.#refreshCurrentSelection.bind(this), COMMAND_PRIORITY_LOW);
-
     this.#registerCommandHandler(PASTE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchPaste.bind(this))
     this.#registerCommandHandler(KEY_DELETE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchDeleteNodes.bind(this))
     this.#registerCommandHandler(KEY_BACKSPACE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchDeleteNodes.bind(this))

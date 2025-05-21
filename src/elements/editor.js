@@ -6,6 +6,7 @@ import { registerRichText, QuoteNode, HeadingNode } from "@lexical/rich-text"
 import { $generateNodesFromDOM, $generateHtmlFromNodes } from "@lexical/html"
 import { CodeHighlightNode, CodeNode, registerCodeHighlighting, } from "@lexical/code"
 import { TRANSFORMERS, registerMarkdownShortcuts } from "@lexical/markdown"
+import { registerHistory, createEmptyHistoryState } from '@lexical/history';
 
 import theme from "../config/theme"
 import { ActionTextAttachmentNode } from "../nodes/action_text_attachment_node"
@@ -94,6 +95,7 @@ export default class LexicalEditorElement extends HTMLElement {
     })
 
     editor.setRootElement(this.editorContentElement)
+    editor.update(() => {})
 
     return editor
   }
@@ -123,6 +125,7 @@ export default class LexicalEditorElement extends HTMLElement {
 
   #registerComponents() {
     registerRichText(this.editor)
+    registerHistory(this.editor, createEmptyHistoryState(), 20)
     registerList(this.editor)
     registerCodeHighlighting(this.editor)
     registerMarkdownShortcuts(this.editor, TRANSFORMERS)
