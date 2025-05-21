@@ -9,7 +9,9 @@ import {
   KEY_BACKSPACE_COMMAND,
   COMMAND_PRIORITY_LOW,
   FORMAT_TEXT_COMMAND,
-  SELECTION_CHANGE_COMMAND, $setSelection
+  SELECTION_CHANGE_COMMAND,
+  HISTORY_MERGE_TAG,
+  $setSelection
 } from "lexical"
 
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list"
@@ -61,7 +63,7 @@ export class CommandDispatcher {
         $setSelection(null)
         this.editor.focus()
       }
-    });
+    })
   }
 
   dispatchBold() {
@@ -183,7 +185,7 @@ export class CommandDispatcher {
     this.editor.update(() => {
       const uploadedImageNode = new ActionTextAttachmentUploadNode(file, uploadUrl, this.editor)
       $getRoot().append(uploadedImageNode)
-    })
+    }, { tag: HISTORY_MERGE_TAG })
   }
 }
 

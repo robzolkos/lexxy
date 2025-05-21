@@ -1,8 +1,9 @@
 import { DecoratorNode, $getNodeByKey } from "lexical"
 import { DirectUpload } from "@rails/activestorage"
 import { ActionTextAttachmentNode } from "./action_text_attachment_node"
-import { createElement, createFigureWithImage } from "../helpers/html_helper";
-import { loadFileIntoImage } from "../helpers/upload_helper";
+import { createElement, createFigureWithImage } from "../helpers/html_helper"
+import { loadFileIntoImage } from "../helpers/upload_helper"
+import { HISTORY_MERGE_TAG } from 'lexical'
 
 export class ActionTextAttachmentUploadNode extends DecoratorNode {
   static getType() {
@@ -95,6 +96,6 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
           height: image.height
         }))
       }
-    })
+    }, { tag: HISTORY_MERGE_TAG })
   }
 }

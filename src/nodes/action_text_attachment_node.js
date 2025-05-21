@@ -11,6 +11,10 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     return new ActionTextAttachmentNode({ node }, node.__key)
   }
 
+  static importJSON(serializedNode) {
+    return new ActionTextAttachmentNode({ serializedNode })
+  }
+
   static importDOM() {
     return {
       "action-text-attachment": (attachment) => {
@@ -83,6 +87,23 @@ export class ActionTextAttachmentNode extends DecoratorNode {
 
     return { element: attachment }
   }
+
+  exportJSON() {
+    return {
+      type: "action_text_attachment",
+      version: 1,
+      sgid: this.sgid,
+      src: this.src,
+      altText: this.altText,
+      caption: this.caption,
+      contentType: this.contentType,
+      fileName: this.fileName,
+      fileSize: this.fileSize,
+      width: this.width,
+      height: this.height
+    }
+  }
+
 
   decorate() {
     return null

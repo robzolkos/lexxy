@@ -3839,6 +3839,10 @@ class ActionTextAttachmentNode extends gi {
     return new ActionTextAttachmentNode({ node }, node.__key)
   }
 
+  static importJSON(serializedNode) {
+    return new ActionTextAttachmentNode({ serializedNode })
+  }
+
   static importDOM() {
     return {
       "action-text-attachment": (attachment) => {
@@ -3911,6 +3915,23 @@ class ActionTextAttachmentNode extends gi {
 
     return { element: attachment }
   }
+
+  exportJSON() {
+    return {
+      type: "action_text_attachment",
+      version: 1,
+      sgid: this.sgid,
+      src: this.src,
+      altText: this.altText,
+      caption: this.caption,
+      contentType: this.contentType,
+      fileName: this.fileName,
+      fileSize: this.fileSize,
+      width: this.width,
+      height: this.height
+    }
+  }
+
 
   decorate() {
     return null
@@ -4052,7 +4073,7 @@ class ActionTextAttachmentUploadNode extends gi {
           height: image.height
         }));
       }
-    });
+    }, { tag: Ti });
   }
 }
 
@@ -4220,7 +4241,7 @@ class CommandDispatcher {
     this.editor.update(() => {
       const uploadedImageNode = new ActionTextAttachmentUploadNode(file, uploadUrl, this.editor);
       _s().append(uploadedImageNode);
-    });
+    }, { tag: Ti });
   }
 }
 
