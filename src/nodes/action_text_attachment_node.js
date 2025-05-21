@@ -1,5 +1,6 @@
 import { DecoratorNode } from "lexical"
 import { createElement, createFigureWithImage } from "../helpers/html_helper";
+import { bytesToHumanSize } from "../helpers/storage_helper";
 
 export class ActionTextAttachmentNode extends DecoratorNode {
   static getType() {
@@ -99,7 +100,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     const figcaption = createElement("figcaption", { className: "attachment__caption" })
 
     const nameSpan = createElement("span", { className: "attachment__name", textContent: this.fileName })
-    const sizeSpan = createElement("span", { className: "attachment__size", textContent: this.fileSize })
+    const sizeSpan = createElement("span", { className: "attachment__size", textContent: bytesToHumanSize(this.fileSize) })
 
     figcaption.appendChild(nameSpan)
     figcaption.appendChild(sizeSpan)

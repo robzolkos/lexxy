@@ -43,7 +43,6 @@ export class CommandDispatcher {
     if (!clipboardData) return false
 
     for (const item of clipboardData.items) {
-      if (!item.type.startsWith("image/")) continue
       const file = item.getAsFile()
       if (!file) continue
 

@@ -3822,6 +3822,14 @@ function createFigureWithImage(properties) {
   return { figure, image }
 }
 
+function bytesToHumanSize(bytes) {
+  if (bytes === 0) return '0 B'
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  const value = bytes / Math.pow(1024, i);
+  return `${value.toFixed(2)} ${sizes[i]}`
+}
+
 class ActionTextAttachmentNode extends gi {
   static getType() {
     return "action_text_attachment"
@@ -3920,7 +3928,7 @@ class ActionTextAttachmentNode extends gi {
     const figcaption = createElement("figcaption", { className: "attachment__caption" });
 
     const nameSpan = createElement("span", { className: "attachment__name", textContent: this.fileName });
-    const sizeSpan = createElement("span", { className: "attachment__size", textContent: this.fileSize });
+    const sizeSpan = createElement("span", { className: "attachment__size", textContent: bytesToHumanSize(this.fileSize) });
 
     figcaption.appendChild(nameSpan);
     figcaption.appendChild(sizeSpan);
@@ -4074,7 +4082,6 @@ class CommandDispatcher {
     if (!clipboardData) return false
 
     for (const item of clipboardData.items) {
-      if (!item.type.startsWith("image/")) continue
       const file = item.getAsFile();
       if (!file) continue
 
