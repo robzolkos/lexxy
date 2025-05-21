@@ -4135,15 +4135,11 @@ class CommandDispatcher {
       const selection = Nr();
       if (!cr(selection)) return
 
-      // Extract the selected nodes
       const nodes = selection.extract();
 
-      // Process each node
       for (const node of nodes) {
-        // Skip nodes without a parent
         if (!node.getParent()) continue
 
-        // Create the appropriate wrapper element based on the type
         let wrapper;
         if (type === "quote") {
           wrapper = xt$2();
@@ -4153,7 +4149,6 @@ class CommandDispatcher {
           wrapper = Pi();
         }
 
-        // Insert the wrapper before the node and move the node inside it
         node.insertBefore(wrapper);
         wrapper.append(node);
       }

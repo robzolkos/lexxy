@@ -105,15 +105,11 @@ export class CommandDispatcher {
       const selection = $getSelection()
       if (!$isRangeSelection(selection)) return
 
-      // Extract the selected nodes
       const nodes = selection.extract()
 
-      // Process each node
       for (const node of nodes) {
-        // Skip nodes without a parent
         if (!node.getParent()) continue
 
-        // Create the appropriate wrapper element based on the type
         let wrapper
         if (type === "quote") {
           wrapper = $createQuoteNode()
@@ -123,7 +119,6 @@ export class CommandDispatcher {
           wrapper = $createParagraphNode()
         }
 
-        // Insert the wrapper before the node and move the node inside it
         node.insertBefore(wrapper)
         wrapper.append(node)
       }

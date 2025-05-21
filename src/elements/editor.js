@@ -145,7 +145,3 @@ export default class LexicalEditorElement extends HTMLElement {
 
 customElements.define("lexical-editor", LexicalEditorElement)
 
-
-
-
-
