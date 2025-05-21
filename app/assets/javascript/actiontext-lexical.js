@@ -3803,7 +3803,7 @@ function createElement(name, properties) {
 }
 
 function createFigureWithImage(properties) {
-  const { image: imageProperties = {}, ...figureProperties } = properties || {};
+  const { image: imageProperties = {}, ...figureProperties } = {};
 
   const figure = createElement("figure", { className: "attachment", contentEditable: false, ...figureProperties });
   const image = createElement("img", imageProperties);
@@ -3867,11 +3867,15 @@ class ActionTextAttachmentNode extends gi {
   }
 
   createDOM() {
+    const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType });
+
     if (this.#isImage) {
-      return this.#createDOMForImage()
+      figure.appendChild(this.#createDOMForImage());
     } else {
-      return this.#createDOMForNotImage()
+      figure.appendChild(this.#createDOMForNotImage());
     }
+
+    return figure
   }
 
   updateDOM() {
@@ -3897,17 +3901,23 @@ class ActionTextAttachmentNode extends gi {
     return null
   }
 
+  isIsolated() {
+    return true
+  }
+
+  isKeyboardSelectable() {
+    return true
+  }
+
   get #isImage() {
     return this.contentType.startsWith("image/")
   }
 
   #createDOMForImage() {
-    const { figure } = createFigureWithImage({ image: { src: this.src, alt: this.altText }, "data-content-type": this.contentType });
-    return figure
+    return createElement("img", { src: this.src, alt: this.altText })
   }
 
   #createDOMForNotImage() {
-    const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType });
     const figcaption = createElement("figcaption", { className: "attachment__caption" });
 
     const nameSpan = createElement("span", { className: "attachment__name", textContent: this.fileName });
@@ -3915,9 +3925,8 @@ class ActionTextAttachmentNode extends gi {
 
     figcaption.appendChild(nameSpan);
     figcaption.appendChild(sizeSpan);
-    figure.appendChild(figcaption);
 
-    return figure
+    return figcaption
   }
 }
 

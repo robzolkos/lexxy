@@ -49,11 +49,15 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   createDOM() {
+    const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType })
+
     if (this.#isImage) {
-      return this.#createDOMForImage()
+      figure.appendChild(this.#createDOMForImage())
     } else {
-      return this.#createDOMForNotImage()
+      figure.appendChild(this.#createDOMForNotImage())
     }
+
+    return figure
   }
 
   updateDOM() {
@@ -79,17 +83,23 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     return null
   }
 
+  isIsolated() {
+    return true
+  }
+
+  isKeyboardSelectable() {
+    return true
+  }
+
   get #isImage() {
     return this.contentType.startsWith("image/")
   }
 
   #createDOMForImage() {
-    const { figure } = createFigureWithImage({ image: { src: this.src, alt: this.altText }, "data-content-type": this.contentType })
-    return figure
+    return createElement("img", { src: this.src, alt: this.altText })
   }
 
   #createDOMForNotImage() {
-    const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType })
     const figcaption = createElement("figcaption", { className: "attachment__caption" })
 
     const nameSpan = createElement("span", { className: "attachment__name", textContent: this.fileName })
@@ -97,8 +107,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
 
     figcaption.appendChild(nameSpan)
     figcaption.appendChild(sizeSpan)
-    figure.appendChild(figcaption)
 
-    return figure
+    return figcaption
   }
 }
