@@ -32,13 +32,15 @@ const COMMANDS = [
 ]
 
 export class CommandDispatcher {
-  static configureFor(editor) {
-    new CommandDispatcher(editor)
+  static configureFor(editorElement) {
+    new CommandDispatcher(editorElement)
   }
 
-  constructor(editor) {
-    this.editor = editor
-    this.editorElement = this.editor.getRootElement().closest("lexical-editor")
+  constructor(editorElement) {
+    this.editorElement = editorElement
+    this.editor = editorElement.editor
+    this.selection = editorElement.selection
+
     this.#registerCommands()
   }
 
@@ -56,8 +58,8 @@ export class CommandDispatcher {
 
   dispatchDeleteNodes() {
     this.editor.update(() => {
-      if ($isNodeSelection(this.currentSelection)) {
-        this.currentSelection.getNodes().forEach((node) => {
+      if ($isNodeSelection(this.selection.current)) {
+        this.selection.current.getNodes().forEach((node) => {
           node.remove()
         })
         $setSelection(null)
@@ -165,7 +167,6 @@ export class CommandDispatcher {
       this.#registerCommandHandler(command, 0, this[methodName].bind(this))
     }
 
-    this.editor.registerCommand(SELECTION_CHANGE_COMMAND, this.#refreshCurrentSelection.bind(this), COMMAND_PRIORITY_LOW);
     this.#registerCommandHandler(PASTE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchPaste.bind(this))
     this.#registerCommandHandler(KEY_DELETE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchDeleteNodes.bind(this))
     this.#registerCommandHandler(KEY_BACKSPACE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchDeleteNodes.bind(this))
@@ -173,10 +174,6 @@ export class CommandDispatcher {
 
   #registerCommandHandler(command, priority, handler) {
     this.editor.registerCommand(command, handler, priority)
-  }
-
-  #refreshCurrentSelection() {
-    this.currentSelection = $getSelection()
   }
 
   #uploadFile(file) {

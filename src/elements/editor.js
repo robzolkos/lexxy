@@ -12,6 +12,7 @@ import theme from "../config/theme"
 import { ActionTextAttachmentNode } from "../nodes/action_text_attachment_node"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { CommandDispatcher } from "../editor/command_dispatcher"
+import Selection from "../editor/selection";
 
 export default class LexicalEditorElement extends HTMLElement {
   static formAssociated = true
@@ -25,12 +26,13 @@ export default class LexicalEditorElement extends HTMLElement {
 
   connectedCallback() {
     this.editor = this.#createEditor()
-    CommandDispatcher.configureFor(this.editor)
+    this.selection = new Selection(this.editor)
+
+    CommandDispatcher.configureFor(this)
 
     this.#loadInitialValue()
     this.#updateInternalValueOnChange()
     this.#registerComponents()
-    this.#listenForCustomEvents()
     this.#attachDebugHooks()
     this.#attachToolbar()
   }
@@ -129,20 +131,6 @@ export default class LexicalEditorElement extends HTMLElement {
     registerList(this.editor)
     registerCodeHighlighting(this.editor)
     registerMarkdownShortcuts(this.editor, TRANSFORMERS)
-  }
-
-  #listenForCustomEvents() {
-    this.editor.getRootElement().addEventListener("lexical:node-selected", (event) => {
-      const { key } = event.detail
-      this.editor.update(() => {
-        const node = $getNodeByKey(key)
-        if (node) {
-          const selection = $createNodeSelection()
-          selection.add(node.getKey())
-          $setSelection(selection)
-        }
-      })
-    })
   }
 
   #attachDebugHooks() {

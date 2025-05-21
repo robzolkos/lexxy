@@ -4088,13 +4088,15 @@ const COMMANDS = [
 ];
 
 class CommandDispatcher {
-  static configureFor(editor) {
-    new CommandDispatcher(editor);
+  static configureFor(editorElement) {
+    new CommandDispatcher(editorElement);
   }
 
-  constructor(editor) {
-    this.editor = editor;
-    this.editorElement = this.editor.getRootElement().closest("lexical-editor");
+  constructor(editorElement) {
+    this.editorElement = editorElement;
+    this.editor = editorElement.editor;
+    this.selection = editorElement.selection;
+
     this.#registerCommands();
   }
 
@@ -4112,8 +4114,8 @@ class CommandDispatcher {
 
   dispatchDeleteNodes() {
     this.editor.update(() => {
-      if (ur(this.currentSelection)) {
-        this.currentSelection.getNodes().forEach((node) => {
+      if (ur(this.selection.current)) {
+        this.selection.current.getNodes().forEach((node) => {
           node.remove();
         });
         ys(null);
@@ -4221,7 +4223,6 @@ class CommandDispatcher {
       this.#registerCommandHandler(command, 0, this[methodName].bind(this));
     }
 
-    this.editor.registerCommand(le, this.#refreshCurrentSelection.bind(this), Ii);
     this.#registerCommandHandler(ge, Ii, this.dispatchPaste.bind(this));
     this.#registerCommandHandler(De, Ii, this.dispatchDeleteNodes.bind(this));
     this.#registerCommandHandler(Ae, Ii, this.dispatchDeleteNodes.bind(this));
@@ -4229,10 +4230,6 @@ class CommandDispatcher {
 
   #registerCommandHandler(command, priority, handler) {
     this.editor.registerCommand(command, handler, priority);
-  }
-
-  #refreshCurrentSelection() {
-    this.currentSelection = Nr();
   }
 
   #uploadFile(file) {
@@ -4249,6 +4246,36 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
+class NodesSelection {
+  constructor(editor) {
+    this.editor = editor;
+
+    this.#listenForNodeSelections();
+    this.#processSelectionChangeCommands();
+  }
+
+  #processSelectionChangeCommands() {
+    this.editor.registerCommand(le, () => {
+      this.current = Nr();
+    }, Ii);
+
+  }
+
+  #listenForNodeSelections() {
+    this.editor.getRootElement().addEventListener("lexical:node-selected", (event) => {
+      const { key } = event.detail;
+      this.editor.update(() => {
+        const node = as(key);
+        if (node) {
+          const selection = kr();
+          selection.add(node.getKey());
+          ys(selection);
+        }
+      });
+    });
+  }
+}
+
 class LexicalEditorElement extends HTMLElement {
   static formAssociated = true
   static debug = true
@@ -4261,12 +4288,13 @@ class LexicalEditorElement extends HTMLElement {
 
   connectedCallback() {
     this.editor = this.#createEditor();
-    CommandDispatcher.configureFor(this.editor);
+    this.selection = new NodesSelection(this.editor);
+
+    CommandDispatcher.configureFor(this);
 
     this.#loadInitialValue();
     this.#updateInternalValueOnChange();
     this.#registerComponents();
-    this.#listenForCustomEvents();
     this.#attachDebugHooks();
     this.#attachToolbar();
   }
@@ -4365,20 +4393,6 @@ class LexicalEditorElement extends HTMLElement {
     Tt$2(this.editor);
     yt$1(this.editor);
     nt(this.editor, Mt);
-  }
-
-  #listenForCustomEvents() {
-    this.editor.getRootElement().addEventListener("lexical:node-selected", (event) => {
-      const { key } = event.detail;
-      this.editor.update(() => {
-        const node = as(key);
-        if (node) {
-          const selection = kr();
-          selection.add(node.getKey());
-          ys(selection);
-        }
-      });
-    });
   }
 
   #attachDebugHooks() {
