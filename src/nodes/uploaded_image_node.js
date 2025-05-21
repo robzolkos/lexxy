@@ -10,12 +10,7 @@ export class UploadedImageNode extends DecoratorNode {
   }
 
   static clone(node) {
-    return new UploadedImageNode(
-      node.file,
-      node.uploadUrl,
-      node.editor,
-      node.__key
-    )
+    return new UploadedImageNode(node.file, node.uploadUrl, node.editor, node.__key)
   }
 
   static importJSON(serializedNode) {

@@ -3800,10 +3800,25 @@ var theme = {
   }
 };
 
-class ImageNode extends gi {
-  src
-  altText
+function createElement(name, properties) {
+  const element = document.createElement(name);
+  for (const [key, value] of Object.entries(properties)) {
+    element[key] = value;
+  }
+  return element
+}
 
+function createFigureWithImage(properties) {
+  const { image: imageProperties = {}, ...figureProperties } = properties || {};
+
+  const figure = createElement("figure", { className: "attachment", contentEditable: false, ...figureProperties });
+  const image = createElement("img", imageProperties);
+  figure.appendChild(image);
+
+  return { figure, image }
+}
+
+class ImageNode extends gi {
   static getType() {
     return "image"
   }
@@ -3812,35 +3827,39 @@ class ImageNode extends gi {
     return new ImageNode(node.src, node.altText, node.__key)
   }
 
-  constructor(src, altText = "", key) {
+  static importJSON(serializedNode) {
+    return new ImageNode(serializedNode.src, serializedNode.altText)
+  }
+
+  static importDOM() {
+    return {
+      img: (domNode) => {
+        if (domNode instanceof HTMLImageElement) {
+          return { conversion: () => new ImageNode(domNode.src, domNode.alt), priority: 1 }
+        }
+      },
+      figure: (domNode) => {
+        const img = domNode.querySelector('img');
+        if (img instanceof HTMLImageElement) {
+          return { conversion: () => new ImageNode(img.src, img.alt), priority: 1, }
+        }
+      }
+    }
+  }
+
+  constructor(src, altText, key) {
     super(key);
     this.src = src;
     this.altText = altText;
   }
 
-  decorate() {
-    return null
-  }
-
   createDOM() {
-    const figure = document.createElement("figure");
-    const img = document.createElement("img");
-    img.src = this.src;
-    img.alt = this.altText;
-    img.className = "editor-image";
-    img.style.maxWidth = "100%";
-    img.style.display = "block";
-    img.style.margin = "1em 0";
-    figure.appendChild(img);
+    const { figure } = createFigureWithImage({ image: { src: this.src, alt: this.alt } });
     return figure
   }
 
   updateDOM() {
     return false // No need to re-render
-  }
-
-  static importJSON(serializedNode) {
-    return new ImageNode(serializedNode.src, serializedNode.altText)
   }
 
   exportJSON() {
@@ -3852,56 +3871,14 @@ class ImageNode extends gi {
     }
   }
 
-  static importDOM() {
-    return {
-      img: (domNode) => {
-        if (domNode instanceof HTMLImageElement) {
-          return {
-            conversion: () =>
-              new ImageNode(domNode.src, domNode.alt),
-            priority: 1,
-          }
-        }
-        return null
-      },
-      figure: (domNode) => {
-        const img = domNode.querySelector('img');
-        if (img instanceof HTMLImageElement) {
-          return {
-            conversion: () =>
-              new ImageNode(img.src, img.alt),
-            priority: 1,
-          }
-        }
-        return null
-      }
-    }
-  }
-
   exportDOM() {
-    const figure = document.createElement("figure");
-    const img = document.createElement("img");
-    img.src = this.src;
-    img.alt = this.altText;
-    figure.appendChild(img);
+    const { figure } = createFigureWithImage({ image: { src: this.src, alt: this.alt } });
     return { element: figure }
   }
-}
 
-function createElement(name, properties) {
-  const element = document.createElement(name);
-  for (const [key, value] of Object.entries(properties)) {
-    element[key] = value;
+  decorate() {
+    return null
   }
-  return element
-}
-
-function createFigureWithImage() {
-  const figure = createElement("figure", { class: "attachment", contentEditable: false });
-  const image = createElement("image", { parent: figure });
-  figure.appendChild(image);
-
-  return { figure, image }
 }
 
 function loadFileIntoImage(file, image) {
@@ -3918,12 +3895,7 @@ class UploadedImageNode extends gi {
   }
 
   static clone(node) {
-    return new UploadedImageNode(
-      node.file,
-      node.uploadUrl,
-      node.editor,
-      node.__key
-    )
+    return new UploadedImageNode(node.file, node.uploadUrl, node.editor, node.__key)
   }
 
   static importJSON(serializedNode) {

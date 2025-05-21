@@ -6,9 +6,11 @@ export function createElement(name, properties) {
   return element
 }
 
-export function createFigureWithImage() {
-  const figure = createElement("figure", { class: "attachment", contentEditable: false })
-  const image = createElement("image", { parent: figure })
+export function createFigureWithImage(properties) {
+  const { image: imageProperties = {}, ...figureProperties } = properties || {}
+
+  const figure = createElement("figure", { className: "attachment", contentEditable: false, ...figureProperties })
+  const image = createElement("img", imageProperties)
   figure.appendChild(image)
 
   return { figure, image }
