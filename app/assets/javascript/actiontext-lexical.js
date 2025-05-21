@@ -3837,15 +3837,10 @@ class ImageNode extends gi {
 
   static importDOM() {
     return {
-      img: (domNode) => {
-        if (domNode instanceof HTMLImageElement) {
-          return { conversion: () => new ImageNode(domNode.src, domNode.alt), priority: 1 }
-        }
-      },
-      figure: (domNode) => {
-        const img = domNode.querySelector('img');
-        if (img instanceof HTMLImageElement) {
-          return { conversion: () => new ImageNode(img.src, img.alt), priority: 1, }
+      figure: (figure) => {
+        const image = figure.querySelector("img");
+        if (image instanceof HTMLImageElement) {
+          return { conversion: () => { new ImageNode(image.src, image.alt); }, priority: 1 }
         }
       }
     }
@@ -3855,7 +3850,7 @@ class ImageNode extends gi {
     super(key);
     this.src = src;
     this.altText = altText;
-    this.contentType = contentType;
+    this.contentType = contentType || "";
   }
 
   createDOM() {
