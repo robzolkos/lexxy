@@ -63,6 +63,7 @@ const ALLOWED_HTML_ATTRIBUTES = [
   "presentation",
   "sgid",
   "src",
+  "title",
   "url",
   "width"
 ]
