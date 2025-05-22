@@ -58,7 +58,7 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
   }
 
   get #isImage() {
-    this.file.type.startsWith("image/")
+    return this.file.type.startsWith("image/")
   }
 
   #createDOMForImage() {
