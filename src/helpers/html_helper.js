@@ -1,6 +1,6 @@
 export function createElement(name, properties) {
   const element = document.createElement(name)
-  for (const [key, value] of Object.entries(properties)) {
+  for (const [key, value] of Object.entries(properties || {})) {
     if (key in element) {
       element[key] = value
     } else {

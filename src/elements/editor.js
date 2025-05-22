@@ -1,6 +1,6 @@
 import { createEditor, $getRoot, $isParagraphNode, $getNodeByKey } from "lexical"
 import { ListNode, ListItemNode, registerList } from "@lexical/list"
-import { LinkNode } from "@lexical/link"
+import { LinkNode, AutoLinkNode } from "@lexical/link"
 import { registerRichText, QuoteNode, HeadingNode } from "@lexical/rich-text"
 import { $generateNodesFromDOM, $generateHtmlFromNodes } from "@lexical/html"
 import { CodeHighlightNode, CodeNode, registerCodeHighlighting, } from "@lexical/code"
@@ -89,6 +89,7 @@ export default class LexicalEditorElement extends HTMLElement {
         CodeNode,
         CodeHighlightNode,
         LinkNode,
+        AutoLinkNode,
 
         ActionTextAttachmentNode,
         ActionTextAttachmentUploadNode
@@ -149,4 +150,3 @@ export default class LexicalEditorElement extends HTMLElement {
 }
 
 customElements.define("lexical-editor", LexicalEditorElement)
-

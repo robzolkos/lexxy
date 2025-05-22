@@ -20,14 +20,17 @@ import {
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list"
 import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text"
 import { CodeNode } from "@lexical/code"
+import { $isLinkNode, $toggleLink } from "@lexical/link"
 
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { createElement } from "../helpers/html_helper"
+import { createLinkDialog } from "../elements/link_dialog"
 
 const COMMANDS = [
   "bold",
   "formatElement",
   "italic",
+  "link",
   "insertUnorderedList",
   "insertOrderedList",
   "insertCodeBlock",
@@ -85,12 +88,38 @@ export class CommandDispatcher {
     })
   }
 
+  // Not using TOGGLE_LINK_COMMAND because it's not handled unless you use React/LinkPlugin
+  #toggleLink(url) {
+    this.editor.update(() => {
+      if (url === null) {
+        $toggleLink(null)
+      } else {
+        $toggleLink(url)
+      }
+    })
+  }
+
   dispatchBold() {
     this.editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold")
   }
 
   dispatchItalic() {
     this.editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic")
+  }
+
+  dispatchLink() {
+    const dialog = createLinkDialog()
+
+    this.#withSelectedUrl((url) => dialog.open(url))
+
+    dialog.addEventListener("link-dialog:link",  (event) => {
+      const { url } = event.detail;
+      this.#toggleLink(url)
+    }, { once: true })
+
+    dialog.addEventListener("link-dialog:unlink",  (event) => {
+      this.#toggleLink(null)
+    }, { once: true })
   }
 
   dispatchInsertUnorderedList() {
@@ -125,7 +154,7 @@ export class CommandDispatcher {
         if (insertionPoint && insertionPoint.getParent()) {
           insertionPoint.insertBefore(codeNode)
 
-          if (insertionPoint.getTextContent().trim() === '') {
+          if (insertionPoint.getTextContent().trim() === "") {
             insertionPoint.remove()
           }
         } else {
@@ -214,10 +243,32 @@ export class CommandDispatcher {
         if (currentParagraph && $isElementNode(currentParagraph)) {
           currentParagraph.insertAfter(newParagraph);
         } else {
-          $insertNodes([newParagraph]);
+          $insertNodes([ newParagraph ]);
         }
       }
     }, { tag: HISTORY_MERGE_TAG });
+  }
+
+  async #withSelectedUrl(callback) {
+    let url = ""
+
+    this.editor.update(() => {
+      const selection = $getSelection()
+      if (!$isRangeSelection(selection)) return
+
+      const anchorNode = selection.anchor.getNode()
+      let currentNode = anchorNode
+
+      while (currentNode !== null) {
+        if ($isLinkNode(currentNode)) {
+          url = currentNode.getURL()
+          break
+        }
+        currentNode = currentNode.getParent()
+      }
+
+      callback(url || "")
+    })
   }
 }
 
