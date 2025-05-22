@@ -12,12 +12,10 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   static importJSON(serializedNode) {
-    console.debug("IMPORTING JSON: ", serializedNode)
     return new ActionTextAttachmentNode({ serializedNode })
   }
 
   static importDOM() {
-    console.debug("IMPORT DOM");
     return {
       "action-text-attachment": (attachment) => {
         return {
@@ -55,8 +53,6 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   createDOM() {
-    console.debug("CREATE DOM");
-
     const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType })
 
     figure.addEventListener("click", (event) => {
@@ -77,9 +73,6 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   exportDOM() {
-    console.debug("EXPORT DOM");
-
-
     const attachment = createElement("action-text-attachment", {
       sgid: this.sgid,
       url: this.src,
@@ -95,8 +88,6 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   exportJSON() {
-    console.debug("EXPORT JSON");
-
     return {
       type: "action_text_attachment",
       version: 1,

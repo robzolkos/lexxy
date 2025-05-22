@@ -76,7 +76,6 @@ export class CommandDispatcher {
         })
 
         if (nodesWereRemoved) {
-          console.debug("CALLED WERE!");
           this.selection.clear()
           this.editor.focus()
 
