@@ -4322,6 +4322,7 @@ class NodesSelection {
 
   #selectPreviousNode() {
     if (this.current) {
+      this.clear();
       const currentNode = this.current.getNodes()[0];
       currentNode.selectPrevious();
     }
@@ -4330,6 +4331,7 @@ class NodesSelection {
 
   #selectNextNode() {
     if (this.current) {
+      this.clear();
       const currentNode = this.current.getNodes()[0];
       currentNode.selectNext();
     }

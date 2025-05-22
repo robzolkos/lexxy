@@ -7,25 +7,28 @@
   <div>
     <%= form.label :body, style: "display: block" %>
 
-    <lexical-toolbar id="the-toolbar">
-      <!-- Inline formatting -->
-      <button type="button" data-command="bold">Bold</button>
-      <button type="button" data-command="italic">Italic</button>
+    <div style="width: 50%; margin: 0 auto;">
 
-      <!-- Block-level formatting -->
-      <button type="button" data-command="formatElement" data-payload="h1">Heading</button>
-      <button type="button" data-command="formatElement" data-payload="quote">Quote</button>
-      <button type="button" data-command="insertCodeBlock">Code Block</button>
+      <lexical-toolbar id="the-toolbar">
+        <!-- Inline formatting -->
+        <button type="button" data-command="bold">Bold</button>
+        <button type="button" data-command="italic">Italic</button>
 
-      <!-- Lists -->
-      <button type="button" data-command="insertUnorderedList">• Bullet List</button>
-      <button type="button" data-command="insertOrderedList">1. Numbered List</button>
+        <!-- Block-level formatting -->
+        <button type="button" data-command="formatElement" data-payload="h1">Heading</button>
+        <button type="button" data-command="formatElement" data-payload="quote">Quote</button>
+        <button type="button" data-command="insertCodeBlock">Code Block</button>
 
-      <!-- Attachments -->
-      <button type="button" data-command="uploadAttachments">Upload Attachment</button>
-    </lexical-toolbar>
+        <!-- Lists -->
+        <button type="button" data-command="insertUnorderedList">• Bullet List</button>
+        <button type="button" data-command="insertOrderedList">1. Numbered List</button>
 
-    <%= form.rich_text_area :body, toolbar: "the-toolbar" %>
+        <!-- Attachments -->
+        <button type="button" data-command="uploadAttachments">Upload Attachment</button>
+      </lexical-toolbar>
+
+      <%= form.rich_text_area :body, toolbar: "the-toolbar" %>ç
+    </div>
   </div>
 
   <div>

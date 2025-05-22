@@ -71,6 +71,7 @@ export default class NodesSelection {
 
   #selectPreviousNode() {
     if (this.current) {
+      this.clear()
       const currentNode = this.current.getNodes()[0]
       currentNode.selectPrevious()
     }
@@ -79,6 +80,7 @@ export default class NodesSelection {
 
   #selectNextNode() {
     if (this.current) {
+      this.clear()
       const currentNode = this.current.getNodes()[0]
       currentNode.selectNext()
     }
