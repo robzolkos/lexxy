@@ -2,7 +2,34 @@
   padding: 1rem 0.5rem;
 }
 
+lexical-editor {
+  figure {
+    display: inline-block;
+    position: relative;
+    block-size: auto;
+    max-inline-size: 100%;
+    width: 100%;
+
+    img {
+      display: block;
+      max-width: 100%;
+      margin-inline: auto;
+      max-inline-size: 100%;
+      height: auto;
+      user-select: none;
+      block-size: auto;
+    }
+  }
+}
+
 /* Node selection */
 .node--selected {
-  border: 2px solid blue;
+  img {
+    border: 2px solid blue;
+  }
+}
+
+/* Editing cursor. Lexical adds this to indicate the cursor is below/above certain nodes. */
+[data-lexical-cursor] {
+  border: 2px solid red;
 }

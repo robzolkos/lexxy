@@ -55,10 +55,9 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   createDOM() {
     const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType })
 
-    figure.addEventListener("mousedown", (event) => {
-      event.preventDefault()
+    figure.addEventListener("click", (event) => {
       this.#select(figure)
-    }, true)
+    })
 
     if (this.#isImage) {
       figure.appendChild(this.#createDOMForImage())
@@ -104,26 +103,11 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     }
   }
 
-
   decorate() {
     return null
   }
 
-  isIsolated() {
-    return true
-  }
 
-  isKeyboardSelectable() {
-    return true
-  }
-
-  isInline() {
-    return false
-  }
-
-  isTopLevel() {
-    return true
-  }
 
   get #isImage() {
     return this.contentType.startsWith("image/")

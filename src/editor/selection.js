@@ -1,4 +1,8 @@
-import { $createNodeSelection, $getNodeByKey, $getSelection, $isNodeSelection, $setSelection, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND } from "lexical"
+import {
+  $createNodeSelection, $createRangeSelection, $getNodeByKey, $getSelection, $isNodeSelection,
+  $setSelection, $isElementNode, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, CLICK_COMMAND,
+  KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND
+} from "lexical"
 
 export default class NodesSelection {
   constructor(editor) {
@@ -19,7 +23,10 @@ export default class NodesSelection {
       this._current = $getSelection()
       this.#syncSelectedClasses()
     } else {
-      this._current = null
+      this.editor.update(() => {
+        this.#syncSelectedClasses()
+        this._current = null
+      })
     }
   }
 
@@ -28,19 +35,20 @@ export default class NodesSelection {
   }
 
   #processSelectionChangeCommands() {
+    this.editor.registerCommand(KEY_ARROW_LEFT_COMMAND, this.#selectPreviousNode.bind(this), COMMAND_PRIORITY_LOW)
+    this.editor.registerCommand(KEY_ARROW_RIGHT_COMMAND, this.#selectNextNode.bind(this), COMMAND_PRIORITY_LOW)
+
     this.editor.registerCommand(SELECTION_CHANGE_COMMAND, () => {
       this.current = $getSelection()
     }, COMMAND_PRIORITY_LOW)
   }
 
   #syncSelectedClasses() {
-    this.editor.update(() => {
-      this.#clearPreviouslyHighlightedItems();
-      this.#highlightNewItems();
+    this.#clearPreviouslyHighlightedItems()
+    this.#highlightNewItems()
 
-      this.previouslySelectedKeys = this.#currentlySelectedKeys
-      this._currentlySelectedKeys = null
-    })
+    this.previouslySelectedKeys = this.#currentlySelectedKeys
+    this._currentlySelectedKeys = null
   }
 
   #clearPreviouslyHighlightedItems() {
@@ -59,6 +67,22 @@ export default class NodesSelection {
         if (nodeElement) nodeElement.classList.add("node--selected")
       }
     }
+  }
+
+  #selectPreviousNode() {
+    if (this.current) {
+      const currentNode = this.current.getNodes()[0]
+      currentNode.selectPrevious()
+    }
+    return false
+  }
+
+  #selectNextNode() {
+    if (this.current) {
+      const currentNode = this.current.getNodes()[0]
+      currentNode.selectNext()
+    }
+    return false
   }
 
   get #currentlySelectedKeys() {
@@ -85,6 +109,7 @@ export default class NodesSelection {
           selection.add(node.getKey())
           $setSelection(selection)
         }
+        this.editor.focus()
       })
     })
   }

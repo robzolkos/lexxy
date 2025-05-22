@@ -3883,10 +3883,9 @@ class ActionTextAttachmentNode extends gi {
   createDOM() {
     const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType });
 
-    figure.addEventListener("mousedown", (event) => {
-      event.preventDefault();
+    figure.addEventListener("click", (event) => {
       this.#select(figure);
-    }, true);
+    });
 
     if (this.#isImage) {
       figure.appendChild(this.#createDOMForImage());
@@ -3932,26 +3931,11 @@ class ActionTextAttachmentNode extends gi {
     }
   }
 
-
   decorate() {
     return null
   }
 
-  isIsolated() {
-    return true
-  }
 
-  isKeyboardSelectable() {
-    return true
-  }
-
-  isInline() {
-    return false
-  }
-
-  isTopLevel() {
-    return true
-  }
 
   get #isImage() {
     return this.contentType.startsWith("image/")
@@ -4290,7 +4274,10 @@ class NodesSelection {
       this._current = Nr();
       this.#syncSelectedClasses();
     } else {
-      this._current = null;
+      this.editor.update(() => {
+        this.#syncSelectedClasses();
+        this._current = null;
+      });
     }
   }
 
@@ -4299,19 +4286,20 @@ class NodesSelection {
   }
 
   #processSelectionChangeCommands() {
+    this.editor.registerCommand(Te, this.#selectPreviousNode.bind(this), Ii);
+    this.editor.registerCommand(ve, this.#selectNextNode.bind(this), Ii);
+
     this.editor.registerCommand(le, () => {
       this.current = Nr();
     }, Ii);
   }
 
   #syncSelectedClasses() {
-    this.editor.update(() => {
-      this.#clearPreviouslyHighlightedItems();
-      this.#highlightNewItems();
+    this.#clearPreviouslyHighlightedItems();
+    this.#highlightNewItems();
 
-      this.previouslySelectedKeys = this.#currentlySelectedKeys;
-      this._currentlySelectedKeys = null;
-    });
+    this.previouslySelectedKeys = this.#currentlySelectedKeys;
+    this._currentlySelectedKeys = null;
   }
 
   #clearPreviouslyHighlightedItems() {
@@ -4330,6 +4318,22 @@ class NodesSelection {
         if (nodeElement) nodeElement.classList.add("node--selected");
       }
     }
+  }
+
+  #selectPreviousNode() {
+    if (this.current) {
+      const currentNode = this.current.getNodes()[0];
+      currentNode.selectPrevious();
+    }
+    return false
+  }
+
+  #selectNextNode() {
+    if (this.current) {
+      const currentNode = this.current.getNodes()[0];
+      currentNode.selectNext();
+    }
+    return false
   }
 
   get #currentlySelectedKeys() {
@@ -4356,6 +4360,7 @@ class NodesSelection {
           selection.add(node.getKey());
           ys(selection);
         }
+        this.editor.focus();
       });
     });
   }
