@@ -4,6 +4,7 @@ import { ActionTextAttachmentNode } from "./action_text_attachment_node"
 import { createElement, createFigureWithImage } from "../helpers/html_helper"
 import { loadFileIntoImage } from "../helpers/upload_helper"
 import { HISTORY_MERGE_TAG } from 'lexical'
+import { bytesToHumanSize } from "../helpers/storage_helper";
 
 export class ActionTextAttachmentUploadNode extends DecoratorNode {
   static getType() {
@@ -23,11 +24,16 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
   }
 
   createDOM() {
-    const { figure, image } = createFigureWithImage()
+    const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType })
 
-    const progressBar = createElement("progress", { value: 0, max: 100 });
+    if (this.#isImage) {
+      figure.appendChild(this.#createDOMForImage())
+    } else {
+      figure.appendChild(this.#createDOMForNotImage())
+    }
+
+    const progressBar = createElement("progress", { value: 0, max: 100 })
     figure.appendChild(progressBar)
-    loadFileIntoImage(this.file, image)
 
     this.#startUpload(progressBar, figure)
 
@@ -51,6 +57,27 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
     return null
   }
 
+  get #isImage() {
+    this.file.type.startsWith("image/")
+  }
+
+  #createDOMForImage() {
+    const image = createElement("img", { src: this.src, alt: this.altText })
+    loadFileIntoImage(this.file, image)
+    return image
+  }
+
+  #createDOMForNotImage() {
+    const figcaption = createElement("figcaption", { className: "attachment__caption" })
+
+    const nameSpan = createElement("span", { className: "attachment__name", textContent: this.file.name })
+    const sizeSpan = createElement("span", { className: "attachment__size", textContent: bytesToHumanSize(this.file.size) })
+    figcaption.appendChild(nameSpan)
+    figcaption.appendChild(sizeSpan)
+
+    return figcaption
+  }
+
   #startUpload(progressBar, figure) {
     const upload = new DirectUpload(this.file, this.uploadUrl, this)
 
@@ -69,7 +96,7 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
         this.#handleUploadError(figure)
       } else {
         this.src = `/rails/active_storage/blobs/redirect/${blob.signed_id}/${blob.filename}`
-        this.#showUploadedImage(figure, blob)
+        this.#showUploadedAttachment(figure, blob)
       }
     })
   }
@@ -80,7 +107,7 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
     figure.appendChild(createElement("div", { innerText: `Error uploading ${this.file?.name ?? "image"}` }))
   }
 
-  #showUploadedImage(figure, blob) {
+  #showUploadedAttachment(figure, blob) {
     const image = figure.querySelector("img")
     this.editor.update(() => {
       const latest = $getNodeByKey(this.getKey())
@@ -92,8 +119,8 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
           contentType: blob.content_type,
           fileName: blob.filename,
           fileSize: blob.byte_size,
-          width: image.width,
-          height: image.height
+          width: image?.width,
+          height: image?.height
         }))
       }
     }, { tag: HISTORY_MERGE_TAG })

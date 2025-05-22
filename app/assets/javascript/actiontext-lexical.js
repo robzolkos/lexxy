@@ -3812,16 +3812,6 @@ function createElement(name, properties) {
   return element
 }
 
-function createFigureWithImage(properties) {
-  const { image: imageProperties = {}, ...figureProperties } = {};
-
-  const figure = createElement("figure", { className: "attachment", contentEditable: false, ...figureProperties });
-  const image = createElement("img", imageProperties);
-  figure.appendChild(image);
-
-  return { figure, image }
-}
-
 function bytesToHumanSize(bytes) {
   if (bytes === 0) return "0 B"
   const sizes = [ "B", "KB", "MB", "GB", "TB", "PB" ];
@@ -3840,12 +3830,10 @@ class ActionTextAttachmentNode extends gi {
   }
 
   static importJSON(serializedNode) {
-    console.debug("IMPORTING JSON: ", serializedNode);
     return new ActionTextAttachmentNode({ serializedNode })
   }
 
   static importDOM() {
-    console.debug("IMPORT DOM");
     return {
       "action-text-attachment": (attachment) => {
         return {
@@ -3883,8 +3871,6 @@ class ActionTextAttachmentNode extends gi {
   }
 
   createDOM() {
-    console.debug("CREATE DOM");
-
     const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType });
 
     figure.addEventListener("click", (event) => {
@@ -3905,9 +3891,6 @@ class ActionTextAttachmentNode extends gi {
   }
 
   exportDOM() {
-    console.debug("EXPORT DOM");
-
-
     const attachment = createElement("action-text-attachment", {
       sgid: this.sgid,
       url: this.src,
@@ -3923,8 +3906,6 @@ class ActionTextAttachmentNode extends gi {
   }
 
   exportJSON() {
-    console.debug("EXPORT JSON");
-
     return {
       type: "action_text_attachment",
       version: 1,
@@ -4003,11 +3984,16 @@ class ActionTextAttachmentUploadNode extends gi {
   }
 
   createDOM() {
-    const { figure, image } = createFigureWithImage();
+    const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType });
+
+    if (this.#isImage) {
+      figure.appendChild(this.#createDOMForImage());
+    } else {
+      figure.appendChild(this.#createDOMForNotImage());
+    }
 
     const progressBar = createElement("progress", { value: 0, max: 100 });
     figure.appendChild(progressBar);
-    loadFileIntoImage(this.file, image);
 
     this.#startUpload(progressBar, figure);
 
@@ -4031,6 +4017,27 @@ class ActionTextAttachmentUploadNode extends gi {
     return null
   }
 
+  get #isImage() {
+    this.file.type.startsWith("image/");
+  }
+
+  #createDOMForImage() {
+    const image = createElement("img", { src: this.src, alt: this.altText });
+    loadFileIntoImage(this.file, image);
+    return image
+  }
+
+  #createDOMForNotImage() {
+    const figcaption = createElement("figcaption", { className: "attachment__caption" });
+
+    const nameSpan = createElement("span", { className: "attachment__name", textContent: this.file.name });
+    const sizeSpan = createElement("span", { className: "attachment__size", textContent: bytesToHumanSize(this.file.size) });
+    figcaption.appendChild(nameSpan);
+    figcaption.appendChild(sizeSpan);
+
+    return figcaption
+  }
+
   #startUpload(progressBar, figure) {
     const upload = new DirectUpload(this.file, this.uploadUrl, this);
 
@@ -4049,7 +4056,7 @@ class ActionTextAttachmentUploadNode extends gi {
         this.#handleUploadError(figure);
       } else {
         this.src = `/rails/active_storage/blobs/redirect/${blob.signed_id}/${blob.filename}`;
-        this.#showUploadedImage(figure, blob);
+        this.#showUploadedAttachment(figure, blob);
       }
     });
   }
@@ -4060,7 +4067,7 @@ class ActionTextAttachmentUploadNode extends gi {
     figure.appendChild(createElement("div", { innerText: `Error uploading ${this.file?.name ?? "image"}` }));
   }
 
-  #showUploadedImage(figure, blob) {
+  #showUploadedAttachment(figure, blob) {
     const image = figure.querySelector("img");
     this.editor.update(() => {
       const latest = as(this.getKey());
@@ -4072,8 +4079,8 @@ class ActionTextAttachmentUploadNode extends gi {
           contentType: blob.content_type,
           fileName: blob.filename,
           fileSize: blob.byte_size,
-          width: image.width,
-          height: image.height
+          width: image?.width,
+          height: image?.height
         }));
       }
     }, { tag: Ti });
@@ -4132,7 +4139,6 @@ class CommandDispatcher {
         });
 
         if (nodesWereRemoved) {
-          console.debug("CALLED WERE!");
           this.selection.clear();
           this.editor.focus();
 
