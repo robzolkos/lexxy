@@ -150,8 +150,10 @@ export class CommandDispatcher {
         let wrapper
         if (type === "quote") {
           wrapper = $createQuoteNode()
-        } else if (type === "h1") {
-          wrapper = $createHeadingNode("h1")
+        } else if (type === "h2") {
+          wrapper = $createHeadingNode("h2")
+        } else if (type === "h3") {
+          wrapper = $createHeadingNode("h3")
         } else {
           wrapper = $createParagraphNode()
         }

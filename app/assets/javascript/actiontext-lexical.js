@@ -4018,7 +4018,7 @@ class ActionTextAttachmentUploadNode extends gi {
   }
 
   get #isImage() {
-    this.file.type.startsWith("image/");
+    return this.file.type.startsWith("image/")
   }
 
   #createDOMForImage() {
@@ -4213,8 +4213,10 @@ class CommandDispatcher {
         let wrapper;
         if (type === "quote") {
           wrapper = xt$2();
-        } else if (type === "h1") {
-          wrapper = _t$1("h1");
+        } else if (type === "h2") {
+          wrapper = _t$1("h2");
+        } else if (type === "h3") {
+          wrapper = _t$1("h3");
         } else {
           wrapper = Pi();
         }
