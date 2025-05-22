@@ -5188,6 +5188,7 @@ const ALLOWED_HTML_ATTRIBUTES = [
   "presentation",
   "sgid",
   "src",
+  "title",
   "url",
   "width"
 ];
@@ -6009,10 +6010,7 @@ class LexicalEditorElement extends HTMLElement {
 
   #updateInternalValueOnChange() {
     this.editor.registerUpdateListener(({ editorState }) => {
-      editorState.read(() => {
-        const html = m$1(this.editor, null);
-        this.internals.setFormValue(html);
-      });
+      this.internals.setFormValue(this.value);
     });
   }
 

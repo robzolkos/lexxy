@@ -120,10 +120,7 @@ export default class LexicalEditorElement extends HTMLElement {
 
   #updateInternalValueOnChange() {
     this.editor.registerUpdateListener(({ editorState }) => {
-      editorState.read(() => {
-        const html = $generateHtmlFromNodes(this.editor, null)
-        this.internals.setFormValue(html)
-      })
+      this.internals.setFormValue(this.value)
     })
   }
 
