@@ -4,6 +4,8 @@ import {
   $getSelection,
   $isRangeSelection,
   $isNodeSelection,
+  $isParagraphNode,
+  $isElementNode,
   $insertNodes,
   PASTE_COMMAND,
   KEY_DELETE_COMMAND,
@@ -193,14 +195,28 @@ export class CommandDispatcher {
   }
 
   #uploadFile(file) {
-    const uploadUrl = this.editorElement.directUploadUrl
+    const uploadUrl = this.editorElement.directUploadUrl;
 
     this.editor.update(() => {
-      const paragraph = $createParagraphNode()
-      const uploadedImageNode = new ActionTextAttachmentUploadNode(file, uploadUrl, this.editor)
-      paragraph.append(uploadedImageNode)
-      $insertNodes([paragraph])
-    }, { tag: HISTORY_MERGE_TAG })
+      const selection = $getSelection();
+      const anchorNode = selection?.anchor.getNode();
+      const currentParagraph = anchorNode?.getTopLevelElementOrThrow();
+
+      const uploadedImageNode = new ActionTextAttachmentUploadNode(file, uploadUrl, this.editor);
+
+      if (currentParagraph && $isParagraphNode(currentParagraph) && currentParagraph.getChildrenSize() === 0) {
+        currentParagraph.append(uploadedImageNode);
+      } else {
+        const newParagraph = $createParagraphNode();
+        newParagraph.append(uploadedImageNode);
+
+        if (currentParagraph && $isElementNode(currentParagraph)) {
+          currentParagraph.insertAfter(newParagraph);
+        } else {
+          $insertNodes([newParagraph]);
+        }
+      }
+    }, { tag: HISTORY_MERGE_TAG });
   }
 }
 

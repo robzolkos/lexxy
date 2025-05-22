@@ -8,11 +8,11 @@ lexical-editor {
     position: relative;
     block-size: auto;
     max-inline-size: 100%;
-    width: 80%;
+    width: 100%;
 
     img {
       display: block;
-      max-width: 80%;
+      max-width: 100%;
       margin-inline: auto;
       max-inline-size: 100%;
       height: auto;
