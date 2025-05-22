@@ -3767,36 +3767,36 @@ const m=0,h=1,_=2,g=0,S=1,k=2,y=3,C=4;function x(t,e,n,r,o){if(null===t||0===n.s
 
 var theme = {
   codeHighlight: {
-    atrule: 'editor-tokenAttr',
-    attr: 'editor-tokenAttr',
-    boolean: 'editor-tokenProperty',
-    builtin: 'editor-tokenSelector',
-    cdata: 'editor-tokenComment',
-    char: 'editor-tokenSelector',
-    class: 'editor-tokenFunction',
-    'class-name': 'editor-tokenFunction',
-    comment: 'editor-tokenComment',
-    constant: 'editor-tokenProperty',
-    deleted: 'editor-tokenProperty',
-    doctype: 'editor-tokenComment',
-    entity: 'editor-tokenOperator',
-    function: 'editor-tokenFunction',
-    important: 'editor-tokenVariable',
-    inserted: 'editor-tokenSelector',
-    keyword: 'editor-tokenAttr',
-    namespace: 'editor-tokenVariable',
-    number: 'editor-tokenProperty',
-    operator: 'editor-tokenOperator',
-    prolog: 'editor-tokenComment',
-    property: 'editor-tokenProperty',
-    punctuation: 'editor-tokenPunctuation',
-    regex: 'editor-tokenVariable',
-    selector: 'editor-tokenSelector',
-    string: 'editor-tokenSelector',
-    symbol: 'editor-tokenProperty',
-    tag: 'editor-tokenProperty',
-    url: 'editor-tokenOperator',
-    variable: 'editor-tokenVariable',
+    atrule: 'code-token__attr',
+    attr: 'code-token__attr',
+    boolean: 'code-token__property',
+    builtin: 'code-token__selector',
+    cdata: 'code-token__comment',
+    char: 'code-token__selector',
+    class: 'code-token__function',
+    'class-name': 'code-token__function',
+    comment: 'code-token__comment',
+    constant: 'code-token__property',
+    deleted: 'code-token__property',
+    doctype: 'code-token__comment',
+    entity: 'code-token__operator',
+    function: 'code-token__function',
+    important: 'code-token__variable',
+    inserted: 'code-token__selector',
+    keyword: 'code-token__attr',
+    namespace: 'code-token__variable',
+    number: 'code-token__property',
+    operator: 'code-token__operator',
+    prolog: 'code-token__comment',
+    property: 'code-token__property',
+    punctuation: 'code-token__punctuation',
+    regex: 'code-token__variable',
+    selector: 'code-token__selector',
+    string: 'code-token__selector',
+    symbol: 'code-token__property',
+    tag: 'code-token__property',
+    url: 'code-token__operator',
+    variable: 'code-token__variable',
   }
 };
 
@@ -4571,6 +4571,7 @@ class LexicalEditorElement extends HTMLElement {
       root.select();
       const nodes = h$1(this.editor, dom);
       root.append(...nodes);
+      this.#refreshHighlightedCodeNodes();
     });
   }
 
@@ -4649,6 +4650,212 @@ class LexicalEditorElement extends HTMLElement {
   #attachToolbar() {
     this.toolbarElement.setEditor(this.editor);
   }
+
+  #refreshHighlightedCodeNodes() {
+    // Workaround to get Prims highlighing working on the initial load.
+    requestAnimationFrame(() => {
+      this.editor.update(() => {
+        const root = _s();
+        root.getChildren().forEach((node) => {
+          if (J(node)) {
+            const oldText = node.getTextContent();
+            node.getChildren().forEach((child) => child.remove());
+            node.append(Xn(oldText));
+          }
+        });
+      });
+    });
+  }
 }
 
 customElements.define("lexical-editor", LexicalEditorElement);
+
+/**
+ * Original by Samuel Flores
+ *
+ * Adds the following new token classes:
+ *     constant, builtin, variable, symbol, regex
+ */
+(function (Prism) {
+	Prism.languages.ruby = Prism.languages.extend('clike', {
+		'comment': {
+			pattern: /#.*|^=begin\s[\s\S]*?^=end/m,
+			greedy: true
+		},
+		'class-name': {
+			pattern: /(\b(?:class|module)\s+|\bcatch\s+\()[\w.\\]+|\b[A-Z_]\w*(?=\s*\.\s*new\b)/,
+			lookbehind: true,
+			inside: {
+				'punctuation': /[.\\]/
+			}
+		},
+		'keyword': /\b(?:BEGIN|END|alias|and|begin|break|case|class|def|define_method|defined|do|each|else|elsif|end|ensure|extend|for|if|in|include|module|new|next|nil|not|or|prepend|private|protected|public|raise|redo|require|rescue|retry|return|self|super|then|throw|undef|unless|until|when|while|yield)\b/,
+		'operator': /\.{2,3}|&\.|===|<?=>|[!=]?~|(?:&&|\|\||<<|>>|\*\*|[+\-*/%<>!^&|=])=?|[?:]/,
+		'punctuation': /[(){}[\].,;]/,
+	});
+
+	Prism.languages.insertBefore('ruby', 'operator', {
+		'double-colon': {
+			pattern: /::/,
+			alias: 'punctuation'
+		},
+	});
+
+	var interpolation = {
+		pattern: /((?:^|[^\\])(?:\\{2})*)#\{(?:[^{}]|\{[^{}]*\})*\}/,
+		lookbehind: true,
+		inside: {
+			'content': {
+				pattern: /^(#\{)[\s\S]+(?=\}$)/,
+				lookbehind: true,
+				inside: Prism.languages.ruby
+			},
+			'delimiter': {
+				pattern: /^#\{|\}$/,
+				alias: 'punctuation'
+			}
+		}
+	};
+
+	delete Prism.languages.ruby.function;
+
+	var percentExpression = '(?:' + [
+		/([^a-zA-Z0-9\s{(\[<=])(?:(?!\1)[^\\]|\\[\s\S])*\1/.source,
+		/\((?:[^()\\]|\\[\s\S]|\((?:[^()\\]|\\[\s\S])*\))*\)/.source,
+		/\{(?:[^{}\\]|\\[\s\S]|\{(?:[^{}\\]|\\[\s\S])*\})*\}/.source,
+		/\[(?:[^\[\]\\]|\\[\s\S]|\[(?:[^\[\]\\]|\\[\s\S])*\])*\]/.source,
+		/<(?:[^<>\\]|\\[\s\S]|<(?:[^<>\\]|\\[\s\S])*>)*>/.source
+	].join('|') + ')';
+
+	var symbolName = /(?:"(?:\\.|[^"\\\r\n])*"|(?:\b[a-zA-Z_]\w*|[^\s\0-\x7F]+)[?!]?|\$.)/.source;
+
+	Prism.languages.insertBefore('ruby', 'keyword', {
+		'regex-literal': [
+			{
+				pattern: RegExp(/%r/.source + percentExpression + /[egimnosux]{0,6}/.source),
+				greedy: true,
+				inside: {
+					'interpolation': interpolation,
+					'regex': /[\s\S]+/
+				}
+			},
+			{
+				pattern: /(^|[^/])\/(?!\/)(?:\[[^\r\n\]]+\]|\\.|[^[/\\\r\n])+\/[egimnosux]{0,6}(?=\s*(?:$|[\r\n,.;})#]))/,
+				lookbehind: true,
+				greedy: true,
+				inside: {
+					'interpolation': interpolation,
+					'regex': /[\s\S]+/
+				}
+			}
+		],
+		'variable': /[@$]+[a-zA-Z_]\w*(?:[?!]|\b)/,
+		'symbol': [
+			{
+				pattern: RegExp(/(^|[^:]):/.source + symbolName),
+				lookbehind: true,
+				greedy: true
+			},
+			{
+				pattern: RegExp(/([\r\n{(,][ \t]*)/.source + symbolName + /(?=:(?!:))/.source),
+				lookbehind: true,
+				greedy: true
+			},
+		],
+		'method-definition': {
+			pattern: /(\bdef\s+)\w+(?:\s*\.\s*\w+)?/,
+			lookbehind: true,
+			inside: {
+				'function': /\b\w+$/,
+				'keyword': /^self\b/,
+				'class-name': /^\w+/,
+				'punctuation': /\./
+			}
+		}
+	});
+
+	Prism.languages.insertBefore('ruby', 'string', {
+		'string-literal': [
+			{
+				pattern: RegExp(/%[qQiIwWs]?/.source + percentExpression),
+				greedy: true,
+				inside: {
+					'interpolation': interpolation,
+					'string': /[\s\S]+/
+				}
+			},
+			{
+				pattern: /("|')(?:#\{[^}]+\}|#(?!\{)|\\(?:\r\n|[\s\S])|(?!\1)[^\\#\r\n])*\1/,
+				greedy: true,
+				inside: {
+					'interpolation': interpolation,
+					'string': /[\s\S]+/
+				}
+			},
+			{
+				pattern: /<<[-~]?([a-z_]\w*)[\r\n](?:.*[\r\n])*?[\t ]*\1/i,
+				alias: 'heredoc-string',
+				greedy: true,
+				inside: {
+					'delimiter': {
+						pattern: /^<<[-~]?[a-z_]\w*|\b[a-z_]\w*$/i,
+						inside: {
+							'symbol': /\b\w+/,
+							'punctuation': /^<<[-~]?/
+						}
+					},
+					'interpolation': interpolation,
+					'string': /[\s\S]+/
+				}
+			},
+			{
+				pattern: /<<[-~]?'([a-z_]\w*)'[\r\n](?:.*[\r\n])*?[\t ]*\1/i,
+				alias: 'heredoc-string',
+				greedy: true,
+				inside: {
+					'delimiter': {
+						pattern: /^<<[-~]?'[a-z_]\w*'|\b[a-z_]\w*$/i,
+						inside: {
+							'symbol': /\b\w+/,
+							'punctuation': /^<<[-~]?'|'$/,
+						}
+					},
+					'string': /[\s\S]+/
+				}
+			}
+		],
+		'command-literal': [
+			{
+				pattern: RegExp(/%x/.source + percentExpression),
+				greedy: true,
+				inside: {
+					'interpolation': interpolation,
+					'command': {
+						pattern: /[\s\S]+/,
+						alias: 'string'
+					}
+				}
+			},
+			{
+				pattern: /`(?:#\{[^}]+\}|#(?!\{)|\\(?:\r\n|[\s\S])|[^\\`#\r\n])*`/,
+				greedy: true,
+				inside: {
+					'interpolation': interpolation,
+					'command': {
+						pattern: /[\s\S]+/,
+						alias: 'string'
+					}
+				}
+			}
+		]
+	});
+
+	delete Prism.languages.ruby.string;
+
+	Prism.languages.insertBefore('ruby', 'number', {
+		'builtin': /\b(?:Array|Bignum|Binding|Class|Continuation|Dir|Exception|FalseClass|File|Fixnum|Float|Hash|IO|Integer|MatchData|Method|Module|NilClass|Numeric|Object|Proc|Range|Regexp|Stat|String|Struct|Symbol|TMS|Thread|ThreadGroup|Time|TrueClass)\b/,
+		'constant': /\b[A-Z][A-Z0-9_]*(?:[?!]|\b)/
+	});
+
+	Prism.languages.rb = Prism.languages.ruby;
+}(Prism));

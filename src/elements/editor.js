@@ -1,9 +1,9 @@
-import { createEditor, $getRoot, $isParagraphNode, $getNodeByKey } from "lexical"
+import { createEditor, $getRoot, $createTextNode } from "lexical"
 import { ListNode, ListItemNode, registerList } from "@lexical/list"
 import { LinkNode, AutoLinkNode } from "@lexical/link"
 import { registerRichText, QuoteNode, HeadingNode } from "@lexical/rich-text"
 import { $generateNodesFromDOM, $generateHtmlFromNodes } from "@lexical/html"
-import { CodeHighlightNode, CodeNode, registerCodeHighlighting, } from "@lexical/code"
+import { $createCodeNode, $isCodeNode, CodeHighlightNode, CodeNode, registerCodeHighlighting, } from "@lexical/code"
 import { TRANSFORMERS, registerMarkdownShortcuts } from "@lexical/markdown"
 import { registerHistory, createEmptyHistoryState } from '@lexical/history'
 
@@ -69,6 +69,7 @@ export default class LexicalEditorElement extends HTMLElement {
       root.select()
       const nodes = $generateNodesFromDOM(this.editor, dom)
       root.append(...nodes)
+      this.#refreshHighlightedCodeNodes()
     })
   }
 
@@ -146,6 +147,22 @@ export default class LexicalEditorElement extends HTMLElement {
 
   #attachToolbar() {
     this.toolbarElement.setEditor(this.editor)
+  }
+
+  #refreshHighlightedCodeNodes() {
+    // Workaround to get Prims highlighing working on the initial load.
+    requestAnimationFrame(() => {
+      this.editor.update(() => {
+        const root = $getRoot()
+        root.getChildren().forEach((node) => {
+          if ($isCodeNode(node)) {
+            const oldText = node.getTextContent()
+            node.getChildren().forEach((child) => child.remove())
+            node.append($createTextNode(oldText))
+          }
+        })
+      })
+    })
   }
 }
 
