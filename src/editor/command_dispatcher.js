@@ -33,6 +33,7 @@ const COMMANDS = [
   "link",
   "insertUnorderedList",
   "insertOrderedList",
+  "insertQuoteBlock",
   "insertCodeBlock",
   "uploadAttachments"
 ]
@@ -113,7 +114,7 @@ export class CommandDispatcher {
     this.#withSelectedUrl((url) => dialog.open(url))
 
     dialog.addEventListener("link-dialog:link",  (event) => {
-      const { url } = event.detail;
+      const { url } = event.detail
       this.#toggleLink(url)
     }, { once: true })
 
@@ -129,6 +130,44 @@ export class CommandDispatcher {
   dispatchInsertOrderedList() {
     this.editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)
   }
+
+  dispatchInsertQuoteBlock() {
+    this.editor.update(() => {
+      const selection = $getSelection()
+      if (!$isRangeSelection(selection)) return
+
+      const nodes = selection.extract()
+
+      const quoteNode = $createQuoteNode()
+
+      if (nodes.length === 0) {
+        // Insert empty blockquote at root
+        $getRoot().append(quoteNode)
+        return
+      }
+
+      const firstNode = nodes[0]
+      const parent = firstNode.getParent()
+
+      for (const node of nodes) {
+        if (node.getParent()) {
+          quoteNode.append(node)
+        }
+      }
+
+      if (parent && parent.getParent()) {
+        parent.insertBefore(quoteNode)
+
+        // Clean up empty wrapper if needed
+        if (parent.getChildrenSize() === 0) {
+          parent.remove()
+        }
+      } else {
+        $getRoot().append(quoteNode)
+      }
+    })
+  }
+
 
   dispatchInsertCodeBlock() {
     this.editor.update(() => {
@@ -225,28 +264,28 @@ export class CommandDispatcher {
   }
 
   #uploadFile(file) {
-    const uploadUrl = this.editorElement.directUploadUrl;
+    const uploadUrl = this.editorElement.directUploadUrl
 
     this.editor.update(() => {
-      const selection = $getSelection();
-      const anchorNode = selection?.anchor.getNode();
-      const currentParagraph = anchorNode?.getTopLevelElementOrThrow();
+      const selection = $getSelection()
+      const anchorNode = selection?.anchor.getNode()
+      const currentParagraph = anchorNode?.getTopLevelElementOrThrow()
 
-      const uploadedImageNode = new ActionTextAttachmentUploadNode(file, uploadUrl, this.editor);
+      const uploadedImageNode = new ActionTextAttachmentUploadNode(file, uploadUrl, this.editor)
 
       if (currentParagraph && $isParagraphNode(currentParagraph) && currentParagraph.getChildrenSize() === 0) {
-        currentParagraph.append(uploadedImageNode);
+        currentParagraph.append(uploadedImageNode)
       } else {
-        const newParagraph = $createParagraphNode();
-        newParagraph.append(uploadedImageNode);
+        const newParagraph = $createParagraphNode()
+        newParagraph.append(uploadedImageNode)
 
         if (currentParagraph && $isElementNode(currentParagraph)) {
-          currentParagraph.insertAfter(newParagraph);
+          currentParagraph.insertAfter(newParagraph)
         } else {
-          $insertNodes([ newParagraph ]);
+          $insertNodes([ newParagraph ])
         }
       }
-    }, { tag: HISTORY_MERGE_TAG });
+    }, { tag: HISTORY_MERGE_TAG })
   }
 
   async #withSelectedUrl(callback) {
