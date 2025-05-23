@@ -23,7 +23,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
             node: new ActionTextAttachmentNode({
               sgid: attachment.getAttribute("sgid"),
               src: attachment.getAttribute("url"),
-              altText: attachment.getAttribute("fiçlename"),
+              altText: attachment.getAttribute("alt"),
               caption: attachment.getAttribute("caption"),
               contentType: attachment.getAttribute("content-type"),
               fileName: attachment.getAttribute("filename"),
@@ -89,6 +89,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     const attachment = createElement("action-text-attachment", {
       sgid: this.sgid,
       url: this.src,
+      alt: this.altText,
       "content-type": this.contentType,
       filename: this.fileName,
       filesize: this.fileSize,

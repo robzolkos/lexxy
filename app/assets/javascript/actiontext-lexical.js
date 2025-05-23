@@ -5230,7 +5230,7 @@ class ActionTextAttachmentNode extends gi {
             node: new ActionTextAttachmentNode({
               sgid: attachment.getAttribute("sgid"),
               src: attachment.getAttribute("url"),
-              altText: attachment.getAttribute("fiçlename"),
+              altText: attachment.getAttribute("alt"),
               caption: attachment.getAttribute("caption"),
               contentType: attachment.getAttribute("content-type"),
               fileName: attachment.getAttribute("filename"),
@@ -5296,6 +5296,7 @@ class ActionTextAttachmentNode extends gi {
     const attachment = createElement("action-text-attachment", {
       sgid: this.sgid,
       url: this.src,
+      alt: this.altText,
       "content-type": this.contentType,
       filename: this.fileName,
       filesize: this.fileSize,
