@@ -2,3 +2,5 @@
 
 import "@rails/actiontext"
 import "actiontext-lexical"
+import "@hotwired/turbo-rails"
+import "controllers"

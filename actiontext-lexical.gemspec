@@ -23,8 +23,10 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency "rails", ">= 8.0.2"
-  spec.add_dependency "capybara"
-  spec.add_dependency "selenium-webdriver"
-  spec.add_dependency "cuprite"
-  spec.add_dependency "image_processing"
+  spec.add_development_dependency "turbo-rails"
+  spec.add_development_dependency "stimulus-rails"
+  spec.add_development_dependency "capybara"
+  spec.add_development_dependency "selenium-webdriver"
+  spec.add_development_dependency "cuprite"
+  spec.add_development_dependency "image_processing"
 end
