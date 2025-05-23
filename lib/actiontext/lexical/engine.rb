@@ -15,6 +15,16 @@ module Actiontext
         app.config.assets.paths << root.join("app/assets/stylesheets")
         app.config.assets.paths << root.join("app/javascript")
       end
+
+      initializer "actiontext-lexical.sanitization" do |app|
+        ActiveSupport.on_load(:action_text_content) do
+          default_allowed_tags = Class.new.include(ActionText::ContentHelper).new.sanitizer_allowed_tags
+          ActionText::ContentHelper.allowed_tags = default_allowed_tags + %w[ video audio source embed ]
+
+          default_allowed_attributes = Class.new.include(ActionText::ContentHelper).new.sanitizer_allowed_attributes
+          ActionText::ContentHelper.allowed_attributes = default_allowed_attributes + %w[ controls poster data-language ]
+        end
+      end
     end
   end
 end
