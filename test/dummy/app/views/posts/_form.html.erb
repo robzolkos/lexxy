@@ -6,29 +6,7 @@
 
   <div>
     <%= form.label :body, style: "display: block" %>
-
-    <div style="width: 50%; margin: 0 auto;">
-
-      <lexical-toolbar id="the-toolbar">
-        <!-- Inline formatting -->
-        <button type="button" data-command="bold">Bold</button>
-        <button type="button" data-command="italic">Italic</button>
-        <button type="button" data-command="link">Link</button>
-
-        <!-- Block-level formatting -->
-        <button type="button" data-command="formatElement" data-payload="h2">Heading</button>
-        <button type="button" data-command="formatElement" data-payload="h3">Subheading</button>
-        <button type="button" data-command="insertCodeBlock">Code Block</button>
-
-        <!-- Lists -->
-        <button type="button" data-command="insertUnorderedList">• Bullet List</button>
-        <button type="button" data-command="insertOrderedList">1. Numbered List</button>
-
-        <!-- Attachments -->
-        <button type="button" data-command="uploadAttachments">Upload Attachment</button>
-      </lexical-toolbar>
-
-      <%= form.rich_text_area :body, toolbar: "the-toolbar" %>
+      <%= form.rich_text_area :body %>
     </div>
   </div>
 

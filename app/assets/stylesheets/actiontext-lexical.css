@@ -1,3 +1,9 @@
+:root {
+  --color-ink-medium: oklch(66% 0.008 258);
+  --color-ink-lighter: oklch(92% 0.003 254);
+  --color-selected: oklch(92% 0.026 254);
+}
+
 .lexical-editor__content {
   padding: 1rem 0.5rem;
 }
@@ -159,4 +165,49 @@ lexical-editor {
     color: #607d8b; /* muted blue-gray for punctuation */
   }
 
+}
+
+lexical-toolbar {
+  background-color: inherit;
+  border-block-end: 1px solid var(--color-ink-medium);
+  border-radius: 0;
+  color: currentColor;
+  display: inline-flex;
+  font-size: inherit;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  padding: 0.2em;
+
+  button, label {
+    aspect-ratio: 4/3;
+    appearance: none;
+    background-color: transparent;
+    block-size: 2em;
+    border: none;
+    border-radius: 0.5em;
+    color: currentColor;
+    cursor: pointer;
+    display: grid;
+    font-size: inherit;
+    inline-size: auto;
+    place-items: center;
+    transition: background-color 300ms ease;
+
+    svg {
+      -webkit-touch-callout: none;
+      block-size: 0.9em;
+      fill: currentColor;
+      grid-area: 1/1;
+      inline-size: auto;
+      user-select: none;
+    }
+
+    &:is(:focus, :hover) {
+      background-color: var(--color-ink-lighter);
+    }
+
+    &:is(:active) {
+      background-color: var(--color-selected);
+    }
+  }
 }
