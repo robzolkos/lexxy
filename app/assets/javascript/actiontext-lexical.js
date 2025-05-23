@@ -6053,8 +6053,9 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #loadInitialValue() {
-    const initialHtml = this.getAttribute("value") || this.innerHTML.trim();
-    if (initialHtml) { this.value = initialHtml; }
+    const initialHtml = this.getAttribute("value") || "<p></p>";
+    console.debug("INITIAL VALUE", initialHtml);
+    this.value = initialHtml;
   }
 
   #updateInternalValueOnChange() {
