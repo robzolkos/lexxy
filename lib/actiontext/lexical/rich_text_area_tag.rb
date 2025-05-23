@@ -5,8 +5,11 @@ module ActionText
         options = options.symbolize_keys
         form = options.delete(:form)
 
+        value = value.try(:body_before_type_cast).presence
+        value = "<div>#{value}</div>" if value
+
         options[:name] ||= name
-        options[:value] ||= value.try(:body_before_type_cast)
+        options[:value] ||= value
         options[:data] ||= {}
         options[:data][:direct_upload_url] ||= main_app.rails_direct_uploads_url
         options[:data][:blob_url_template] ||= main_app.rails_service_blob_url(":signed_id", ":filename")
