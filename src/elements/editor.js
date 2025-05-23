@@ -47,10 +47,6 @@ export default class LexicalEditorElement extends HTMLElement {
     return this.dataset.directUploadUrl
   }
 
-  disconnectedCallback() {
-    this.editor?.destroy()
-  }
-
   get value() {
     let html = ""
     this.editor?.getEditorState().read(() => {
