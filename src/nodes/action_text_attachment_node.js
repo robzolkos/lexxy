@@ -34,6 +34,19 @@ export class ActionTextAttachmentNode extends DecoratorNode {
           }),
           priority: 1
         }
+      },
+      "img": (img) => {
+        return {
+          conversion: () => ({
+            node: new ActionTextAttachmentNode({
+              src: img.getAttribute("src"),
+              contentType: "image/*",
+              width: img.getAttribute("width"),
+              height: img.getAttribute("height")
+            })
+          }),
+          priority: 1
+        }
       }
     }
   }
