@@ -4,7 +4,6 @@ export class LinkDialog extends HTMLDialogElement {
 
     this.addEventListener("submit", this.#handleSubmit.bind(this))
     this.querySelector("[value='unlink']").addEventListener("click", this.#handleUnlink.bind(this))
-    this.addEventListener("keydown", this.#handleKeyDown.bind(this))
   }
 
   #handleSubmit(event) {
@@ -15,13 +14,6 @@ export class LinkDialog extends HTMLDialogElement {
   #handleUnlink(event) {
     this.#editor.dispatchCommand("unlink")
     this.close()
-  }
-
-  #handleKeyDown(event) {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      this.close();
-    }
   }
 
   get #editor() {
