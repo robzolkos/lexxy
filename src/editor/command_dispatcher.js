@@ -281,28 +281,6 @@ export class CommandDispatcher {
       }
     }, { tag: HISTORY_MERGE_TAG })
   }
-
-  async #withSelectedUrl(callback) {
-    let url = ""
-
-    this.editor.update(() => {
-      const selection = $getSelection()
-      if (!$isRangeSelection(selection)) return
-
-      const anchorNode = selection.anchor.getNode()
-      let currentNode = anchorNode
-
-      while (currentNode !== null) {
-        if ($isLinkNode(currentNode)) {
-          url = currentNode.getURL()
-          break
-        }
-        currentNode = currentNode.getParent()
-      }
-
-      callback(url || "")
-    })
-  }
 }
 
 function capitalize(str) {

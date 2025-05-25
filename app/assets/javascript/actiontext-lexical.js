@@ -5873,28 +5873,6 @@ class CommandDispatcher {
       }
     }, { tag: Ti });
   }
-
-  async #withSelectedUrl(callback) {
-    let url = "";
-
-    this.editor.update(() => {
-      const selection = Nr();
-      if (!cr(selection)) return
-
-      const anchorNode = selection.anchor.getNode();
-      let currentNode = anchorNode;
-
-      while (currentNode !== null) {
-        if (p(currentNode)) {
-          url = currentNode.getURL();
-          break
-        }
-        currentNode = currentNode.getParent();
-      }
-
-      callback(url || "");
-    });
-  }
 }
 
 function capitalize(str) {
