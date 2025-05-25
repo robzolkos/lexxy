@@ -82,12 +82,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   updateDOM() {
-    return (
-      prevNode.src === this.src &&
-      prevNode.caption === this.caption &&
-      prevNode.fileName === this.fileName &&
-      prevNode.fileSize === this.fileSize
-    )
+    return false
   }
 
   isInline() {
