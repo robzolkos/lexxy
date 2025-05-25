@@ -10,7 +10,7 @@ export default class LexicalToolbarElement extends HTMLElement {
   }
 
   #handleButtonClicked({ target }) {
-    this.#handleTargetClicked(target, "[data-command]", this.#dispatchCommand.bind(this))
+    this.#handleTargetClicked(target, "[data-command]", this.#dispatchButtonCommand.bind(this))
     this.#handleTargetClicked(target, "[data-dialog-target]", this.#toggleDialog.bind(this))
   }
 
@@ -21,7 +21,7 @@ export default class LexicalToolbarElement extends HTMLElement {
     }
   }
 
-  #dispatchCommand(button) {
+  #dispatchButtonCommand(button) {
     const { command, payload } = button.dataset
     this.editor.dispatchCommand(command, payload)
   }
