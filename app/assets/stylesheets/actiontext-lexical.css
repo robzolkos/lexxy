@@ -218,6 +218,12 @@ lexical-toolbar {
   }
 }
 
+.lexical-editor--drag-over {
+  background-color: var(--color-ink-lighter);
+  border: 2px dashed var(--color-ink-medium);
+  border-radius: 4px;
+}
+
 code:not([data-language]) {
   background-color: #f5f5f5;
   border: 1px solid #e0e0e0;
@@ -245,4 +251,3 @@ pre[class*="language-"] {
 code {
   white-space: pre
 }
-

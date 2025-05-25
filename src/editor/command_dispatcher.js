@@ -50,6 +50,7 @@ export class CommandDispatcher {
     this.selection = editorElement.selection
 
     this.#registerCommands()
+    this.#registerDragAndDropHandlers()
   }
 
   dispatchPaste(event) {
@@ -255,6 +256,51 @@ export class CommandDispatcher {
 
   #registerCommandHandler(command, priority, handler) {
     this.editor.registerCommand(command, handler, priority)
+  }
+
+  #registerDragAndDropHandlers() {
+    this.dragCounter = 0
+    this.editor.getRootElement().addEventListener("dragover", this.#handleDragOver.bind(this))
+    this.editor.getRootElement().addEventListener("drop", this.#handleDrop.bind(this))
+    this.editor.getRootElement().addEventListener("dragenter", this.#handleDragEnter.bind(this))
+    this.editor.getRootElement().addEventListener("dragleave", this.#handleDragLeave.bind(this))
+  }
+
+  #handleDragEnter(event) {
+    this.dragCounter++
+    if (this.dragCounter === 1) {
+      this.editor.getRootElement().classList.add("lexical-editor--drag-over")
+    }
+  }
+
+  #handleDragLeave(event) {
+    this.dragCounter--
+    if (this.dragCounter === 0) {
+      this.editor.getRootElement().classList.remove("lexical-editor--drag-over")
+    }
+  }
+
+  #handleDragOver(event) {
+    event.preventDefault()
+  }
+
+  #handleDrop(event) {
+    event.preventDefault()
+
+    this.dragCounter = 0
+    this.editor.getRootElement().classList.remove("lexical-editor--drag-over")
+
+    const dataTransfer = event.dataTransfer
+    if (!dataTransfer) return
+
+    const files = Array.from(dataTransfer.files)
+    if (!files.length) return
+
+    for (const file of files) {
+      this.#uploadFile(file)
+    }
+
+    this.editor.focus()
   }
 
   #uploadFile(file) {
