@@ -31,6 +31,7 @@ const COMMANDS = [
   "formatElement",
   "italic",
   "link",
+  "unlink",
   "insertUnorderedList",
   "insertOrderedList",
   "insertQuoteBlock",
@@ -108,19 +109,12 @@ export class CommandDispatcher {
     this.editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic")
   }
 
-  dispatchLink() {
-    const dialog = createLinkDialog()
+  dispatchLink(url) {
+    this.#toggleLink(url)
+  }
 
-    this.#withSelectedUrl((url) => dialog.open(url))
-
-    dialog.addEventListener("link-dialog:link",  (event) => {
-      const { url } = event.detail
-      this.#toggleLink(url)
-    }, { once: true })
-
-    dialog.addEventListener("link-dialog:unlink",  (event) => {
-      this.#toggleLink(null)
-    }, { once: true })
+  dispatchUnlink() {
+    this.#toggleLink(null)
   }
 
   dispatchInsertUnorderedList() {
