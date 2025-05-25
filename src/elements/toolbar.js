@@ -104,7 +104,7 @@ export default class LexicalToolbarElement extends HTMLElement {
         <svg viewBox="0 0 24 22" xmlns="http://www.w3.org/2000/svg"> <path d="m0 .3h2.7v5.3h-1.4v-4h-1.3zm6.7 2.7c0-.7.6-1.3 1.3-1.3h14.7c.7 0 1.3.6 1.3 1.3s-.6 1.3-1.3 1.3h-14.7c-.7 0-1.3-.6-1.3-1.3zm1.3 6.7c-.7 0-1.3.6-1.3 1.3s.6 1.3 1.3 1.3h14.7c.7 0 1.3-.6 1.3-1.3s-.6-1.3-1.3-1.3zm0 8c-.7 0-1.3.6-1.3 1.3s.6 1.3 1.3 1.3h14.7c.7 0 1.3-.6 1.3-1.3s-.6-1.3-1.3-1.3zm-4.7-9.4h.7v1.3l-2 2.7h2v1.3h-4v-1.3l2.2-2.7h-2.2v-1.3zm-3.3 9.4v-1.3h4v5.3h-4v-1.3h2.7v-.7h-1.4v-1.3h1.3v-.7z" fill-rule="evenodd"/> </svg>
       </button>
       
-      <button type="button" data-command="uploadAttachments" title="Add Image">
+      <button type="button" data-command="uploadAttachments" title="Upload file">
         <svg viewBox="0 0 24 20" xmlns="http://www.w3.org/2000/svg"> <path d="m22 20h-20c-1.1 0-2-.9-2-2.1v-15.8c0-1.2.9-2.1 2-2.1h20c1.1 0 2 .9 2 2.1v15.8c0 1.1-.9 2.1-2 2.1zm0-2.9v-14.5c0-.3-.2-.5-.5-.5h-19c-.3 0-.5.2-.5.5v14.5c0 .1.1.2.2.2s.2 0 .2-.1l2.2-3.3c.1-.2.3-.3.5-.3h.7l2.6-4c.1-.2.3-.3.5-.3h.7c.2 0 .4.1.5.3l5.3 8c0 .1.2.2.3.2h.3c.2 0 .4-.2.4-.4s0-.2 0-.2l-1.3-1.9c-.2-.2-.2-.6 0-.8l1.2-1.6c.1-.2.3-.3.5-.3h1.1c.2 0 .4 0 .5.3l3.2 4.4c0 .1.3.2.4 0 .2 0 .2 0 .2-.2zm-5.5-7.6c-1.4 0-2.5-1.2-2.5-2.6s1.1-2.6 2.5-2.6 2.5 1.2 2.5 2.6-1.1 2.6-2.5 2.6z" fill-rule="evenodd"/> </svg>
       </button>
     `
