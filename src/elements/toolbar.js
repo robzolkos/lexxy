@@ -2,6 +2,7 @@ export default class LexicalToolbarElement extends HTMLElement {
   setEditor(editor) {
     this.editor = editor
     this.#bindButtons()
+    this.#bindHotkeys()
   }
 
   #bindButtons() {
@@ -36,6 +37,31 @@ export default class LexicalToolbarElement extends HTMLElement {
     }
   }
 
+  #bindHotkeys() {
+    document.addEventListener('keydown', (event) => {
+      const buttons = this.querySelectorAll("[data-hotkey]")
+      buttons.forEach((button) => {
+        const hotkeys = button.dataset.hotkey.toLowerCase().split(/\s+/)
+        if (hotkeys.includes(this.#keyCombinationFor(event))) {
+          event.preventDefault()
+          button.click()
+        }
+      })
+    })
+  }
+
+  #keyCombinationFor(event) {
+    const pressedKey = event.key.toLowerCase()
+    const modifiers = [
+      event.ctrlKey ? 'ctrl' : null,
+      event.metaKey ? 'cmd' : null,
+      event.altKey ? 'alt' : null,
+      event.shiftKey ? 'shift' : null,
+    ].filter(Boolean)
+
+    return [...modifiers, pressedKey].join('+')
+  }
+
   static get defaultTemplate() {
     return `
       <button type="button" data-command="bold" title="Bold">
@@ -46,7 +72,7 @@ export default class LexicalToolbarElement extends HTMLElement {
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"> <path d="m9.3 1h10.2v3.1h-3.5l-3.7 15.7h3.2v3.2h-11v-3.1h3.8l3.7-15.7h-2.8v-3.2z" fill-rule="evenodd"/> </svg>
       </button>
       
-      <button type="button" title="Link" data-dialog-target="link-dialog">
+      <button type="button" title="Link" data-dialog-target="link-dialog" data-hotkey="cmd+k ctrl+k">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"> <path d="m9.4 14.5c-2.3-2.3-2.3-5.9 0-8.2l4.6-4.6c1.1-1 2.6-1.7 4.2-1.7s3 .5 4.1 1.7c2.3 2.3 2.3 5.9 0 8.2l-2.7 2.3c-.5.5-1.2.5-1.8 0-.5-.5-.5-1.2 0-1.7l2.7-2.3c1.4-1.3 1.4-3.4 0-4.7-.7-.7-1.5-.9-2.3-.9s-1.8.4-2.5.9l-4.7 4.5c-1.4 1.3-1.4 3.4 0 4.7.5.5.5 1.2 0 1.7-.1.3-.4.4-.8.4s-.5-.1-.8-.3z"/> <path d="m1.7 22.3c-2.3-2.3-2.3-5.9 0-8.2l2.6-2.5c.5-.5 1.2-.5 1.8 0 .5.5.5 1.2 0 1.7l-2.6 2.5c-1.4 1.3-1.4 3.4 0 4.7.7.7 1.5.9 2.3.9s1.8-.4 2.3-.9l4.6-4.6c1.4-1.3 1.4-3.4 0-4.7-.5-.4-.5-1.2 0-1.7s1.2-.5 1.8 0c2.3 2.3 2.3 5.9 0 8.2l-4.6 4.6c-1 1-2.5 1.7-4.1 1.7s-3-.7-4.1-1.7z"/> </svg>
       </button>
       <dialog is="lexical-link-dialog" id="link-dialog">
