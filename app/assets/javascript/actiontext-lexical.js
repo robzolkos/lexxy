@@ -5310,7 +5310,7 @@ class ActionTextAttachmentNode extends gi {
   }
 
   static clone(node) {
-    return new ActionTextAttachmentNode({ node }, node.__key)
+    return new ActionTextAttachmentNode({ ...node }, node.__key);
   }
 
   static importJSON(serializedNode) {
@@ -5384,6 +5384,15 @@ class ActionTextAttachmentNode extends gi {
   }
 
   updateDOM() {
+    return (
+      prevNode.src === this.src &&
+      prevNode.caption === this.caption &&
+      prevNode.fileName === this.fileName &&
+      prevNode.fileSize === this.fileSize
+    )
+  }
+
+  isInline() {
     return false
   }
 
@@ -5423,8 +5432,8 @@ class ActionTextAttachmentNode extends gi {
     return null
   }
 
-  isTextEntity() {
-    return true;
+  isInline() {
+    return true
   }
 
   get #isImage() {
@@ -5656,29 +5665,29 @@ class CommandDispatcher {
   }
 
   dispatchDeleteNodes() {
-    this.editor.update(() => {
-      if (ur(this.selection.current)) {
-        let nodesWereRemoved = false;
-        this.selection.current.getNodes().forEach((node) => {
-          const parent = node.getParent();
-
-          node.remove();
-
-          if (parent && parent.getChildrenSize() === 0) {
-            parent.remove();
-          }
-
-          nodesWereRemoved = true;
-        });
-
-        if (nodesWereRemoved) {
-          this.selection.clear();
-          this.editor.focus();
-
-          return true
-        }
-      }
-    });
+    // this.editor.update(() => {
+    //   if ($isNodeSelection(this.selection.current)) {
+    //     let nodesWereRemoved = false
+    //     this.selection.current.getNodes().forEach((node) => {
+    //       const parent = node.getParent()
+    //
+    //       node.remove()
+    //
+    //       if (parent && parent.getChildrenSize() === 0) {
+    //         parent.remove()
+    //       }
+    //
+    //       nodesWereRemoved = true
+    //     })
+    //
+    //     if (nodesWereRemoved) {
+    //       this.selection.clear()
+    //       this.editor.focus()
+    //
+    //       return true
+    //     }
+    //   }
+    // })
   }
 
   // Not using TOGGLE_LINK_COMMAND because it's not handled unless you use React/LinkPlugin

@@ -8,7 +8,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   static clone(node) {
-    return new ActionTextAttachmentNode({ node }, node.__key)
+    return new ActionTextAttachmentNode({ ...node }, node.__key);
   }
 
   static importJSON(serializedNode) {
@@ -82,6 +82,15 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   updateDOM() {
+    return (
+      prevNode.src === this.src &&
+      prevNode.caption === this.caption &&
+      prevNode.fileName === this.fileName &&
+      prevNode.fileSize === this.fileSize
+    )
+  }
+
+  isInline() {
     return false
   }
 
@@ -121,8 +130,8 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     return null
   }
 
-  isTextEntity() {
-    return true;
+  isInline() {
+    return true
   }
 
   get #isImage() {
