@@ -22,6 +22,14 @@ export function createFigureWithImage(properties) {
   return { figure, image }
 }
 
+export function dispatchCustomEvent(element, name, detail) {
+  const event = new CustomEvent(name, {
+    detail: detail,
+    bubbles: true,
+  })
+  element.dispatchEvent(event)
+}
+
 const ALLOWED_HTML_TAGS = [
   "a",
   "action-text-attachment",
@@ -51,6 +59,7 @@ const ALLOWED_HTML_TAGS = [
 
 const ALLOWED_HTML_ATTRIBUTES = [
   "alt",
+  "caption",
   "class",
   "content-type",
   "contenteditable",
@@ -75,3 +84,4 @@ export function sanitize(html) {
   })
   return sanitizedHtml
 }
+

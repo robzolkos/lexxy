@@ -1,5 +1,5 @@
 import { DecoratorNode } from "lexical"
-import { createElement } from "../helpers/html_helper";
+import { createElement, dispatchCustomEvent } from "../helpers/html_helper";
 import { bytesToHumanSize } from "../helpers/storage_helper";
 
 export class ActionTextAttachmentNode extends DecoratorNode {
@@ -56,8 +56,8 @@ export class ActionTextAttachmentNode extends DecoratorNode {
 
     this.sgid = sgid
     this.src = src
-    this.altText = altText
-    this.caption = caption
+    this.altText = altText || ""
+    this.caption = caption || ""
     this.contentType = contentType || ""
     this.fileName = fileName
     this.fileSize = fileSize
@@ -74,6 +74,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
 
     if (this.#isImage) {
       figure.appendChild(this.#createDOMForImage())
+      figure.appendChild(this.#createEditableCaption())
     } else {
       figure.appendChild(this.#createDOMForNotImage())
     }
@@ -82,7 +83,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   updateDOM() {
-    return false
+    return true
   }
 
   isInline() {
@@ -94,6 +95,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
       sgid: this.sgid,
       url: this.src,
       alt: this.altText,
+      caption: this.caption,
       "content-type": this.contentType,
       filename: this.fileName,
       filesize: this.fileSize,
@@ -140,7 +142,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   #createDOMForNotImage() {
     const figcaption = createElement("figcaption", { className: "attachment__caption" })
 
-    const nameSpan = createElement("span", { className: "attachment__name", textContent: this.fileName })
+    const nameSpan = createElement("span", { className: "attachment__name", textContent: this.caption || this.fileName })
     const sizeSpan = createElement("span", { className: "attachment__size", textContent: bytesToHumanSize(this.fileSize) })
 
     figcaption.appendChild(nameSpan)
@@ -150,10 +152,45 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   #select(figure) {
-    const event = new CustomEvent("lexical:node-selected", {
-      detail: { key: this.getKey() },
-      bubbles: true,
+    dispatchCustomEvent(figure, "lexical:node-selected", { key: this.getKey() })
+  }
+
+  #createEditableCaption() {
+    const caption = createElement("figcaption", { className: "attachment__caption" })
+    const input = createElement("input", {
+      type: "text",
+      value: this.caption,
+      placeholder: this.fileName
     })
-    figure.dispatchEvent(event)
+
+    input.addEventListener("focusin", () => input.placeholder = "Add caption...")
+    input.addEventListener("blur", this.#handleCaptionInputBlurred.bind(this))
+    input.addEventListener("keydown", this.#handleCaptionInputKeydown.bind(this))
+
+    caption.appendChild(input)
+
+    return caption
+  }
+
+  #updateCaption(input) {
+  }
+
+  #handleCaptionInputBlurred(event) {
+    const input = event.target
+
+    input.placeholder = this.fileName
+    this.#updateCaptionValueFromInput(input)
+  }
+
+  #updateCaptionValueFromInput(input) {
+    dispatchCustomEvent(input, "lexical:node-invalidated", { key: this.getKey(), values: { caption: input.value } })
+  }
+
+  #handleCaptionInputKeydown(event) {
+    if (event.key === "Enter") {
+      this.#updateCaptionValueFromInput(event.target)
+      event.preventDefault()
+    }
+    event.stopPropagation()
   }
 }

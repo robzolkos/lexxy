@@ -1,94 +1,8 @@
-:root {
-  --color-ink-medium: oklch(66% 0.008 258);
-  --color-ink-lighter: oklch(92% 0.003 254);
-  --color-selected: oklch(92% 0.026 254);
-}
-
 .lexical-editor__content {
   padding: 1rem 0.5rem;
 }
 
 lexical-editor {
-  /* Basic elements */
-
-  h1 {
-    font-size: 2.5rem;
-    line-height: 1.2;
-    margin-block: 1.5rem;
-  }
-
-  h2 {
-    font-size: 2rem;
-    line-height: 1.3;
-    margin-block: 1.25rem;
-  }
-
-  h3 {
-    font-size: 1.75rem;
-    line-height: 1.3;
-    margin-block: 1rem;
-  }
-
-  h4 {
-    font-size: 1.5rem;
-    line-height: 1.4;
-    margin-block: 0.875rem;
-  }
-
-  h5 {
-    font-size: 1.25rem;
-    line-height: 1.4;
-    margin-block: 0.75rem;
-  }
-
-  p {
-    line-height: 1.6;
-    margin-block: 1rem;
-  }
-
-  blockquote {
-    border-inline-start: 0.25rem solid #e0e0e0;
-    margin-inline: 0;
-    padding: 1rem 1.5rem;
-    font-style: italic;
-    color: #666;
-  }
-
-  a {
-    color: #2563eb;
-    text-decoration: none;
-    transition: color 0.2s ease;
-  }
-
-  a:hover {
-    color: #1e40af;
-    text-decoration: underline;
-  }
-
-
-  figure {
-    display: inline-block;
-    position: relative;
-    block-size: auto;
-    max-inline-size: 100%;
-    margin-inline: 0;
-    width: 100%;
-
-    img {
-      display: block;
-      max-width: 100%;
-      margin-inline: auto;
-      max-inline-size: 100%;
-      height: auto;
-      user-select: none;
-      block-size: auto;
-    }
-  }
-
-
-
-  /* Node selection */
-
   .node--selected:has(img) {
     img {
       border: 2px solid blue;
@@ -98,73 +12,6 @@ lexical-editor {
   .node--selected:not(:has(img)) {
     border: 2px solid blue;
   }
-
-  /* Editing cursor. Lexical adds this to indicate the cursor is below/above certain nodes. */
-
-  [data-lexical-cursor] {
-    border: 2px solid red;
-  }
-
-  /* Code */
-
-  code:not([data-language]) {
-    background-color: #f5f5f5;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-  }
-
-  code[class*="language-"],
-  pre[class*="language-"] {
-    background: #f9f9fc;
-    color: #2d2d2d;
-    font-family: 'Fira Code', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    direction: ltr;
-    text-align: left;
-    white-space: pre;
-    word-break: break-word;
-    tab-size: 2;
-    hyphens: none;
-    border-radius: 8px;
-    padding: 1em;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  }
-
-  /* Syntax token colors */
-  .code-token__attr {
-    color: #b000b5; /* violet-ish for keywords and attributes */
-  }
-
-  .code-token__property {
-    color: #007acc; /* cool blue for numbers, booleans, constants, etc. */
-  }
-
-  .code-token__selector {
-    color: #22863a; /* green for strings, selectors, inserted, etc. */
-  }
-
-  .code-token__comment {
-    color: #90a4ae; /* soft gray-blue for comments */
-    font-style: italic;
-  }
-
-  .code-token__operator {
-    color: #d73a49; /* red for operators, URLs, etc. */
-  }
-
-  .code-token__function {
-    color: #005cc5; /* bold blue for function and class names */
-  }
-
-  .code-token__variable {
-    color: #e36209; /* orange for variables, important things */
-  }
-
-  .code-token__punctuation {
-    color: #607d8b; /* muted blue-gray for punctuation */
-  }
-
 }
 
 lexical-toolbar {
@@ -175,10 +22,13 @@ lexical-toolbar {
   display: inline-flex;
   font-size: inherit;
   max-inline-size: 100%;
-  overflow: visible;
   padding: 0.2em;
-
   position: relative;
+  overflow: visible;
+
+  dialog {
+    position: absolute;
+  }
 
   button, label {
     aspect-ratio: 4/3;
@@ -204,10 +54,6 @@ lexical-toolbar {
       user-select: none;
     }
 
-    dialog {
-      position: absolute;
-    }
-
     &:is(:focus, :hover) {
       background-color: var(--color-ink-lighter);
     }
@@ -216,38 +62,4 @@ lexical-toolbar {
       background-color: var(--color-selected);
     }
   }
-}
-
-.lexical-editor--drag-over {
-  background-color: var(--color-ink-lighter);
-  border: 2px dashed var(--color-ink-medium);
-  border-radius: 4px;
-}
-
-code:not([data-language]) {
-  background-color: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-}
-
-code[class*="language-"],
-pre[class*="language-"] {
-  background: #f9f9fc;
-  color: #2d2d2d;
-  font-family: 'Fira Code', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  direction: ltr;
-  text-align: left;
-  white-space: pre;
-  word-break: break-word;
-  tab-size: 2;
-  hyphens: none;
-  border-radius: 8px;
-  padding: 1em;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-code {
-  white-space: pre
 }

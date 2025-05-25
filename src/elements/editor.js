@@ -1,4 +1,4 @@
-import { createEditor, $getRoot, $createTextNode } from "lexical"
+import { createEditor, $getRoot, $createTextNode, $getNodeByKey, $createNodeSelection, $setSelection } from "lexical"
 import { ListNode, ListItemNode, registerList } from "@lexical/list"
 import { LinkNode, AutoLinkNode } from "@lexical/link"
 import { registerRichText, QuoteNode, HeadingNode } from "@lexical/rich-text"
@@ -12,8 +12,8 @@ import { ActionTextAttachmentNode } from "../nodes/action_text_attachment_node"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { CommandDispatcher } from "../editor/command_dispatcher"
 import Selection from "../editor/selection"
-import { createElement, sanitize } from "../helpers/html_helper";
-import LexicalToolbar from "./toolbar";
+import { createElement, sanitize } from "../helpers/html_helper"
+import LexicalToolbar from "./toolbar"
 
 export default class LexicalEditorElement extends HTMLElement {
   static formAssociated = true
@@ -34,6 +34,7 @@ export default class LexicalEditorElement extends HTMLElement {
     this.#loadInitialValue()
     this.#updateInternalValueOnChange()
     this.#registerComponents()
+    this.#listenForInvalidatedNodes()
     this.#attachDebugHooks()
     this.#attachToolbar()
   }
@@ -113,7 +114,7 @@ export default class LexicalEditorElement extends HTMLElement {
 
   #loadInitialValue() {
     const initialHtml = this.getAttribute("value") || "<p></p>"
-    console.debug("INITIAL VALUE", initialHtml);
+    console.debug("INITIAL VALUE", initialHtml)
     this.value = initialHtml
   }
 
@@ -129,6 +130,21 @@ export default class LexicalEditorElement extends HTMLElement {
     registerList(this.editor)
     registerCodeHighlighting(this.editor)
     registerMarkdownShortcuts(this.editor, TRANSFORMERS)
+  }
+
+  #listenForInvalidatedNodes() {
+    this.editor.getRootElement().addEventListener("lexical:node-invalidated", (event) => {
+      const { key, values } = event.detail
+
+      this.editor.update(() => {
+        const node = $getNodeByKey(key)
+
+        if (node instanceof ActionTextAttachmentNode) {
+          const updatedNode = node.getWritable()
+          Object.assign(updatedNode, values)
+        }
+      })
+    })
   }
 
   #attachDebugHooks() {

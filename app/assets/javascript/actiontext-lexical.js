@@ -5242,6 +5242,14 @@ function createElement(name, properties) {
   return element
 }
 
+function dispatchCustomEvent(element, name, detail) {
+  const event = new CustomEvent(name, {
+    detail: detail,
+    bubbles: true,
+  });
+  element.dispatchEvent(event);
+}
+
 const ALLOWED_HTML_TAGS = [
   "a",
   "action-text-attachment",
@@ -5271,6 +5279,7 @@ const ALLOWED_HTML_TAGS = [
 
 const ALLOWED_HTML_ATTRIBUTES = [
   "alt",
+  "caption",
   "class",
   "content-type",
   "contenteditable",
@@ -5358,8 +5367,8 @@ class ActionTextAttachmentNode extends gi {
 
     this.sgid = sgid;
     this.src = src;
-    this.altText = altText;
-    this.caption = caption;
+    this.altText = altText || "";
+    this.caption = caption || "";
     this.contentType = contentType || "";
     this.fileName = fileName;
     this.fileSize = fileSize;
@@ -5376,6 +5385,7 @@ class ActionTextAttachmentNode extends gi {
 
     if (this.#isImage) {
       figure.appendChild(this.#createDOMForImage());
+      figure.appendChild(this.#createEditableCaption());
     } else {
       figure.appendChild(this.#createDOMForNotImage());
     }
@@ -5384,7 +5394,7 @@ class ActionTextAttachmentNode extends gi {
   }
 
   updateDOM() {
-    return false
+    return true
   }
 
   isInline() {
@@ -5396,6 +5406,7 @@ class ActionTextAttachmentNode extends gi {
       sgid: this.sgid,
       url: this.src,
       alt: this.altText,
+      caption: this.caption,
       "content-type": this.contentType,
       filename: this.fileName,
       filesize: this.fileSize,
@@ -5442,7 +5453,7 @@ class ActionTextAttachmentNode extends gi {
   #createDOMForNotImage() {
     const figcaption = createElement("figcaption", { className: "attachment__caption" });
 
-    const nameSpan = createElement("span", { className: "attachment__name", textContent: this.fileName });
+    const nameSpan = createElement("span", { className: "attachment__name", textContent: this.caption || this.fileName });
     const sizeSpan = createElement("span", { className: "attachment__size", textContent: bytesToHumanSize(this.fileSize) });
 
     figcaption.appendChild(nameSpan);
@@ -5452,11 +5463,46 @@ class ActionTextAttachmentNode extends gi {
   }
 
   #select(figure) {
-    const event = new CustomEvent("lexical:node-selected", {
-      detail: { key: this.getKey() },
-      bubbles: true,
+    dispatchCustomEvent(figure, "lexical:node-selected", { key: this.getKey() });
+  }
+
+  #createEditableCaption() {
+    const caption = createElement("figcaption", { className: "attachment__caption" });
+    const input = createElement("input", {
+      type: "text",
+      value: this.caption,
+      placeholder: this.fileName
     });
-    figure.dispatchEvent(event);
+
+    input.addEventListener("focusin", () => input.placeholder = "Add caption...");
+    input.addEventListener("blur", this.#handleCaptionInputBlurred.bind(this));
+    input.addEventListener("keydown", this.#handleCaptionInputKeydown.bind(this));
+
+    caption.appendChild(input);
+
+    return caption
+  }
+
+  #updateCaption(input) {
+  }
+
+  #handleCaptionInputBlurred(event) {
+    const input = event.target;
+
+    input.placeholder = this.fileName;
+    this.#updateCaptionValueFromInput(input);
+  }
+
+  #updateCaptionValueFromInput(input) {
+    dispatchCustomEvent(input, "lexical:node-invalidated", { key: this.getKey(), values: { caption: input.value } });
+  }
+
+  #handleCaptionInputKeydown(event) {
+    if (event.key === "Enter") {
+      this.#updateCaptionValueFromInput(event.target);
+      event.preventDefault();
+    }
+    event.stopPropagation();
   }
 }
 
@@ -5532,7 +5578,7 @@ class ActionTextAttachmentUploadNode extends gi {
   #createDOMForNotImage() {
     const figcaption = createElement("figcaption", { className: "attachment__caption" });
 
-    const nameSpan = createElement("span", { className: "attachment__name", textContent: this.file.name });
+    const nameSpan = createElement("span", { className: "attachment__name", textContent: this.file.name || "" });
     const sizeSpan = createElement("span", { className: "attachment__size", textContent: bytesToHumanSize(this.file.size) });
     figcaption.appendChild(nameSpan);
     figcaption.appendChild(sizeSpan);
@@ -5841,7 +5887,7 @@ class CommandDispatcher {
   #registerCommandHandler(command, priority, handler) {
     this.editor.registerCommand(command, handler, priority);
   }
-  
+
   // Not using TOGGLE_LINK_COMMAND because it's not handled unless you use React/LinkPlugin
   #toggleLink(url) {
     this.editor.update(() => {
@@ -6060,6 +6106,7 @@ class LexicalEditorElement extends HTMLElement {
     this.#loadInitialValue();
     this.#updateInternalValueOnChange();
     this.#registerComponents();
+    this.#listenForInvalidatedNodes();
     this.#attachDebugHooks();
     this.#attachToolbar();
   }
@@ -6155,6 +6202,21 @@ class LexicalEditorElement extends HTMLElement {
     Tt$2(this.editor);
     yt$1(this.editor);
     nt(this.editor, Mt);
+  }
+
+  #listenForInvalidatedNodes() {
+    this.editor.getRootElement().addEventListener("lexical:node-invalidated", (event) => {
+      const { key, values } = event.detail;
+
+      this.editor.update(() => {
+        const node = as(key);
+
+        if (node instanceof ActionTextAttachmentNode) {
+          const updatedNode = node.getWritable();
+          Object.assign(updatedNode, values);
+        }
+      });
+    });
   }
 
   #attachDebugHooks() {
