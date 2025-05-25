@@ -12,7 +12,7 @@ class LexicalToolbarElement extends HTMLElement {
   }
 
   #handleButtonClicked({ target }) {
-    this.#handleTargetClicked(target, "[data-command]", this.#dispatchCommand.bind(this));
+    this.#handleTargetClicked(target, "[data-command]", this.#dispatchButtonCommand.bind(this));
     this.#handleTargetClicked(target, "[data-dialog-target]", this.#toggleDialog.bind(this));
   }
 
@@ -23,7 +23,7 @@ class LexicalToolbarElement extends HTMLElement {
     }
   }
 
-  #dispatchCommand(button) {
+  #dispatchButtonCommand(button) {
     const { command, payload } = button.dataset;
     this.editor.dispatchCommand(command, payload);
   }
@@ -40,12 +40,13 @@ class LexicalToolbarElement extends HTMLElement {
   }
 
   #bindHotkeys() {
-    document.addEventListener('keydown', (event) => {
+    this.editor.getRootElement().addEventListener('keydown', (event) => {
       const buttons = this.querySelectorAll("[data-hotkey]");
       buttons.forEach((button) => {
         const hotkeys = button.dataset.hotkey.toLowerCase().split(/\s+/);
         if (hotkeys.includes(this.#keyCombinationFor(event))) {
           event.preventDefault();
+          event.stopPropagation();
           button.click();
         }
       });

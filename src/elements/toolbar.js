@@ -38,12 +38,13 @@ export default class LexicalToolbarElement extends HTMLElement {
   }
 
   #bindHotkeys() {
-    document.addEventListener('keydown', (event) => {
+    this.editor.getRootElement().addEventListener('keydown', (event) => {
       const buttons = this.querySelectorAll("[data-hotkey]")
       buttons.forEach((button) => {
         const hotkeys = button.dataset.hotkey.toLowerCase().split(/\s+/)
         if (hotkeys.includes(this.#keyCombinationFor(event))) {
           event.preventDefault()
+          event.stopPropagation()
           button.click()
         }
       })
