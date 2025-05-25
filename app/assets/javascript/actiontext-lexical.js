@@ -5384,12 +5384,7 @@ class ActionTextAttachmentNode extends gi {
   }
 
   updateDOM() {
-    return (
-      prevNode.src === this.src &&
-      prevNode.caption === this.caption &&
-      prevNode.fileName === this.fileName &&
-      prevNode.fileSize === this.fileSize
-    )
+    return false
   }
 
   isInline() {
@@ -5691,17 +5686,6 @@ class CommandDispatcher {
     });
   }
 
-  // Not using TOGGLE_LINK_COMMAND because it's not handled unless you use React/LinkPlugin
-  #toggleLink(url) {
-    this.editor.update(() => {
-      if (url === null) {
-        N$1(null);
-      } else {
-        N$1(url);
-      }
-    });
-  }
-
   dispatchBold() {
     this.editor.dispatchCommand(me, "bold");
   }
@@ -5856,6 +5840,17 @@ class CommandDispatcher {
 
   #registerCommandHandler(command, priority, handler) {
     this.editor.registerCommand(command, handler, priority);
+  }
+  
+  // Not using TOGGLE_LINK_COMMAND because it's not handled unless you use React/LinkPlugin
+  #toggleLink(url) {
+    this.editor.update(() => {
+      if (url === null) {
+        N$1(null);
+      } else {
+        N$1(url);
+      }
+    });
   }
 
   #registerDragAndDropHandlers() {

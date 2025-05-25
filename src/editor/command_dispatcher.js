@@ -91,17 +91,6 @@ export class CommandDispatcher {
     })
   }
 
-  // Not using TOGGLE_LINK_COMMAND because it's not handled unless you use React/LinkPlugin
-  #toggleLink(url) {
-    this.editor.update(() => {
-      if (url === null) {
-        $toggleLink(null)
-      } else {
-        $toggleLink(url)
-      }
-    })
-  }
-
   dispatchBold() {
     this.editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold")
   }
@@ -256,6 +245,17 @@ export class CommandDispatcher {
 
   #registerCommandHandler(command, priority, handler) {
     this.editor.registerCommand(command, handler, priority)
+  }
+
+  // Not using TOGGLE_LINK_COMMAND because it's not handled unless you use React/LinkPlugin
+  #toggleLink(url) {
+    this.editor.update(() => {
+      if (url === null) {
+        $toggleLink(null)
+      } else {
+        $toggleLink(url)
+      }
+    })
   }
 
   #registerDragAndDropHandlers() {
