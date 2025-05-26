@@ -28,9 +28,9 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
 
     if (this.#isImage) {
       figure.appendChild(this.#createDOMForImage())
-    } else {
-      figure.appendChild(this.#createDOMForNotImage())
     }
+
+    figure.appendChild(this.#createCaption())
 
     const progressBar = createElement("progress", { value: 0, max: 100 })
     figure.appendChild(progressBar)
@@ -41,7 +41,7 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
   }
 
   updateDOM() {
-    return false
+    return true
   }
 
   exportDOM() {
@@ -49,7 +49,6 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
     if (this.src) {
       img.src = this.src
     }
-    img.alt = this.altText
     return { element: img }
   }
 
@@ -62,12 +61,12 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
   }
 
   #createDOMForImage() {
-    const image = createElement("img", { src: this.src, alt: this.altText })
+    const image = createElement("img")
     loadFileIntoImage(this.file, image)
     return image
   }
 
-  #createDOMForNotImage() {
+  #createCaption() {
     const figcaption = createElement("figcaption", { className: "attachment__caption" })
 
     const nameSpan = createElement("span", { className: "attachment__name", textContent: this.file.name || "" })

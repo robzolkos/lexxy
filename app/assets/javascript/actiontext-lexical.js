@@ -5509,7 +5509,7 @@ class ActionTextAttachmentNode extends gi {
 function loadFileIntoImage(file, image) {
   const reader = new FileReader();
   reader.onload = (event) => {
-    image.src = event.target.result;
+    image.src = event.target.result || null;
   };
   reader.readAsDataURL(file);
 }
@@ -5536,9 +5536,9 @@ class ActionTextAttachmentUploadNode extends gi {
 
     if (this.#isImage) {
       figure.appendChild(this.#createDOMForImage());
-    } else {
-      figure.appendChild(this.#createDOMForNotImage());
     }
+
+    figure.appendChild(this.#createCaption());
 
     const progressBar = createElement("progress", { value: 0, max: 100 });
     figure.appendChild(progressBar);
@@ -5548,16 +5548,11 @@ class ActionTextAttachmentUploadNode extends gi {
     return figure
   }
 
-  updateDOM() {
-    return false
-  }
-
   exportDOM() {
     const img = document.createElement("img");
     if (this.src) {
       img.src = this.src;
     }
-    img.alt = this.altText;
     return { element: img }
   }
 
@@ -5570,12 +5565,12 @@ class ActionTextAttachmentUploadNode extends gi {
   }
 
   #createDOMForImage() {
-    const image = createElement("img", { src: this.src, alt: this.altText });
+    const image = createElement("img");
     loadFileIntoImage(this.file, image);
     return image
   }
 
-  #createDOMForNotImage() {
+  #createCaption() {
     const figcaption = createElement("figcaption", { className: "attachment__caption" });
 
     const nameSpan = createElement("span", { className: "attachment__name", textContent: this.file.name || "" });
