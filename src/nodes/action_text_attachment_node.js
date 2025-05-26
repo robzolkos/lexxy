@@ -159,6 +159,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     const caption = createElement("figcaption", { className: "attachment__caption" })
     const input = createElement("input", {
       type: "text",
+      class: "input",
       value: this.caption,
       placeholder: this.fileName
     })
