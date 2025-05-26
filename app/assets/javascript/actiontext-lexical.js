@@ -6112,8 +6112,7 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   get toolbarElement() {
-    const toolbarId = this.getAttribute("toolbar");
-    this.toolbar = toolbarId ? document.getElementById(toolbarId) : this.#createDefaultToolbar();
+    this.toolbar = this.toolbar || this.#findOrCreateDefaultToolbar();
     return this.toolbar
   }
 
@@ -6231,6 +6230,11 @@ class LexicalEditorElement extends HTMLElement {
 
   #attachToolbar() {
     this.toolbarElement.setEditor(this.editor);
+  }
+
+  #findOrCreateDefaultToolbar() {
+    const toolbarId = this.getAttribute("toolbar");
+    return toolbarId ? document.getElementById(toolbarId) : this.#createDefaultToolbar()
   }
 
   #createDefaultToolbar() {
