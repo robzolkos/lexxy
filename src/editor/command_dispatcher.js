@@ -24,7 +24,8 @@ import { $isLinkNode, $toggleLink } from "@lexical/link"
 
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { createElement } from "../helpers/html_helper"
-import { createLinkDialog } from "../elements/link_dialog"
+// Rollup complained that this wasn't being exported and wouldn't build
+// import { createLinkDialog } from "../elements/link_dialog"
 
 const COMMANDS = [
   "bold",

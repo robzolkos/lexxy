@@ -78,11 +78,13 @@ class LexicalToolbarElement extends HTMLElement {
       <button type="button" title="Link" data-dialog-target="link-dialog" data-hotkey="cmd+k ctrl+k">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"> <path d="m9.4 14.5c-2.3-2.3-2.3-5.9 0-8.2l4.6-4.6c1.1-1 2.6-1.7 4.2-1.7s3 .5 4.1 1.7c2.3 2.3 2.3 5.9 0 8.2l-2.7 2.3c-.5.5-1.2.5-1.8 0-.5-.5-.5-1.2 0-1.7l2.7-2.3c1.4-1.3 1.4-3.4 0-4.7-.7-.7-1.5-.9-2.3-.9s-1.8.4-2.5.9l-4.7 4.5c-1.4 1.3-1.4 3.4 0 4.7.5.5.5 1.2 0 1.7-.1.3-.4.4-.8.4s-.5-.1-.8-.3z"/> <path d="m1.7 22.3c-2.3-2.3-2.3-5.9 0-8.2l2.6-2.5c.5-.5 1.2-.5 1.8 0 .5.5.5 1.2 0 1.7l-2.6 2.5c-1.4 1.3-1.4 3.4 0 4.7.7.7 1.5.9 2.3.9s1.8-.4 2.3-.9l4.6-4.6c1.4-1.3 1.4-3.4 0-4.7-.5-.4-.5-1.2 0-1.7s1.2-.5 1.8 0c2.3 2.3 2.3 5.9 0 8.2l-4.6 4.6c-1 1-2.5 1.7-4.1 1.7s-3-.7-4.1-1.7z"/> </svg>
       </button>
-      <dialog is="lexical-link-dialog" id="link-dialog" closedby="any">
+      <dialog is="lexical-link-dialog" class="lexical-link-dialog" id="link-dialog" closedby="any">
         <form method="dialog">
-          <input type="url" placeholder="Enter a URL…" required>
-          <button type="submit" value="link">Link</button>
-          <button type="button" value="unlink">Unlink</button>
+          <input type="url" placeholder="Enter a URL…" class="input" required>
+          <div class="lexical-dialog-actions">
+            <button type="submit" class="btn" value="link">Link</button>
+            <button type="button" class="btn" value="unlink">Unlink</button>
+          </div>
         </form>  
       </dialog>
       
@@ -5548,6 +5550,10 @@ class ActionTextAttachmentUploadNode extends gi {
     return figure
   }
 
+  updateDOM() {
+    return true
+  }
+
   exportDOM() {
     const img = document.createElement("img");
     if (this.src) {
@@ -5630,37 +5636,8 @@ class ActionTextAttachmentUploadNode extends gi {
   }
 }
 
-class LinkDialog extends HTMLDialogElement {
-  connectedCallback() {
-    this.input = this.querySelector("input");
-
-    this.addEventListener("submit", this.#handleSubmit.bind(this));
-    this.querySelector("[value='unlink']").addEventListener("click", this.#handleUnlink.bind(this));
-    this.addEventListener("keydown", this.#handleKeyDown.bind(this));
-  }
-
-  #handleSubmit(event) {
-    const command = event.submitter?.value;
-    this.#editor.dispatchCommand(command, this.input.value);
-  }
-
-  #handleUnlink(event) {
-    this.#editor.dispatchCommand("unlink");
-    this.close();
-  }
-
-  #handleKeyDown(event) {
-    if (event.key === "Escape") {
-      event.stopPropagation();
-    }
-  }
-
-  get #editor() {
-    return this.closest("lexical-toolbar").editor
-  }
-}
-
-customElements.define("lexical-link-dialog", LinkDialog, { extends: "dialog" });
+// Rollup complained that this wasn't being exported and wouldn't build
+// import { createLinkDialog } from "../elements/link_dialog"
 
 const COMMANDS = [
   "bold",
@@ -6257,6 +6234,38 @@ class LexicalEditorElement extends HTMLElement {
 }
 
 customElements.define("lexical-editor", LexicalEditorElement);
+
+class LinkDialog extends HTMLDialogElement {
+  connectedCallback() {
+    this.input = this.querySelector("input");
+
+    this.addEventListener("submit", this.#handleSubmit.bind(this));
+    this.querySelector("[value='unlink']").addEventListener("click", this.#handleUnlink.bind(this));
+    this.addEventListener("keydown", this.#handleKeyDown.bind(this));
+  }
+
+  #handleSubmit(event) {
+    const command = event.submitter?.value;
+    this.#editor.dispatchCommand(command, this.input.value);
+  }
+
+  #handleUnlink(event) {
+    this.#editor.dispatchCommand("unlink");
+    this.close();
+  }
+
+  #handleKeyDown(event) {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+    }
+  }
+
+  get #editor() {
+    return this.closest("lexical-toolbar").editor
+  }
+}
+
+customElements.define("lexical-link-dialog", LinkDialog, { extends: "dialog" });
 
 /**
  * Original by Samuel Flores
