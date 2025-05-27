@@ -5420,7 +5420,7 @@ class ActionTextAttachmentNode extends gi {
   exportDOM() {
     const attachment = createElement("action-text-attachment", {
       sgid: this.sgid,
-      previewable: this.previewable,
+      previewable: this.previewable || null,
       url: this.src,
       alt: this.altText,
       caption: this.caption,
