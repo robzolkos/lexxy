@@ -1,7 +1,7 @@
 import { DecoratorNode, $getNodeByKey } from "lexical"
 import { DirectUpload } from "@rails/activestorage"
 import { ActionTextAttachmentNode } from "./action_text_attachment_node"
-import { createElement, createFigureWithImage } from "../helpers/html_helper"
+import { createAttachmentFigure, createElement } from "../helpers/html_helper"
 import { loadFileIntoImage } from "../helpers/upload_helper"
 import { HISTORY_MERGE_TAG } from 'lexical'
 import { bytesToHumanSize } from "../helpers/storage_helper";
@@ -24,7 +24,7 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
   }
 
   createDOM() {
-    const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType })
+    const figure = createAttachmentFigure(this.contentType)
 
     if (this.#isImage) {
       figure.appendChild(this.#createDOMForImage())

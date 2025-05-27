@@ -5,3 +5,10 @@ export function bytesToHumanSize(bytes) {
   const value = bytes / Math.pow(1024, i)
   return `${ value.toFixed(2) } ${ sizes[i] }`
 }
+
+export function mimeTypeToExtension(mimeType) {
+  if (!mimeType) return null
+
+  const extension = mimeType.split("/")[1]
+  return extension
+}

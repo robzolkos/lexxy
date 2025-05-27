@@ -1,6 +1,6 @@
 import { DecoratorNode } from "lexical"
-import { createElement, dispatchCustomEvent } from "../helpers/html_helper";
-import { bytesToHumanSize } from "../helpers/storage_helper";
+import { createAttachmentFigure, createElement, dispatchCustomEvent } from "../helpers/html_helper";
+import { bytesToHumanSize, mimeTypeToExtension } from "../helpers/storage_helper";
 
 export class ActionTextAttachmentNode extends DecoratorNode {
   static getType() {
@@ -68,7 +68,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   createDOM() {
-    const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType })
+    const figure = createAttachmentFigure(this.contentType)
 
     figure.addEventListener("click", (event) => {
       this.#select(figure)

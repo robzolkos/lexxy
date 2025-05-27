@@ -1,4 +1,5 @@
 import DOMPurify from 'dompurify'
+import { mimeTypeToExtension } from "./storage_helper";
 
 export function createElement(name, properties) {
   const element = document.createElement(name)
@@ -12,14 +13,8 @@ export function createElement(name, properties) {
   return element
 }
 
-export function createFigureWithImage(properties) {
-  const { image: imageProperties = {}, ...figureProperties } = properties || {}
-
-  const figure = createElement("figure", { className: "attachment", contentEditable: false, ...figureProperties })
-  const image = createElement("img", imageProperties)
-  figure.appendChild(image)
-
-  return { figure, image }
+export function createAttachmentFigure(contentType) {
+  return createElement("figure", { className: `attachment  attachment--${mimeTypeToExtension(contentType)}`, "data-content-type": contentType })
 }
 
 export function dispatchCustomEvent(element, name, detail) {
@@ -70,6 +65,7 @@ const ALLOWED_HTML_ATTRIBUTES = [
   "height",
   "href",
   "presentation",
+  "previewable",
   "sgid",
   "src",
   "title",
@@ -84,4 +80,6 @@ export function sanitize(html) {
   })
   return sanitizedHtml
 }
+
+
 

@@ -5232,6 +5232,21 @@ function createDOMPurify() {
 }
 var purify = createDOMPurify();
 
+function bytesToHumanSize(bytes) {
+  if (bytes === 0) return "0 B"
+  const sizes = [ "B", "KB", "MB", "GB", "TB", "PB" ];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  const value = bytes / Math.pow(1024, i);
+  return `${ value.toFixed(2) } ${ sizes[i] }`
+}
+
+function mimeTypeToExtension(mimeType) {
+  if (!mimeType) return null
+
+  const extension = mimeType.split("/")[1];
+  return extension
+}
+
 function createElement(name, properties) {
   const element = document.createElement(name);
   for (const [ key, value ] of Object.entries(properties || {})) {
@@ -5242,6 +5257,10 @@ function createElement(name, properties) {
     }
   }
   return element
+}
+
+function createAttachmentFigure(contentType) {
+  return createElement("figure", { className: `attachment  attachment--${mimeTypeToExtension(contentType)}`, "data-content-type": contentType })
 }
 
 function dispatchCustomEvent(element, name, detail) {
@@ -5292,6 +5311,7 @@ const ALLOWED_HTML_ATTRIBUTES = [
   "height",
   "href",
   "presentation",
+  "previewable",
   "sgid",
   "src",
   "title",
@@ -5305,14 +5325,6 @@ function sanitize(html) {
     ALLOWED_ATTR: ALLOWED_HTML_ATTRIBUTES
   });
   return sanitizedHtml
-}
-
-function bytesToHumanSize(bytes) {
-  if (bytes === 0) return "0 B"
-  const sizes = [ "B", "KB", "MB", "GB", "TB", "PB" ];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  const value = bytes / Math.pow(1024, i);
-  return `${ value.toFixed(2) } ${ sizes[i] }`
 }
 
 class ActionTextAttachmentNode extends gi {
@@ -5381,7 +5393,7 @@ class ActionTextAttachmentNode extends gi {
   }
 
   createDOM() {
-    const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType });
+    const figure = createAttachmentFigure(this.contentType);
 
     figure.addEventListener("click", (event) => {
       this.#select(figure);
@@ -5539,7 +5551,7 @@ class ActionTextAttachmentUploadNode extends gi {
   }
 
   createDOM() {
-    const figure = createElement("figure", { className: "attachment", "data-content-type": this.contentType });
+    const figure = createAttachmentFigure(this.contentType);
 
     if (this.#isImage) {
       figure.appendChild(this.#createDOMForImage());
