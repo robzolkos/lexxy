@@ -113,12 +113,13 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
       if (latest) {
         latest.replace(new ActionTextAttachmentNode({
           sgid: blob.attachable_sgid,
-          src: this.src,
+          src: blob.previewable ? blob.url : this.src,
           altText: blob.filename,
           contentType: blob.content_type,
           fileName: blob.filename,
           fileSize: blob.byte_size,
           width: image?.width,
+          previewable: blob.previewable,
           height: image?.height
         }))
       }

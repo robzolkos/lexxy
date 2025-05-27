@@ -23,6 +23,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
             node: new ActionTextAttachmentNode({
               sgid: attachment.getAttribute("sgid"),
               src: attachment.getAttribute("url"),
+              previewable: attachment.getAttribute("previewable"),
               altText: attachment.getAttribute("alt"),
               caption: attachment.getAttribute("caption"),
               contentType: attachment.getAttribute("content-type"),
@@ -51,11 +52,12 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     }
   }
 
-  constructor({ sgid, src, altText, caption, contentType, fileName, fileSize, width, height }, key) {
+  constructor({ sgid, src, previewable, altText, caption, contentType, fileName, fileSize, width, height }, key) {
     super(key)
 
     this.sgid = sgid
     this.src = src
+    this.previewable = previewable
     this.altText = altText || ""
     this.caption = caption || ""
     this.contentType = contentType || ""
@@ -72,7 +74,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
       this.#select(figure)
     })
 
-    if (this.#isImage) {
+    if (this.#isImage || this.previewable) {
       figure.appendChild(this.#createDOMForImage())
       figure.appendChild(this.#createEditableCaption())
     } else {
@@ -93,6 +95,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   exportDOM() {
     const attachment = createElement("action-text-attachment", {
       sgid: this.sgid,
+      previewable: this.previewable,
       url: this.src,
       alt: this.altText,
       caption: this.caption,
@@ -113,6 +116,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
       version: 1,
       sgid: this.sgid,
       src: this.src,
+      previewable: this.previewable,
       altText: this.altText,
       caption: this.caption,
       contentType: this.contentType,

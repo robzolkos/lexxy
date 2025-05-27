@@ -5336,6 +5336,7 @@ class ActionTextAttachmentNode extends gi {
             node: new ActionTextAttachmentNode({
               sgid: attachment.getAttribute("sgid"),
               src: attachment.getAttribute("url"),
+              previewable: attachment.getAttribute("previewable"),
               altText: attachment.getAttribute("alt"),
               caption: attachment.getAttribute("caption"),
               contentType: attachment.getAttribute("content-type"),
@@ -5364,11 +5365,12 @@ class ActionTextAttachmentNode extends gi {
     }
   }
 
-  constructor({ sgid, src, altText, caption, contentType, fileName, fileSize, width, height }, key) {
+  constructor({ sgid, src, previewable, altText, caption, contentType, fileName, fileSize, width, height }, key) {
     super(key);
 
     this.sgid = sgid;
     this.src = src;
+    this.previewable = previewable;
     this.altText = altText || "";
     this.caption = caption || "";
     this.contentType = contentType || "";
@@ -5385,7 +5387,7 @@ class ActionTextAttachmentNode extends gi {
       this.#select(figure);
     });
 
-    if (this.#isImage) {
+    if (this.#isImage || this.previewable) {
       figure.appendChild(this.#createDOMForImage());
       figure.appendChild(this.#createEditableCaption());
     } else {
@@ -5406,6 +5408,7 @@ class ActionTextAttachmentNode extends gi {
   exportDOM() {
     const attachment = createElement("action-text-attachment", {
       sgid: this.sgid,
+      previewable: this.previewable,
       url: this.src,
       alt: this.altText,
       caption: this.caption,
@@ -5426,6 +5429,7 @@ class ActionTextAttachmentNode extends gi {
       version: 1,
       sgid: this.sgid,
       src: this.src,
+      previewable: this.previewable,
       altText: this.altText,
       caption: this.caption,
       contentType: this.contentType,
@@ -5624,12 +5628,13 @@ class ActionTextAttachmentUploadNode extends gi {
       if (latest) {
         latest.replace(new ActionTextAttachmentNode({
           sgid: blob.attachable_sgid,
-          src: this.src,
+          src: blob.previewable ? blob.url : this.src,
           altText: blob.filename,
           contentType: blob.content_type,
           fileName: blob.filename,
           fileSize: blob.byte_size,
           width: image?.width,
+          previewable: blob.previewable,
           height: image?.height
         }));
       }

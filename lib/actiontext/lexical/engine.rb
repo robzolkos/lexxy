@@ -1,4 +1,5 @@
 require_relative "rich_text_area_tag"
+require "active_storage/blob_with_preview_url"
 
 module Actiontext
   module Lexical
@@ -23,6 +24,12 @@ module Actiontext
 
           default_allowed_attributes = Class.new.include(ActionText::ContentHelper).new.sanitizer_allowed_attributes
           ActionText::ContentHelper.allowed_attributes = default_allowed_attributes + %w[ controls poster data-language ]
+        end
+      end
+
+      initializer "actiontext-lexical.blob_with_preview" do |app|
+        ActiveSupport.on_load(:active_storage_blob) do
+          prepend ActiveStorage::BlobWithPreviewUrl
         end
       end
     end
