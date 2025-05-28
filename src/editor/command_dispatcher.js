@@ -75,10 +75,9 @@ export class CommandDispatcher {
 
           node.remove()
 
-          if (parent && parent.getChildrenSize() === 0) {
+          if (parent && parent.getChildrenSize() === 0 && (parent.getNextSibling() !== null || parent.getPreviousSibling() !== null)) {
             parent.remove()
           }
-
           nodesWereRemoved = true
         })
 
