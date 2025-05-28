@@ -6196,6 +6196,7 @@ class LexicalEditorElement extends HTMLElement {
   #updateInternalValueOnChange() {
     this.editor.registerUpdateListener(({ editorState }) => {
       this.internals.setFormValue(this.value);
+      dispatch(this, "actiontext:change");
     });
   }
 
