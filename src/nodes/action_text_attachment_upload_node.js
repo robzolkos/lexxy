@@ -24,10 +24,12 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
   }
 
   createDOM() {
-    const figure = createAttachmentFigure(this.contentType)
+    const figure = createAttachmentFigure(this.file.type, (this.#isImage || this.previewable), this.file.name)
 
-    if (this.#isImage) {
+    if (this.#isImage || this.previewable) {
       figure.appendChild(this.#createDOMForImage())
+    } else {
+      figure.appendChild(this.#createDOMForFile())
     }
 
     figure.appendChild(this.#createCaption())
@@ -64,6 +66,16 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
     const image = createElement("img")
     loadFileIntoImage(this.file, image)
     return image
+  }
+
+  #createDOMForFile() {
+    const extension = this.#getFileExtension()
+    const span = createElement("span", { className: "attachment__icon", textContent: extension })
+    return span
+  }
+
+  #getFileExtension() {
+    return this.file.name.split('.').pop().toLowerCase()
   }
 
   #createCaption() {

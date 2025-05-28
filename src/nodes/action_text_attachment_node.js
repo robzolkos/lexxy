@@ -18,12 +18,13 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   static importDOM() {
     return {
       "action-text-attachment": (attachment) => {
+        const previewable = attachment.getAttribute("previewable")
         return {
           conversion: () => ({
             node: new ActionTextAttachmentNode({
               sgid: attachment.getAttribute("sgid"),
               src: attachment.getAttribute("url"),
-              previewable: attachment.getAttribute("previewable"),
+              previewable: previewable === "true",
               altText: attachment.getAttribute("alt"),
               caption: attachment.getAttribute("caption"),
               contentType: attachment.getAttribute("content-type"),
@@ -68,7 +69,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   createDOM() {
-    const figure = createAttachmentFigure(this.contentType)
+    const figure = createAttachmentFigure(this.contentType, (this.#isImage || this.previewable), this.fileName)
 
     figure.addEventListener("click", (event) => {
       this.#select(figure)
@@ -78,6 +79,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
       figure.appendChild(this.#createDOMForImage())
       figure.appendChild(this.#createEditableCaption())
     } else {
+      figure.appendChild(this.#createDOMForFile())
       figure.appendChild(this.#createDOMForNotImage())
     }
 
@@ -143,13 +145,18 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     return createElement("img", { src: this.src, alt: this.altText })
   }
 
+  #createDOMForFile() {
+    const extension = this.fileName ? this.fileName.split('.').pop().toLowerCase() : 'unknown'
+    return createElement("span", { className: "attachment__icon", textContent: `.${extension}`})
+  }
+
   #createDOMForNotImage() {
     const figcaption = createElement("figcaption", { className: "attachment__caption" })
 
-    const nameSpan = createElement("span", { className: "attachment__name", textContent: this.caption || this.fileName })
+    const nameTag = createElement("strong", { className: "attachment__name", textContent: this.caption || this.fileName })
     const sizeSpan = createElement("span", { className: "attachment__size", textContent: bytesToHumanSize(this.fileSize) })
 
-    figcaption.appendChild(nameSpan)
+    figcaption.appendChild(nameTag)
     figcaption.appendChild(sizeSpan)
 
     return figcaption

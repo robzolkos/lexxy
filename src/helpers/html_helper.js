@@ -13,8 +13,12 @@ export function createElement(name, properties) {
   return element
 }
 
-export function createAttachmentFigure(contentType) {
-  return createElement("figure", { className: `attachment  attachment--${mimeTypeToExtension(contentType)}`, "data-content-type": contentType })
+export function createAttachmentFigure(contentType, isImage, fileName) {
+  const extension = fileName ? fileName.split('.').pop().toLowerCase() : "unknown"
+  return createElement("figure", { 
+    className: `attachment attachment--${isImage ? 'preview' : 'file'} attachment--${extension}`, 
+    "data-content-type": contentType 
+  })
 }
 
 export function dispatchCustomEvent(element, name, detail) {

@@ -5240,13 +5240,6 @@ function bytesToHumanSize(bytes) {
   return `${ value.toFixed(2) } ${ sizes[i] }`
 }
 
-function mimeTypeToExtension(mimeType) {
-  if (!mimeType) return null
-
-  const extension = mimeType.split("/")[1];
-  return extension
-}
-
 function createElement(name, properties) {
   const element = document.createElement(name);
   for (const [ key, value ] of Object.entries(properties || {})) {
@@ -5259,8 +5252,12 @@ function createElement(name, properties) {
   return element
 }
 
-function createAttachmentFigure(contentType) {
-  return createElement("figure", { className: `attachment  attachment--${mimeTypeToExtension(contentType)}`, "data-content-type": contentType })
+function createAttachmentFigure(contentType, isImage, fileName) {
+  const extension = fileName ? fileName.split('.').pop().toLowerCase() : "unknown";
+  return createElement("figure", { 
+    className: `attachment attachment--${isImage ? 'preview' : 'file'} attachment--${extension}`, 
+    "data-content-type": contentType 
+  })
 }
 
 function dispatchCustomEvent(element, name, detail) {
@@ -5343,12 +5340,13 @@ class ActionTextAttachmentNode extends gi {
   static importDOM() {
     return {
       "action-text-attachment": (attachment) => {
+        const previewable = attachment.getAttribute("previewable");
         return {
           conversion: () => ({
             node: new ActionTextAttachmentNode({
               sgid: attachment.getAttribute("sgid"),
               src: attachment.getAttribute("url"),
-              previewable: attachment.getAttribute("previewable"),
+              previewable: previewable === "true",
               altText: attachment.getAttribute("alt"),
               caption: attachment.getAttribute("caption"),
               contentType: attachment.getAttribute("content-type"),
@@ -5393,7 +5391,7 @@ class ActionTextAttachmentNode extends gi {
   }
 
   createDOM() {
-    const figure = createAttachmentFigure(this.contentType);
+    const figure = createAttachmentFigure(this.contentType, (this.#isImage || this.previewable), this.fileName);
 
     figure.addEventListener("click", (event) => {
       this.#select(figure);
@@ -5403,6 +5401,7 @@ class ActionTextAttachmentNode extends gi {
       figure.appendChild(this.#createDOMForImage());
       figure.appendChild(this.#createEditableCaption());
     } else {
+      figure.appendChild(this.#createDOMForFile());
       figure.appendChild(this.#createDOMForNotImage());
     }
 
@@ -5468,13 +5467,18 @@ class ActionTextAttachmentNode extends gi {
     return createElement("img", { src: this.src, alt: this.altText })
   }
 
+  #createDOMForFile() {
+    const extension = this.fileName ? this.fileName.split('.').pop().toLowerCase() : 'unknown';
+    return createElement("span", { className: "attachment__icon", textContent: `.${extension}`})
+  }
+
   #createDOMForNotImage() {
     const figcaption = createElement("figcaption", { className: "attachment__caption" });
 
-    const nameSpan = createElement("span", { className: "attachment__name", textContent: this.caption || this.fileName });
+    const nameTag = createElement("strong", { className: "attachment__name", textContent: this.caption || this.fileName });
     const sizeSpan = createElement("span", { className: "attachment__size", textContent: bytesToHumanSize(this.fileSize) });
 
-    figcaption.appendChild(nameSpan);
+    figcaption.appendChild(nameTag);
     figcaption.appendChild(sizeSpan);
 
     return figcaption
@@ -5551,10 +5555,12 @@ class ActionTextAttachmentUploadNode extends gi {
   }
 
   createDOM() {
-    const figure = createAttachmentFigure(this.contentType);
+    const figure = createAttachmentFigure(this.file.type, (this.#isImage || this.previewable), this.file.name);
 
-    if (this.#isImage) {
+    if (this.#isImage || this.previewable) {
       figure.appendChild(this.#createDOMForImage());
+    } else {
+      figure.appendChild(this.#createDOMForFile());
     }
 
     figure.appendChild(this.#createCaption());
@@ -5591,6 +5597,16 @@ class ActionTextAttachmentUploadNode extends gi {
     const image = createElement("img");
     loadFileIntoImage(this.file, image);
     return image
+  }
+
+  #createDOMForFile() {
+    const extension = this.#getFileExtension();
+    const span = createElement("span", { className: "attachment__icon", textContent: extension });
+    return span
+  }
+
+  #getFileExtension() {
+    return this.file.name.split('.').pop().toLowerCase()
   }
 
   #createCaption() {
