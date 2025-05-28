@@ -6142,7 +6142,6 @@ class LexicalEditorElement extends HTMLElement {
     this.editor.update(() => {
       const root = _s();
       root.clear();
-      root.select();
       const nodes = h$1(this.editor, dom);
       root.append(...nodes);
       this.#refreshHighlightedCodeNodes();

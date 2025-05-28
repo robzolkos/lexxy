@@ -65,7 +65,6 @@ export default class LexicalEditorElement extends HTMLElement {
     this.editor.update(() => {
       const root = $getRoot()
       root.clear()
-      root.select()
       const nodes = $generateNodesFromDOM(this.editor, dom)
       root.append(...nodes)
       this.#refreshHighlightedCodeNodes()
