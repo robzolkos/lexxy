@@ -1,4 +1,4 @@
-import { createEditor, $getRoot, $createTextNode, $getNodeByKey, $createNodeSelection, $setSelection } from "lexical"
+import { createEditor, $getRoot, $createTextNode, $getNodeByKey, $addUpdateTag, SKIP_DOM_SELECTION_TAG } from "lexical"
 import { ListNode, ListItemNode, registerList } from "@lexical/list"
 import { LinkNode, AutoLinkNode } from "@lexical/link"
 import { registerRichText, QuoteNode, HeadingNode } from "@lexical/rich-text"
@@ -12,7 +12,7 @@ import { ActionTextAttachmentNode } from "../nodes/action_text_attachment_node"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { CommandDispatcher } from "../editor/command_dispatcher"
 import Selection from "../editor/selection"
-import { createElement, dispatch, sanitize } from "../helpers/html_helper"
+import { createElement, sanitize } from "../helpers/html_helper"
 import LexicalToolbar from "./toolbar"
 
 export default class LexicalEditorElement extends HTMLElement {
@@ -56,18 +56,19 @@ export default class LexicalEditorElement extends HTMLElement {
     return sanitize(html)
   }
 
-  set value(newValue) {
-    this.internals.setFormValue(newValue)
-
+  set value(html) {
     const parser = new DOMParser()
-    const dom = parser.parseFromString(newValue, "text/html")
+    const dom = parser.parseFromString(html, "text/html")
 
     this.editor.update(() => {
+      $addUpdateTag(SKIP_DOM_SELECTION_TAG)
       const root = $getRoot()
       root.clear()
+      root.select()
       const nodes = $generateNodesFromDOM(this.editor, dom)
       root.append(...nodes)
       this.#refreshHighlightedCodeNodes()
+      this.internals.setFormValue(html)
     })
   }
 
@@ -119,7 +120,6 @@ export default class LexicalEditorElement extends HTMLElement {
   #updateInternalValueOnChange() {
     this.editor.registerUpdateListener(({ editorState }) => {
       this.internals.setFormValue(this.value)
-      dispatch(this, "actiontext:change")
     })
   }
 
