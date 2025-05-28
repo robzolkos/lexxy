@@ -312,7 +312,7 @@ export class CommandDispatcher {
       const anchorNode = selection?.anchor.getNode()
       const currentParagraph = anchorNode?.getTopLevelElementOrThrow()
 
-      const uploadedImageNode = new ActionTextAttachmentUploadNode(file, uploadUrl, this.editor)
+      const uploadedImageNode = new ActionTextAttachmentUploadNode( { file: file, uploadUrl: uploadUrl, editor: this.editor })
 
       if (currentParagraph && $isParagraphNode(currentParagraph) && currentParagraph.getChildrenSize() === 0) {
         currentParagraph.append(uploadedImageNode)

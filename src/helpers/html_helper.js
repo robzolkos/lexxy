@@ -6,19 +6,23 @@ export function createElement(name, properties) {
   for (const [ key, value ] of Object.entries(properties || {})) {
     if (key in element) {
       element[key] = value
-    } else {
+    } else if (value !== null && value !== undefined ) {
       element.setAttribute(key, value)
     }
   }
   return element
 }
 
-export function createAttachmentFigure(contentType, isImage, fileName) {
+export function createAttachmentFigure(contentType, isPreviewable, fileName) {
   const extension = fileName ? fileName.split('.').pop().toLowerCase() : "unknown"
-  return createElement("figure", { 
-    className: `attachment attachment--${isImage ? 'preview' : 'file'} attachment--${extension}`, 
-    "data-content-type": contentType 
+  return createElement("figure", {
+    className: `attachment attachment--${isPreviewable ? 'preview' : 'file'} attachment--${extension}`,
+    "data-content-type": contentType
   })
+}
+
+export function isPreviewableImage(contentType) {
+  return contentType.startsWith("image/") && !contentType.includes("svg")
 }
 
 export function dispatchCustomEvent(element, name, detail) {

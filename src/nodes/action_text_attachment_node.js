@@ -1,5 +1,5 @@
 import { DecoratorNode } from "lexical"
-import { createAttachmentFigure, createElement, dispatchCustomEvent } from "../helpers/html_helper";
+import { createAttachmentFigure, createElement, dispatchCustomEvent, isPreviewableImage } from "../helpers/html_helper";
 import { bytesToHumanSize, mimeTypeToExtension } from "../helpers/storage_helper";
 
 export class ActionTextAttachmentNode extends DecoratorNode {
@@ -18,13 +18,12 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   static importDOM() {
     return {
       "action-text-attachment": (attachment) => {
-        const previewable = attachment.getAttribute("previewable")
         return {
           conversion: () => ({
             node: new ActionTextAttachmentNode({
               sgid: attachment.getAttribute("sgid"),
               src: attachment.getAttribute("url"),
-              previewable: previewable === "true",
+              previewable: attachment.getAttribute("previewable"),
               altText: attachment.getAttribute("alt"),
               caption: attachment.getAttribute("caption"),
               contentType: attachment.getAttribute("content-type"),
@@ -69,13 +68,13 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   createDOM() {
-    const figure = createAttachmentFigure(this.contentType, (this.#isImage || this.previewable), this.fileName)
+    const figure = this.createAttachmentFigure()
 
     figure.addEventListener("click", (event) => {
       this.#select(figure)
     })
 
-    if (this.#isImage || this.previewable) {
+    if (this.isPreviewableAttachment) {
       figure.appendChild(this.#createDOMForImage())
       figure.appendChild(this.#createEditableCaption())
     } else {
@@ -137,8 +136,16 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     return true
   }
 
-  get #isImage() {
-    return this.contentType.startsWith("image/")
+  createAttachmentFigure() {
+    return createAttachmentFigure(this.contentType, this.isPreviewableAttachment, this.fileName)
+  }
+
+  get #isPreviewableImage() {
+    return isPreviewableImage(this.contentType)
+  }
+
+  get isPreviewableAttachment() {
+    return this.#isPreviewableImage || this.previewable
   }
 
   #createDOMForImage() {

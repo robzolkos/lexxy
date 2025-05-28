@@ -6,17 +6,17 @@ import { loadFileIntoImage } from "../helpers/upload_helper"
 import { HISTORY_MERGE_TAG } from 'lexical'
 import { bytesToHumanSize } from "../helpers/storage_helper";
 
-export class ActionTextAttachmentUploadNode extends DecoratorNode {
+export class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
   static getType() {
     return "action_text_attachment_upload"
   }
 
   static clone(node) {
-    return new ActionTextAttachmentUploadNode(node.file, node.uploadUrl, node.editor, node.__key)
+    return new ActionTextAttachmentUploadNode({ ...node }, node.__key);
   }
 
-  constructor(file, uploadUrl, editor, key) {
-    super(key)
+  constructor({ file, uploadUrl, editor }, key) {
+    super({}, key)
     this.file = file
     this.uploadUrl = uploadUrl
     this.src = null
@@ -24,9 +24,9 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
   }
 
   createDOM() {
-    const figure = createAttachmentFigure(this.file.type, (this.#isImage || this.previewable), this.file.name)
+    const figure = this.createAttachmentFigure()
 
-    if (this.#isImage || this.previewable) {
+    if (this.isPreviewableAttachment) {
       figure.appendChild(this.#createDOMForImage())
     } else {
       figure.appendChild(this.#createDOMForFile())
@@ -42,24 +42,12 @@ export class ActionTextAttachmentUploadNode extends DecoratorNode {
     return figure
   }
 
-  updateDOM() {
-    return true
-  }
-
   exportDOM() {
     const img = document.createElement("img")
     if (this.src) {
       img.src = this.src
     }
     return { element: img }
-  }
-
-  decorate() {
-    return null
-  }
-
-  get #isImage() {
-    return this.file.type.startsWith("image/")
   }
 
   #createDOMForImage() {

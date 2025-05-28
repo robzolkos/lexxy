@@ -5245,19 +5245,23 @@ function createElement(name, properties) {
   for (const [ key, value ] of Object.entries(properties || {})) {
     if (key in element) {
       element[key] = value;
-    } else {
+    } else if (value !== null && value !== undefined ) {
       element.setAttribute(key, value);
     }
   }
   return element
 }
 
-function createAttachmentFigure(contentType, isImage, fileName) {
+function createAttachmentFigure(contentType, isPreviewable, fileName) {
   const extension = fileName ? fileName.split('.').pop().toLowerCase() : "unknown";
-  return createElement("figure", { 
-    className: `attachment attachment--${isImage ? 'preview' : 'file'} attachment--${extension}`, 
-    "data-content-type": contentType 
+  return createElement("figure", {
+    className: `attachment attachment--${isPreviewable ? 'preview' : 'file'} attachment--${extension}`,
+    "data-content-type": contentType
   })
+}
+
+function isPreviewableImage(contentType) {
+  return contentType.startsWith("image/") && !contentType.includes("svg")
 }
 
 function dispatchCustomEvent(element, name, detail) {
@@ -5340,13 +5344,12 @@ class ActionTextAttachmentNode extends gi {
   static importDOM() {
     return {
       "action-text-attachment": (attachment) => {
-        const previewable = attachment.getAttribute("previewable");
         return {
           conversion: () => ({
             node: new ActionTextAttachmentNode({
               sgid: attachment.getAttribute("sgid"),
               src: attachment.getAttribute("url"),
-              previewable: previewable === "true",
+              previewable: attachment.getAttribute("previewable"),
               altText: attachment.getAttribute("alt"),
               caption: attachment.getAttribute("caption"),
               contentType: attachment.getAttribute("content-type"),
@@ -5391,13 +5394,13 @@ class ActionTextAttachmentNode extends gi {
   }
 
   createDOM() {
-    const figure = createAttachmentFigure(this.contentType, (this.#isImage || this.previewable), this.fileName);
+    const figure = this.createAttachmentFigure();
 
     figure.addEventListener("click", (event) => {
       this.#select(figure);
     });
 
-    if (this.#isImage || this.previewable) {
+    if (this.isPreviewableAttachment) {
       figure.appendChild(this.#createDOMForImage());
       figure.appendChild(this.#createEditableCaption());
     } else {
@@ -5459,8 +5462,16 @@ class ActionTextAttachmentNode extends gi {
     return true
   }
 
-  get #isImage() {
-    return this.contentType.startsWith("image/")
+  createAttachmentFigure() {
+    return createAttachmentFigure(this.contentType, this.isPreviewableAttachment, this.fileName)
+  }
+
+  get #isPreviewableImage() {
+    return isPreviewableImage(this.contentType)
+  }
+
+  get isPreviewableAttachment() {
+    return this.#isPreviewableImage || this.previewable
   }
 
   #createDOMForImage() {
@@ -5537,17 +5548,17 @@ function loadFileIntoImage(file, image) {
   reader.readAsDataURL(file);
 }
 
-class ActionTextAttachmentUploadNode extends gi {
+class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
   static getType() {
     return "action_text_attachment_upload"
   }
 
   static clone(node) {
-    return new ActionTextAttachmentUploadNode(node.file, node.uploadUrl, node.editor, node.__key)
+    return new ActionTextAttachmentUploadNode({ ...node }, node.__key);
   }
 
-  constructor(file, uploadUrl, editor, key) {
-    super(key);
+  constructor({ file, uploadUrl, editor }, key) {
+    super({}, key);
     this.file = file;
     this.uploadUrl = uploadUrl;
     this.src = null;
@@ -5555,9 +5566,9 @@ class ActionTextAttachmentUploadNode extends gi {
   }
 
   createDOM() {
-    const figure = createAttachmentFigure(this.file.type, (this.#isImage || this.previewable), this.file.name);
+    const figure = this.createAttachmentFigure();
 
-    if (this.#isImage || this.previewable) {
+    if (this.isPreviewableAttachment) {
       figure.appendChild(this.#createDOMForImage());
     } else {
       figure.appendChild(this.#createDOMForFile());
@@ -5573,24 +5584,12 @@ class ActionTextAttachmentUploadNode extends gi {
     return figure
   }
 
-  updateDOM() {
-    return true
-  }
-
   exportDOM() {
     const img = document.createElement("img");
     if (this.src) {
       img.src = this.src;
     }
     return { element: img }
-  }
-
-  decorate() {
-    return null
-  }
-
-  get #isImage() {
-    return this.file.type.startsWith("image/")
   }
 
   #createDOMForImage() {
@@ -5958,7 +5957,7 @@ class CommandDispatcher {
       const anchorNode = selection?.anchor.getNode();
       const currentParagraph = anchorNode?.getTopLevelElementOrThrow();
 
-      const uploadedImageNode = new ActionTextAttachmentUploadNode(file, uploadUrl, this.editor);
+      const uploadedImageNode = new ActionTextAttachmentUploadNode( { file: file, uploadUrl: uploadUrl, editor: this.editor });
 
       if (currentParagraph && Fi(currentParagraph) && currentParagraph.getChildrenSize() === 0) {
         currentParagraph.append(uploadedImageNode);
