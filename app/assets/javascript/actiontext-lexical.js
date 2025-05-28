@@ -5328,6 +5328,10 @@ function sanitize(html) {
   return sanitizedHtml
 }
 
+function dispatch(element, eventName, detail = null, cancelable = false) {
+  return element.dispatchEvent(new CustomEvent(eventName, { bubbles: true, detail, cancelable }))
+}
+
 class ActionTextAttachmentNode extends gi {
   static getType() {
     return "action_text_attachment"
@@ -6099,6 +6103,7 @@ class LexicalEditorElement extends HTMLElement {
   constructor() {
     super();
     this.internals = this.attachInternals();
+    this.internals.ariaRole = "textbox";
   }
 
   connectedCallback() {
@@ -6113,6 +6118,10 @@ class LexicalEditorElement extends HTMLElement {
     this.#listenForInvalidatedNodes();
     this.#attachDebugHooks();
     this.#attachToolbar();
+  }
+
+  get form() {
+    return this.internals.form
   }
 
   get toolbarElement() {

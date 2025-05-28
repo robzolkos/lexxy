@@ -23,6 +23,7 @@ export default class LexicalEditorElement extends HTMLElement {
   constructor() {
     super()
     this.internals = this.attachInternals()
+    this.internals.ariaRole = "textbox"
   }
 
   connectedCallback() {
@@ -37,6 +38,10 @@ export default class LexicalEditorElement extends HTMLElement {
     this.#listenForInvalidatedNodes()
     this.#attachDebugHooks()
     this.#attachToolbar()
+  }
+
+  get form() {
+    return this.internals.form
   }
 
   get toolbarElement() {
