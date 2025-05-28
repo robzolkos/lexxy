@@ -89,5 +89,8 @@ export function sanitize(html) {
   return sanitizedHtml
 }
 
+export function dispatch(element, eventName, detail = null, cancelable = false) {
+  return element.dispatchEvent(new CustomEvent(eventName, { bubbles: true, detail, cancelable }))
+}
 
 

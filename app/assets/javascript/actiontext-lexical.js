@@ -5328,6 +5328,10 @@ function sanitize(html) {
   return sanitizedHtml
 }
 
+function dispatch(element, eventName, detail = null, cancelable = false) {
+  return element.dispatchEvent(new CustomEvent(eventName, { bubbles: true, detail, cancelable }))
+}
+
 class ActionTextAttachmentNode extends gi {
   static getType() {
     return "action_text_attachment"
@@ -6132,11 +6136,12 @@ class LexicalEditorElement extends HTMLElement {
     return sanitize(html)
   }
 
-  set value(html) {
-    this.internals.setFormValue(html);
+  set value(newValue) {
+    this.value;
+    this.internals.setFormValue(newValue);
 
     const parser = new DOMParser();
-    const dom = parser.parseFromString(html, "text/html");
+    const dom = parser.parseFromString(newValue, "text/html");
 
     this.editor.update(() => {
       const root = _s();
@@ -6195,6 +6200,7 @@ class LexicalEditorElement extends HTMLElement {
   #updateInternalValueOnChange() {
     this.editor.registerUpdateListener(({ editorState }) => {
       this.internals.setFormValue(this.value);
+      dispatch(this, "actiontext:change", { oldValue, newValue });
     });
   }
 
