@@ -18,7 +18,7 @@ import {
 } from "lexical"
 
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list"
-import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text"
+import { $createHeadingNode, $createQuoteNode, $isHeadingNode, $isQuoteNode } from "@lexical/rich-text"
 import { CodeNode } from "@lexical/code"
 import { $isLinkNode, $toggleLink } from "@lexical/link"
 
@@ -29,6 +29,7 @@ import { createElement } from "../helpers/html_helper"
 
 const COMMANDS = [
   "bold",
+  "rotateHeadingFormat",
   "formatElement",
   "italic",
   "link",
@@ -202,16 +203,47 @@ export class CommandDispatcher {
         let wrapper
         if (type === "quote") {
           wrapper = $createQuoteNode()
-        } else if (type === "h2") {
-          wrapper = $createHeadingNode("h2")
-        } else if (type === "h3") {
-          wrapper = $createHeadingNode("h3")
         } else {
           wrapper = $createParagraphNode()
         }
 
         node.insertBefore(wrapper)
         wrapper.append(node)
+      }
+    })
+  }
+
+  dispatchRotateHeadingFormat() {
+    this.editor.update(() => {
+      const selection = $getSelection()
+      if (!$isRangeSelection(selection)) return
+
+      const nodes = selection.extract()
+      if (nodes.length === 0) return
+
+      for (const node of nodes) {
+        const topLevel = node.getTopLevelElementOrThrow()
+
+        if ($isHeadingNode(topLevel)) {
+          const currentTag = topLevel.getTag()
+          let nextTag
+          if (currentTag === "h1") {
+            nextTag = "h2"
+          } else if (currentTag === "h2") {
+            nextTag = "h3"
+          } else {
+            nextTag = "h1"
+          }
+
+          const newHeading = $createHeadingNode(nextTag)
+          newHeading.append(...topLevel.getChildren())
+          topLevel.replace(newHeading)
+
+        } else if ($isParagraphNode(topLevel) || $isQuoteNode(topLevel)) {
+          const newHeading = $createHeadingNode("h1")
+          newHeading.append(...topLevel.getChildren())
+          topLevel.replace(newHeading)
+        }
       }
     })
   }

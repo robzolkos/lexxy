@@ -90,7 +90,7 @@ export default class LexicalToolbarElement extends HTMLElement {
         <svg viewBox="0 0 24 22" xmlns="http://www.w3.org/2000/svg"> <path d="m1.1 5.2c.6-.7 1.4-1.3 2.4-1.4 2.6-.4 4.2.4 5.3 1.9 2 2.3 1.9 5.1.6 7.6-1.3 2.4-4 4.6-7.2 5.1-.4 0-.7-.1-1-.4-.1-.3-.1-.7.3-1.1l1.1-1.1c.3-.4.6-.7.7-1.1s.3-.9 0-1.3c0-.4-.6-.7-1-1-1.2-.8-2.3-2.2-2.3-4.1.1-1.4.4-2.4 1.1-3.1z"/> <path d="m14.6 5.2c.6-.7 1.6-1.1 2.6-1.4 2.4-.4 4.2.4 5.3 1.9 2 2.3 1.9 5.1.6 7.6-1.3 2.4-4 4.6-7.2 5.1-.4 0-.7-.1-1-.4-.1-.3-.1-.7.3-1.1l1.1-1.1c.3-.4.6-.7.7-1.1s.3-.9 0-1.3c-.1-.4-.6-.7-1-1-1.3-.6-2.4-2-2.4-3.9s.4-2.6 1-3.3z"/> </svg>
       </button>
       
-      <button type="button" data-command="formatElement" data-payload="h2" title="Heading">
+      <button type="button" data-command="rotateHeadingFormat" title="Heading">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m5.7 6.2v16.3h3.8v-16.3h5.7v-3.8h-15.2v3.8zm10.1 16.4h3.8v-8.8h4.4v-3.8h-12.6v3.8h4.4z" fill-rule="evenodd"/></svg>
       </button>
             
