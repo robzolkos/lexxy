@@ -53,6 +53,10 @@ export default class LexicalEditorElement extends HTMLElement {
     return this.dataset.directUploadUrl
   }
 
+  focus() {
+    this.editor.focus()
+  }
+
   get value() {
     let html = ""
     this.editor?.getEditorState().read(() => {
@@ -113,6 +117,13 @@ export default class LexicalEditorElement extends HTMLElement {
     editorContentElement.setAttribute("contenteditable", "true")
     this.appendChild(editorContentElement)
 
+    if (this.getAttribute("tabindex")) {
+      this.editorContentElement.setAttribute("tabindex", this.getAttribute("tabindex"))
+      this.removeAttribute("tabindex")
+    } else {
+      editorContentElement.setAttribute("tabindex", 0)
+    }
+
     return editorContentElement
   }
 
@@ -163,7 +174,7 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   #attachToolbar() {
-    this.toolbarElement.setEditor(this.editor)
+    this.toolbarElement.setEditor(this)
   }
 
   #findOrCreateDefaultToolbar() {

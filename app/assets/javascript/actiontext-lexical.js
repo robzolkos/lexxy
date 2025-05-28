@@ -1,10 +1,12 @@
 import { DirectUpload } from '@rails/activestorage';
 
 class LexicalToolbarElement extends HTMLElement {
-  setEditor(editor) {
-    this.editor = editor;
+  setEditor(editorElement) {
+    this.editorElement = editorElement;
+    this.editor = editorElement.editor;
     this.#bindButtons();
     this.#bindHotkeys();
+    this.#assignButtonTabindex();
   }
 
   #bindButtons() {
@@ -40,7 +42,7 @@ class LexicalToolbarElement extends HTMLElement {
   }
 
   #bindHotkeys() {
-    this.editor.getRootElement().addEventListener('keydown', (event) => {
+    this.editorElement.addEventListener('keydown', (event) => {
       const buttons = this.querySelectorAll("[data-hotkey]");
       buttons.forEach((button) => {
         const hotkeys = button.dataset.hotkey.toLowerCase().split(/\s+/);
@@ -63,6 +65,14 @@ class LexicalToolbarElement extends HTMLElement {
     ].filter(Boolean);
 
     return [...modifiers, pressedKey].join('+')
+  }
+
+  #assignButtonTabindex() {
+    const baseTabIndex = parseInt(this.editorElement.editorContentElement.getAttribute("tabindex") ?? "0");
+    const buttons = this.querySelectorAll("button");
+    buttons.forEach((button, index) => {
+      button.setAttribute("tabindex", `${baseTabIndex + index + 1}`);
+    });
   }
 
   static get defaultTemplate() {
@@ -6165,6 +6175,10 @@ class LexicalEditorElement extends HTMLElement {
     return this.dataset.directUploadUrl
   }
 
+  focus() {
+    this.editor.focus();
+  }
+
   get value() {
     let html = "";
     this.editor?.getEditorState().read(() => {
@@ -6225,6 +6239,13 @@ class LexicalEditorElement extends HTMLElement {
     editorContentElement.setAttribute("contenteditable", "true");
     this.appendChild(editorContentElement);
 
+    if (this.getAttribute("tabindex")) {
+      this.editorContentElement.setAttribute("tabindex", this.getAttribute("tabindex"));
+      this.removeAttribute("tabindex");
+    } else {
+      editorContentElement.setAttribute("tabindex", 0);
+    }
+
     return editorContentElement
   }
 
@@ -6275,7 +6296,7 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #attachToolbar() {
-    this.toolbarElement.setEditor(this.editor);
+    this.toolbarElement.setEditor(this);
   }
 
   #findOrCreateDefaultToolbar() {
