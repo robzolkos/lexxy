@@ -1,6 +1,6 @@
 module ActiveStorage
   module BlobWithPreviewUrl
-    PREVIEW_SIZE = [1024, 768]
+    PREVIEW_SIZE = [ 1024, 768 ]
 
     def as_json(options = nil)
       json = super(options)
