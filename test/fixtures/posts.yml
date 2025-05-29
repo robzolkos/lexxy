@@ -1,2 +1,5 @@
 empty:
   title: "A post without rich text record"
+
+hello_world:
+  title: "Hello World"

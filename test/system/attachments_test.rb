@@ -28,4 +28,16 @@ class AttachmentsTest < ApplicationSystemTestCase
 
     assert_no_image_figure_attachment content_type: "text/plain", caption: "note.txt"
   end
+
+  test "delete attachments with the keyboard" do
+    attach_file file_fixture("example.png") do
+      click_on "Upload file"
+    end
+
+    find("figure.attachment").click.click
+    find_editor.send :delete
+    assert_no_selector "figure.attachment[content-type='image/png']"
+
+    assert_equal_html "<p><br></p>", find_editor.value
+  end
 end

@@ -8,7 +8,7 @@ module EditorHelper
   end
 
   def assert_figure_attachment(content_type:, &block)
-    figure = find("figure[data-content-type='#{content_type}']")
+    figure = find("figure.attachment[data-content-type='#{content_type}']")
     within(figure, &block) if block_given?
   end
 
