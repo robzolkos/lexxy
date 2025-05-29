@@ -6137,13 +6137,13 @@ class LexicalEditorElement extends HTMLElement {
 
     CommandDispatcher.configureFor(this);
 
-    this.#loadInitialValue();
     this.#updateInternalValueOnChange();
     this.#registerComponents();
     this.#listenForInvalidatedNodes();
     this.#preventCtrlEnter();
     this.#attachDebugHooks();
     this.#attachToolbar();
+    this.#loadInitialValue();
   }
 
   get form() {
@@ -6181,7 +6181,6 @@ class LexicalEditorElement extends HTMLElement {
       root.clear();
       const nodes = h$1(this.editor, dom);
       root.append(...nodes);
-      this.#refreshHighlightedCodeNodes();
       this.internals.setFormValue(html);
       root.select();
     });
@@ -6234,8 +6233,7 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #loadInitialValue() {
-    const initialHtml = this.getAttribute("value") || "<p></p>";
-    console.debug("INITIAL VALUE", initialHtml);
+    const initialHtml = this.getAttribute("value");
     this.value = initialHtml;
   }
 
@@ -6309,22 +6307,6 @@ class LexicalEditorElement extends HTMLElement {
     toolbar.innerHTML = LexicalToolbarElement.defaultTemplate;
     this.prepend(toolbar);
     return toolbar
-  }
-
-  #refreshHighlightedCodeNodes() {
-    // Workaround to get Prims highlighing working on the initial load.
-    requestAnimationFrame(() => {
-      this.editor.update(() => {
-        const root = _s();
-        root.getChildren().forEach((node) => {
-          if (J(node)) {
-            const oldText = node.getTextContent();
-            node.getChildren().forEach((child) => child.remove());
-            node.append(Xn(oldText));
-          }
-        });
-      });
-    });
   }
 }
 

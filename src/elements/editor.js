@@ -32,13 +32,13 @@ export default class LexicalEditorElement extends HTMLElement {
 
     CommandDispatcher.configureFor(this)
 
-    this.#loadInitialValue()
     this.#updateInternalValueOnChange()
     this.#registerComponents()
     this.#listenForInvalidatedNodes()
     this.#preventCtrlEnter()
     this.#attachDebugHooks()
     this.#attachToolbar()
+    this.#loadInitialValue()
   }
 
   get form() {
@@ -76,7 +76,6 @@ export default class LexicalEditorElement extends HTMLElement {
       root.clear()
       const nodes = $generateNodesFromDOM(this.editor, dom)
       root.append(...nodes)
-      this.#refreshHighlightedCodeNodes()
       this.internals.setFormValue(html)
       root.select()
     })
@@ -129,7 +128,7 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   #loadInitialValue() {
-    const initialHtml = this.getAttribute("value") || "<p></p>"
+    const initialHtml = this.getAttribute("value")
     console.debug("INITIAL VALUE", initialHtml)
     this.value = initialHtml
   }
@@ -204,22 +203,6 @@ export default class LexicalEditorElement extends HTMLElement {
     toolbar.innerHTML = LexicalToolbar.defaultTemplate
     this.prepend(toolbar)
     return toolbar
-  }
-
-  #refreshHighlightedCodeNodes() {
-    // Workaround to get Prims highlighing working on the initial load.
-    requestAnimationFrame(() => {
-      this.editor.update(() => {
-        const root = $getRoot()
-        root.getChildren().forEach((node) => {
-          if ($isCodeNode(node)) {
-            const oldText = node.getTextContent()
-            node.getChildren().forEach((child) => child.remove())
-            node.append($createTextNode(oldText))
-          }
-        })
-      })
-    })
   }
 }
 
