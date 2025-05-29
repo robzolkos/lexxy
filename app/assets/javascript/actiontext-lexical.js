@@ -6146,6 +6146,10 @@ class LexicalEditorElement extends HTMLElement {
     this.#loadInitialValue();
   }
 
+  disconnectedCallback() {
+    this.#reset(); // Prevent hangs with Safari when morphing
+  }
+
   get form() {
     return this.internals.form
   }
@@ -6308,6 +6312,27 @@ class LexicalEditorElement extends HTMLElement {
     toolbar.innerHTML = LexicalToolbarElement.defaultTemplate;
     this.prepend(toolbar);
     return toolbar
+  }
+
+  #reset() {
+    if (this.editor) {
+      this.editor.setRootElement(null);
+      this.editor = null;
+    }
+
+    if (this.editorContentElement) {
+      this.removeChild(this.editorContentElement);
+      this.editorContentElement = null;
+    }
+
+    if (this.toolbar) {
+      this.removeChild(this.toolbar);
+      this.toolbar = null;
+    }
+
+    this.selection = null;
+
+    this.internals.setFormValue("");
   }
 }
 
