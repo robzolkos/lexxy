@@ -30,7 +30,7 @@ export default class LexicalToolbarElement extends HTMLElement {
 
   // Not using popover because of CSS anchoring still not widely available.
   #toggleDialog(button) {
-    const dialog = document.getElementById(button.dataset.dialogTarget)
+    const dialog = document.getElementById(button.dataset.dialogTarget).parentNode
 
     if (dialog.open) {
       dialog.close()

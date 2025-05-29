@@ -1,4 +1,6 @@
 import { createElement } from "../helpers/html_helper";
+import { $getSelection, $isRangeSelection } from "lexical";
+import { $isLinkNode } from "@lexical/link";
 
 export class LinkDialog extends HTMLElement {
   connectedCallback() {
@@ -10,7 +12,8 @@ export class LinkDialog extends HTMLElement {
     this.addEventListener("keydown", this.#handleKeyDown.bind(this))
   }
 
-  show() {
+  show(editor) {
+    this.input.value = this.#selectedLinkUrl
     this.dialog.show()
   }
 
@@ -32,6 +35,26 @@ export class LinkDialog extends HTMLElement {
     if (event.key === "Escape") {
       event.stopPropagation()
     }
+  }
+
+  get #selectedLinkUrl() {
+    let url = ""
+
+    this.#editor.getEditorState().read(() => {
+      const selection = $getSelection()
+      if (!$isRangeSelection(selection)) return
+
+      let node = selection.getNodes()[0]
+      while (node && node.getParent()) {
+        if ($isLinkNode(node)) {
+          url = node.getURL()
+          break
+        }
+        node = node.getParent()
+      }
+    })
+
+    return url
   }
 
   get #editor() {

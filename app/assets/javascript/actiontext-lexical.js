@@ -32,7 +32,7 @@ class LexicalToolbarElement extends HTMLElement {
 
   // Not using popover because of CSS anchoring still not widely available.
   #toggleDialog(button) {
-    const dialog = document.getElementById(button.dataset.dialogTarget);
+    const dialog = document.getElementById(button.dataset.dialogTarget).parentNode;
 
     if (dialog.open) {
       dialog.close();
@@ -6340,7 +6340,8 @@ class LinkDialog extends HTMLElement {
     this.addEventListener("keydown", this.#handleKeyDown.bind(this));
   }
 
-  show() {
+  show(editor) {
+    this.input.value = this.#selectedLinkUrl;
     this.dialog.show();
   }
 
@@ -6362,6 +6363,26 @@ class LinkDialog extends HTMLElement {
     if (event.key === "Escape") {
       event.stopPropagation();
     }
+  }
+
+  get #selectedLinkUrl() {
+    let url = "";
+
+    this.#editor.getEditorState().read(() => {
+      const selection = Nr();
+      if (!cr(selection)) return
+
+      let node = selection.getNodes()[0];
+      while (node && node.getParent()) {
+        if (p(node)) {
+          url = node.getURL();
+          break
+        }
+        node = node.getParent();
+      }
+    });
+
+    return url
   }
 
   get #editor() {
