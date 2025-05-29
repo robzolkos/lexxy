@@ -128,7 +128,7 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   #loadInitialValue() {
-    const initialHtml = this.getAttribute("value")
+    const initialHtml = this.getAttribute("value") || "<p></p>"
     console.debug("INITIAL VALUE", initialHtml)
     this.value = initialHtml
   }
