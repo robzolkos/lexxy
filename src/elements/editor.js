@@ -1,4 +1,4 @@
-import { createEditor, $getRoot, $createTextNode, $getNodeByKey, $addUpdateTag, SKIP_DOM_SELECTION_TAG } from "lexical"
+import { createEditor, $getRoot, $createTextNode, $getNodeByKey, $addUpdateTag, SKIP_DOM_SELECTION_TAG, KEY_ENTER_COMMAND, COMMAND_PRIORITY_HIGH } from "lexical"
 import { ListNode, ListItemNode, registerList } from "@lexical/list"
 import { LinkNode, AutoLinkNode } from "@lexical/link"
 import { registerRichText, QuoteNode, HeadingNode } from "@lexical/rich-text"
@@ -36,6 +36,7 @@ export default class LexicalEditorElement extends HTMLElement {
     this.#updateInternalValueOnChange()
     this.#registerComponents()
     this.#listenForInvalidatedNodes()
+    this.#preventCtrlEnter()
     this.#attachDebugHooks()
     this.#attachToolbar()
   }
@@ -161,6 +162,22 @@ export default class LexicalEditorElement extends HTMLElement {
         }
       })
     })
+  }
+
+  #preventCtrlEnter() {
+    // We can't prevent these externally using regular keydown because Lexical handles it first.
+    this.editor.registerCommand(
+      KEY_ENTER_COMMAND,
+      (event) => {
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault()
+          return true
+        }
+
+        return false
+      },
+      COMMAND_PRIORITY_HIGH
+    )
   }
 
   #attachDebugHooks() {
