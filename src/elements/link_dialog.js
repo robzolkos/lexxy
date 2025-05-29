@@ -34,6 +34,7 @@ export class LinkDialog extends HTMLElement {
   #handleKeyDown(event) {
     if (event.key === "Escape") {
       event.stopPropagation()
+      this.close()
     }
   }
 
