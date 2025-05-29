@@ -5780,38 +5780,15 @@ class CommandDispatcher {
       const selection = Nr();
       if (!cr(selection)) return
 
-      const nodes = selection.extract();
+      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow();
+
+      if (!Fi(topLevelElement)) return
 
       const quoteNode = xt$2();
-
-      if (nodes.length === 0) {
-        // Insert empty blockquote at root
-        _s().append(quoteNode);
-        return
-      }
-
-      const firstNode = nodes[0];
-      const parent = firstNode.getParent();
-
-      for (const node of nodes) {
-        if (node.getParent()) {
-          quoteNode.append(node);
-        }
-      }
-
-      if (parent && parent.getParent()) {
-        parent.insertBefore(quoteNode);
-
-        // Clean up empty wrapper if needed
-        if (parent.getChildrenSize() === 0) {
-          parent.remove();
-        }
-      } else {
-        _s().append(quoteNode);
-      }
+      quoteNode.append(...topLevelElement.getChildren());
+      topLevelElement.replace(quoteNode);
     });
   }
-
 
   dispatchInsertCodeBlock() {
     this.editor.update(() => {
