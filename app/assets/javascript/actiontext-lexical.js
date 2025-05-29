@@ -5908,7 +5908,7 @@ class CommandDispatcher {
   }
 
   dispatchUploadAttachments() {
-    createElement("input", {
+    const input = createElement("input", {
       type: "file",
       accept: "image/*",
       multiple: true,
@@ -5920,7 +5920,11 @@ class CommandDispatcher {
           this.#uploadFile(file);
         }
       }
-    }).click();
+    });
+
+    document.body.appendChild(input); // Append and remove just for the sake of making it testeable
+    input.click();
+    setTimeout(() => input.remove(), 1000);
   }
 
   #registerCommands() {
@@ -6189,17 +6193,17 @@ class LexicalEditorElement extends HTMLElement {
 
   set value(html) {
     const parser = new DOMParser();
-    const dom = parser.parseFromString(html, "text/html");
+    const dom = parser.parseFromString(`<div>${html}</div>`, "text/html");
 
     this.editor.update(() => {
       Vs(Mi);
       const root = _s();
       root.clear();
-      root.select();
       const nodes = h$1(this.editor, dom);
       root.append(...nodes);
       this.#refreshHighlightedCodeNodes();
       this.internals.setFormValue(html);
+      root.select();
     });
   }
 

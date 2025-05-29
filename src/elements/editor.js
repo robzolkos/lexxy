@@ -67,17 +67,17 @@ export default class LexicalEditorElement extends HTMLElement {
 
   set value(html) {
     const parser = new DOMParser()
-    const dom = parser.parseFromString(html, "text/html")
+    const dom = parser.parseFromString(`<div>${html}</div>`, "text/html")
 
     this.editor.update(() => {
       $addUpdateTag(SKIP_DOM_SELECTION_TAG)
       const root = $getRoot()
       root.clear()
-      root.select()
       const nodes = $generateNodesFromDOM(this.editor, dom)
       root.append(...nodes)
       this.#refreshHighlightedCodeNodes()
       this.internals.setFormValue(html)
+      root.select()
     })
   }
 

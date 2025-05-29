@@ -1,0 +1,30 @@
+module EditorHelper
+  def find_editor(selector = "lexical-editor")
+    @handlers_by_selector ||= {}
+    @handlers_by_selector[selector] = begin
+      editor_element = find(selector)
+      EditorHandler.new(page, editor_element)
+    end
+  end
+
+  def assert_figure_attachment(content_type:, &block)
+    figure = find("figure[data-content-type='#{content_type}']")
+    within(figure, &block) if block_given?
+  end
+
+  def assert_image_figure_attachment(content_type: "image/png", caption:)
+    assert_figure_attachment(content_type: content_type) do
+      assert_selector("img[src*='/rails/active_storage']")
+      assert_selector "figcaption input[placeholder='#{caption}']"
+    end
+  end
+
+  def assert_no_image_figure_attachment(content_type: "image/png", caption:)
+    assert_figure_attachment(content_type: content_type) do
+      assert_no_selector "img"
+      within "figcaption" do
+        assert_text caption
+      end
+    end
+  end
+end

@@ -249,7 +249,7 @@ export class CommandDispatcher {
   }
 
   dispatchUploadAttachments() {
-    createElement("input", {
+    const input = createElement("input", {
       type: "file",
       accept: "image/*",
       multiple: true,
@@ -261,7 +261,11 @@ export class CommandDispatcher {
           this.#uploadFile(file)
         }
       }
-    }).click()
+    })
+
+    document.body.appendChild(input) // Append and remove just for the sake of making it testeable
+    input.click()
+    setTimeout(() => input.remove(), 1000)
   }
 
   #registerCommands() {
