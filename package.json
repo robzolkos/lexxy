@@ -1,0 +1,34 @@
+{
+  "name": "actiontext-lexical",
+  "version": "0.0.1",
+  "description": "Action text 🤝 Lexical",
+  "main": "dist/actiontext-lexical.js",
+  "repository": "https://github.com/jorgemanrubia/actiontext-lexical.git",
+  "author": "Jorge Manrubia <jorge@37signals.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@lexical/clipboard": "^0.31.2",
+    "@lexical/code": "^0.31.2",
+    "@lexical/html": "^0.31.2",
+    "@lexical/link": "^0.31.2",
+    "@lexical/list": "^0.31.2",
+    "@lexical/markdown": "^0.31.2",
+    "@lexical/rich-text": "^0.31.2",
+    "@lexical/selection": "^0.31.2",
+    "@lexical/table": "^0.31.2",
+    "@lexical/utils": "^0.31.2",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "prismjs": "^1.30.0",
+    "rollup": "^4.40.2",
+    "rollup-plugin-gzip": "^4.0.1"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -wc"
+  },
+  "dependencies": {
+    "@lexical/history": "^0.31.2",
+    "dompurify": "^3.2.6"
+  }
+}

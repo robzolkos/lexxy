@@ -1,0 +1,5 @@
+hello_world:
+  record: hello_world (Post)
+  name: body
+  body:
+    <p>Hello everyone</p>

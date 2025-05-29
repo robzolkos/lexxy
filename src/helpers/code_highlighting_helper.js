@@ -1,0 +1,23 @@
+import { createElement } from "./html_helper"
+
+export function highlightAll() {
+  const elements = document.querySelectorAll("pre[data-language]")
+
+  elements.forEach(preElement => {
+    highlightElement(preElement)
+  })
+}
+
+function highlightElement(preElement) {
+  const language = preElement.getAttribute("data-language")
+
+  let code = preElement.innerHTML.replace(/<br\s*\/?>/gi, "\n")
+
+  const grammar = Prism.languages[language]
+  if (!grammar) return
+
+  const highlightedHtml = Prism.highlight(code, grammar, language)
+
+  const codeElement = createElement("code", { "data-language": language, innerHTML: highlightedHtml })
+  preElement.replaceWith(codeElement)
+}
