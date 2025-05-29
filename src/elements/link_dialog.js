@@ -1,10 +1,21 @@
-export class LinkDialog extends HTMLDialogElement {
+import { createElement } from "../helpers/html_helper";
+
+export class LinkDialog extends HTMLElement {
   connectedCallback() {
+    this.dialog = this.querySelector("dialog")
     this.input = this.querySelector("input")
 
     this.addEventListener("submit", this.#handleSubmit.bind(this))
     this.querySelector("[value='unlink']").addEventListener("click", this.#handleUnlink.bind(this))
     this.addEventListener("keydown", this.#handleKeyDown.bind(this))
+  }
+
+  show() {
+    this.dialog.show()
+  }
+
+  close() {
+    this.dialog.close()
   }
 
   #handleSubmit(event) {
@@ -28,4 +39,6 @@ export class LinkDialog extends HTMLDialogElement {
   }
 }
 
-customElements.define("lexical-link-dialog", LinkDialog, { extends: "dialog" })
+// We should extend the native dialog and avoid the intermediary <dialog> but not
+// supported by Safari yet: customElements.define("lexical-link-dialog", LinkDialog, { extends: "dialog" })
+customElements.define("lexical-link-dialog", LinkDialog)

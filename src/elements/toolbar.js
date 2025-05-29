@@ -86,15 +86,17 @@ export default class LexicalToolbarElement extends HTMLElement {
       <button type="button" title="Link" data-dialog-target="link-dialog" data-hotkey="cmd+k ctrl+k">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m22.2 1.8c-1.1-1.2-2.5-1.8-4.3-1.8s-3.1.6-4.4 1.8l-4.4 4.4c-1.2 1.2-1.8 2.7-1.8 4.3s.6 3.1 1.8 4.3h.2c.2.3.5.4 1 .4.7 0 1.1-.3 1.2-.6.3-.3.4-.7.4-1.1s-.2-.8-.5-1.2c-.5-.5-.8-1.2-.8-1.9s.3-1.4.8-1.9l4.4-4.2c.6-.5 1.5-.8 2.1-.8s1.4.2 1.9.7.8 1.2.8 1.9-.3 1.4-.8 1.9l-2.6 2.2c-.3.3-.5.7-.5 1.2s.2.8.5 1.2c.8.6 1.7.6 2.4 0l2.6-2.2c2.4-2.4 2.4-6.1 0-8.5z"/><path d="m12.3 9.3c-.3.3-.5.8-.5 1.3 0 .4.2.8.5 1.1.5.5.8 1.2.8 1.9s-.3 1.4-.9 1.9l-4.4 4.4c-.4.4-1.2.7-1.8.7s-1.4-.2-1.9-.7-.8-1.2-.8-1.9.3-1.4.8-1.9l2.5-2.4c.7-.7.7-1.7 0-2.4-.8-.6-1.7-.6-2.4 0l-2.5 2.4c-1 1.1-1.7 2.6-1.7 4.2s.6 3.1 1.8 4.3c1.3 1.2 2.7 1.8 4.2 1.8s3.2-.7 4.3-1.8l4.4-4.4c2.4-2.4 2.4-6.1 0-8.6-.8-.6-1.7-.6-2.4 0z"/></svg>
       </button>
-      <dialog is="lexical-link-dialog" class="lexical-link-dialog" id="link-dialog" closedby="any">
-        <form method="dialog">
-          <input type="url" placeholder="Enter a URL…" class="input" required>
-          <div class="lexical-dialog-actions">
-            <button type="submit" class="btn" value="link">Link</button>
-            <button type="button" class="btn" value="unlink">Unlink</button>
-          </div>
-        </form>  
-      </dialog>
+      <lexical-link-dialog class="lexical-link-dialog">
+        <dialog id="link-dialog" closedby="any">
+          <form method="dialog">
+            <input type="url" placeholder="Enter a URL…" class="input" required>
+            <div class="lexical-dialog-actions">
+              <button type="submit" class="btn" value="link">Link</button>
+              <button type="button" class="btn" value="unlink">Unlink</button>
+            </div>
+          </form> 
+        </dialog> 
+      </lexical-link-dialog>
       
       <button type="button" data-command="insertQuoteBlock" title="Quote">
         <svg viewBox="0 0 24 22" xmlns="http://www.w3.org/2000/svg"> <path d="m1.1 5.2c.6-.7 1.4-1.3 2.4-1.4 2.6-.4 4.2.4 5.3 1.9 2 2.3 1.9 5.1.6 7.6-1.3 2.4-4 4.6-7.2 5.1-.4 0-.7-.1-1-.4-.1-.3-.1-.7.3-1.1l1.1-1.1c.3-.4.6-.7.7-1.1s.3-.9 0-1.3c0-.4-.6-.7-1-1-1.2-.8-2.3-2.2-2.3-4.1.1-1.4.4-2.4 1.1-3.1z"/> <path d="m14.6 5.2c.6-.7 1.6-1.1 2.6-1.4 2.4-.4 4.2.4 5.3 1.9 2 2.3 1.9 5.1.6 7.6-1.3 2.4-4 4.6-7.2 5.1-.4 0-.7-.1-1-.4-.1-.3-.1-.7.3-1.1l1.1-1.1c.3-.4.6-.7.7-1.1s.3-.9 0-1.3c-.1-.4-.6-.7-1-1-1.3-.6-2.4-2-2.4-3.9s.4-2.6 1-3.3z"/> </svg>
