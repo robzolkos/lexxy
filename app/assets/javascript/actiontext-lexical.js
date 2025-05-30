@@ -5252,6 +5252,18 @@ function bytesToHumanSize(bytes) {
   return `${ value.toFixed(2) } ${ sizes[i] }`
 }
 
+const VISUALLY_RELEVANT_ELEMENTS_SELECTOR = [
+  "img", "video", "audio", "iframe", "embed", "object", "picture", "source", "canvas", "svg", "math",
+  "form", "input", "textarea", "select", "button"
+].join(",");
+
+const ALLOWED_HTML_TAGS = [ "a", "action-text-attachment", "b", "blockquote", "br", "code", "em",
+  "figcaption", "figure", "h1", "h2", "h3", "h4", "h5", "h6", "i", "img", "li", "ol", "p", "pre", "q", "strong", "ul" ];
+
+const ALLOWED_HTML_ATTRIBUTES = [ "alt", "caption", "class", "content-type", "contenteditable",
+  "data-direct-upload-id", "data-sgid", "filename", "filesize", "height", "href", "presentation",
+  "previewable", "sgid", "src", "title", "url", "width" ];
+
 function createElement(name, properties) {
   const element = document.createElement(name);
   for (const [ key, value ] of Object.entries(properties || {})) {
@@ -5284,21 +5296,9 @@ function dispatchCustomEvent(element, name, detail) {
   element.dispatchEvent(event);
 }
 
-const VISUALLY_RELEVANT_ELEMENTS_SELECTOR = [
-  "img", "video", "audio", "iframe", "embed", "object", "picture", "source", "canvas", "svg", "math",
-  "form", "input", "textarea", "select", "button"
-].join(",");
-
 function containsVisuallyRelevantChildren(element) {
   return element.querySelector(VISUALLY_RELEVANT_ELEMENTS_SELECTOR)
 }
-
-const ALLOWED_HTML_TAGS = [ "a", "action-text-attachment", "b", "blockquote", "br", "code", "em",
-  "figcaption", "figure", "h1", "h2", "h3", "h4", "h5", "h6", "i", "img", "li", "ol", "p", "pre", "q", "strong", "ul" ];
-
-const ALLOWED_HTML_ATTRIBUTES = [ "alt", "caption", "class", "content-type", "contenteditable",
-  "data-direct-upload-id", "data-sgid", "filename", "filesize", "height", "href", "presentation",
-  "previewable", "sgid", "src", "title", "url", "width" ];
 
 function sanitize(html) {
   const sanitizedHtml = purify.sanitize(html, {
