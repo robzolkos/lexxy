@@ -6137,7 +6137,7 @@ class LexicalEditorElement extends HTMLElement {
 
     CommandDispatcher.configureFor(this);
 
-    this.#updateInternalValueOnChange();
+    this.#synchronizeWithChanges();
     this.#registerComponents();
     this.#listenForInvalidatedNodes();
     this.#preventCtrlEnter();
@@ -6188,6 +6188,8 @@ class LexicalEditorElement extends HTMLElement {
       this.internals.setFormValue(html);
       root.select();
 
+      this.#toggleEmptyStatus();
+
       // The first time you set the value, when the editor is empty, it seems to leave Lexical
       // in an inconsistent state until, at least, you focus. You can type but adding attachments
       // fails because no root node detected. This is a workaround to deal with the issue.
@@ -6225,9 +6227,7 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #createEditorContentElement() {
-    const editorContentElement = document.createElement("div");
-    editorContentElement.classList.add("lexical-editor__content");
-    editorContentElement.setAttribute("contenteditable", "true");
+    const editorContentElement = createElement("div", { classList: "lexical-editor__content", contenteditable: true, placeholder: this.getAttribute("placeholder") });
     this.appendChild(editorContentElement);
 
     if (this.getAttribute("tabindex")) {
@@ -6242,13 +6242,13 @@ class LexicalEditorElement extends HTMLElement {
 
   #loadInitialValue() {
     const initialHtml = this.getAttribute("value") || "<p></p>";
-    console.debug("INITIAL VALUE", initialHtml);
     this.value = initialHtml;
   }
 
-  #updateInternalValueOnChange() {
+  #synchronizeWithChanges() {
     this.editor.registerUpdateListener(({ editorState }) => {
       this.internals.setFormValue(this.value);
+      this.#toggleEmptyStatus();
       dispatch(this, "actiontext:change");
     });
   }
@@ -6316,6 +6316,14 @@ class LexicalEditorElement extends HTMLElement {
     toolbar.innerHTML = LexicalToolbarElement.defaultTemplate;
     this.prepend(toolbar);
     return toolbar
+  }
+
+  #toggleEmptyStatus() {
+    this.classList.toggle("lexical-editor--empty", this.#isEmpty);
+  }
+
+  get #isEmpty() {
+    return !this.editorContentElement.textContent.trim()
   }
 
   #reset() {
