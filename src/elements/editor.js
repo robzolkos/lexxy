@@ -12,7 +12,7 @@ import { ActionTextAttachmentNode } from "../nodes/action_text_attachment_node"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { CommandDispatcher } from "../editor/command_dispatcher"
 import Selection from "../editor/selection"
-import { createElement, dispatch, sanitize } from "../helpers/html_helper"
+import { containsVisuallyRelevantChildren, createElement, dispatch, sanitize } from "../helpers/html_helper"
 import LexicalToolbar from "./toolbar"
 
 export default class LexicalEditorElement extends HTMLElement {
@@ -218,7 +218,7 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   get #isEmpty() {
-    return !this.editorContentElement.textContent.trim()
+    return !this.editorContentElement.textContent.trim() && !containsVisuallyRelevantChildren(this.editorContentElement)
   }
 
   #reset() {
