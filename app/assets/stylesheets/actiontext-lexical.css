@@ -12,6 +12,12 @@ lexical-editor {
   .node--selected:not(:has(img)) {
     border: 2px solid blue;
   }
+
+  &.lexical-editor--empty {
+    .lexical-editor__content:not(:focus):before {
+      content: attr(placeholder)
+    }
+  }
 }
 
 lexical-toolbar {
