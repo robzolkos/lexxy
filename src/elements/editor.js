@@ -3,7 +3,7 @@ import { ListNode, ListItemNode, registerList } from "@lexical/list"
 import { LinkNode, AutoLinkNode } from "@lexical/link"
 import { registerRichText, QuoteNode, HeadingNode } from "@lexical/rich-text"
 import { $generateNodesFromDOM, $generateHtmlFromNodes } from "@lexical/html"
-import { $createCodeNode, $isCodeNode, CodeHighlightNode, CodeNode, registerCodeHighlighting, } from "@lexical/code"
+import { CodeHighlightNode, CodeNode, registerCodeHighlighting, } from "@lexical/code"
 import { TRANSFORMERS, registerMarkdownShortcuts } from "@lexical/markdown"
 import { registerHistory, createEmptyHistoryState } from '@lexical/history'
 
@@ -82,6 +82,11 @@ export default class LexicalEditorElement extends HTMLElement {
       root.append(...nodes)
       this.internals.setFormValue(html)
       root.select()
+
+      // The first time you set the value, when the editor is empty, it seems to leave Lexical
+      // in an inconsistent state until, at least, you focus. You can type but adding attachments
+      // fails because no root node detected. This is a workaround to deal with the issue.
+      requestAnimationFrame(() => this.editor?.update(() => { }))
     })
   }
 
@@ -110,7 +115,6 @@ export default class LexicalEditorElement extends HTMLElement {
     })
 
     editor.setRootElement(this.editorContentElement)
-    editor.update(() => {})
 
     return editor
   }
