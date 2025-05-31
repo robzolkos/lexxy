@@ -6136,11 +6136,13 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   get value() {
-    let html = "";
-    this.editor?.getEditorState().read(() => {
-      html = m$1(this.editor, null);
-    });
-    return sanitize(html)
+    if (!this.cachedValue) {
+      this.editor?.getEditorState().read(() => {
+        this.cachedValue = sanitize(m$1(this.editor, null));
+      });
+    }
+
+    return this.cachedValue
   }
 
   set value(html) {
@@ -6153,7 +6155,6 @@ class LexicalEditorElement extends HTMLElement {
       root.clear();
       const nodes = h$1(this.editor, dom);
       root.append(...nodes);
-      this.internals.setFormValue(html);
       root.select();
 
       this.#toggleEmptyStatus();
@@ -6208,6 +6209,25 @@ class LexicalEditorElement extends HTMLElement {
     return editorContentElement
   }
 
+  set #internalFormValue(html) {
+    console.debug("Previous value", this.#internalFormValue);
+    console.debug("Current value", this.value);
+
+    const changed = this.#internalFormValue !== undefined && this.#internalFormValue !== this.value;
+
+    this.internals.setFormValue(html);
+    this._internalFormValue = html;
+
+    if (changed) {
+      console.debug("Dispatched!");
+      dispatch(this, "actiontext:change");
+    }
+  }
+
+  get #internalFormValue()  {
+    return this._internalFormValue
+  }
+
   #loadInitialValue() {
     const initialHtml = this.getAttribute("value") || "<p></p>";
     this.value = initialHtml;
@@ -6215,9 +6235,9 @@ class LexicalEditorElement extends HTMLElement {
 
   #synchronizeWithChanges() {
     this.editor.registerUpdateListener(({ editorState }) => {
-      this.internals.setFormValue(this.value);
+      this.cachedValue = null;
+      this.#internalFormValue = this.value;
       this.#toggleEmptyStatus();
-      dispatch(this, "actiontext:change");
     });
   }
 
