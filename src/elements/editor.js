@@ -137,16 +137,12 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   set #internalFormValue(html) {
-    console.debug("Previous value", this.#internalFormValue)
-    console.debug("Current value", this.value)
-
     const changed = this.#internalFormValue !== undefined && this.#internalFormValue !== this.value
 
     this.internals.setFormValue(html)
     this._internalFormValue = html
 
     if (changed) {
-      console.debug("Dispatched!");
       dispatch(this, "actiontext:change")
     }
   }
@@ -161,11 +157,23 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   #synchronizeWithChanges() {
-    this.editor.registerUpdateListener(({ editorState }) => {
+    this.#addUnregisterHandler(this.editor.registerUpdateListener(({ editorState }) => {
       this.cachedValue = null
       this.#internalFormValue = this.value
       this.#toggleEmptyStatus()
+    }))
+  }
+
+  #addUnregisterHandler(handler) {
+    this.unregisterHandlers = this.unregisterHandlers || []
+    this.unregisterHandlers.push(handler)
+  }
+
+  #unregisterHandlers() {
+    this.unregisterHandlers?.forEach((handler) => {
+      handler()
     })
+    this.unregisterHandlers = null
   }
 
   #registerComponents() {
@@ -210,11 +218,11 @@ export default class LexicalEditorElement extends HTMLElement {
   #attachDebugHooks() {
     if (!LexicalEditorElement.debug) return
 
-    this.editor.registerUpdateListener(({ editorState }) => {
+    this.#addUnregisterHandler(this.editor.registerUpdateListener(({ editorState }) => {
       editorState.read(() => {
         console.debug("HTML: ", this.value)
       })
-    })
+    }))
   }
 
   #attachToolbar() {
@@ -242,6 +250,8 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   #reset() {
+    this.#unregisterHandlers()
+
     if (this.editor) {
       this.editor.setRootElement(null)
       this.editor = null
