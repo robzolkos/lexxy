@@ -6136,11 +6136,13 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   get value() {
-    let html = "";
-    this.editor?.getEditorState().read(() => {
-      html = m$1(this.editor, null);
-    });
-    return sanitize(html)
+    if (!this.cachedValue) {
+      this.editor?.getEditorState().read(() => {
+        this.cachedValue = sanitize(m$1(this.editor, null));
+      });
+    }
+
+    return this.cachedValue
   }
 
   set value(html) {
@@ -6153,7 +6155,6 @@ class LexicalEditorElement extends HTMLElement {
       root.clear();
       const nodes = h$1(this.editor, dom);
       root.append(...nodes);
-      this.internals.setFormValue(html);
       root.select();
 
       this.#toggleEmptyStatus();
@@ -6208,17 +6209,44 @@ class LexicalEditorElement extends HTMLElement {
     return editorContentElement
   }
 
+  set #internalFormValue(html) {
+    const changed = this.#internalFormValue !== undefined && this.#internalFormValue !== this.value;
+
+    this.internals.setFormValue(html);
+    this._internalFormValue = html;
+
+    if (changed) {
+      dispatch(this, "actiontext:change");
+    }
+  }
+
+  get #internalFormValue()  {
+    return this._internalFormValue
+  }
+
   #loadInitialValue() {
     const initialHtml = this.getAttribute("value") || "<p></p>";
     this.value = initialHtml;
   }
 
   #synchronizeWithChanges() {
-    this.editor.registerUpdateListener(({ editorState }) => {
-      this.internals.setFormValue(this.value);
+    this.#addUnregisterHandler(this.editor.registerUpdateListener(({ editorState }) => {
+      this.cachedValue = null;
+      this.#internalFormValue = this.value;
       this.#toggleEmptyStatus();
-      dispatch(this, "actiontext:change");
+    }));
+  }
+
+  #addUnregisterHandler(handler) {
+    this.unregisterHandlers = this.unregisterHandlers || [];
+    this.unregisterHandlers.push(handler);
+  }
+
+  #unregisterHandlers() {
+    this.unregisterHandlers?.forEach((handler) => {
+      handler();
     });
+    this.unregisterHandlers = null;
   }
 
   #registerComponents() {
@@ -6263,11 +6291,11 @@ class LexicalEditorElement extends HTMLElement {
   #attachDebugHooks() {
     if (!LexicalEditorElement.debug) return
 
-    this.editor.registerUpdateListener(({ editorState }) => {
+    this.#addUnregisterHandler(this.editor.registerUpdateListener(({ editorState }) => {
       editorState.read(() => {
         console.debug("HTML: ", this.value);
       });
-    });
+    }));
   }
 
   #attachToolbar() {
@@ -6295,6 +6323,8 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #reset() {
+    this.#unregisterHandlers();
+
     if (this.editor) {
       this.editor.setRootElement(null);
       this.editor = null;
