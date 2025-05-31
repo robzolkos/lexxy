@@ -6093,6 +6093,8 @@ class LexicalEditorElement extends HTMLElement {
   static debug = true
   static commands = [ "bold", "italic", "" ]
 
+  static observedAttributes = [ "connected" ]
+
   constructor() {
     super();
     this.internals = this.attachInternals();
@@ -6104,18 +6106,18 @@ class LexicalEditorElement extends HTMLElement {
     this.selection = new NodesSelection(this.editor);
 
     CommandDispatcher.configureFor(this);
-
-    this.#synchronizeWithChanges();
-    this.#registerComponents();
-    this.#listenForInvalidatedNodes();
-    this.#preventCtrlEnter();
-    this.#attachDebugHooks();
-    this.#attachToolbar();
-    this.#loadInitialValue();
+    this.#initialize();
+    this.toggleAttribute("connected", true);
   }
 
   disconnectedCallback() {
     this.#reset(); // Prevent hangs with Safari when morphing
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "connected" && this.isConnected && oldValue != null && oldValue !== newValue) {
+      requestAnimationFrame(() => this.#reconnect());
+    }
   }
 
   get form() {
@@ -6164,6 +6166,16 @@ class LexicalEditorElement extends HTMLElement {
       // fails because no root node detected. This is a workaround to deal with the issue.
       requestAnimationFrame(() => this.editor?.update(() => { }));
     });
+  }
+
+  #initialize() {
+    this.#synchronizeWithChanges();
+    this.#registerComponents();
+    this.#listenForInvalidatedNodes();
+    this.#preventCtrlEnter();
+    this.#attachDebugHooks();
+    this.#attachToolbar();
+    this.#loadInitialValue();
   }
 
   #createEditor() {
@@ -6325,24 +6337,26 @@ class LexicalEditorElement extends HTMLElement {
   #reset() {
     this.#unregisterHandlers();
 
-    if (this.editor) {
-      this.editor.setRootElement(null);
-      this.editor = null;
-    }
-
     if (this.editorContentElement) {
-      this.removeChild(this.editorContentElement);
+      this.editorContentElement.remove();
       this.editorContentElement = null;
     }
 
+    this.editor = null;
+
     if (this.toolbar) {
-      this.removeChild(this.toolbar);
+      if (!this.getAttribute("toolbar")) { this.toolbar.remove(); }
       this.toolbar = null;
     }
 
     this.selection = null;
 
     this.internals.setFormValue("");
+  }
+
+  #reconnect() {
+    this.disconnectedCallback();
+    this.connectedCallback();
   }
 }
 
