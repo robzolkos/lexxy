@@ -36,6 +36,7 @@ class EditorHandler
         }
       }
     JS
+    sleep 0.1
   end
 
   private
