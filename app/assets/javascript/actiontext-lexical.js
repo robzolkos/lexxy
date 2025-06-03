@@ -5542,7 +5542,7 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
   }
 
   constructor({ file, uploadUrl, editor }, key) {
-    super({}, key);
+    super({ contentType: file.type }, key);
     this.file = file;
     this.uploadUrl = uploadUrl;
     this.src = null;
@@ -5579,7 +5579,6 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
   #createDOMForImage() {
     const image = createElement("img");
     loadFileIntoImage(this.file, image);
-    console.debug("ES", image.naturalWidth);
     return image
   }
 
