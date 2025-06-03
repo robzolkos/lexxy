@@ -5459,7 +5459,7 @@ class ActionTextAttachmentNode extends gi {
   }
 
   #createDOMForImage() {
-    return createElement("img", { src: this.src, alt: this.altText, width: this.width, height: this.height })
+    return createElement("img", { src: this.src, alt: this.altText })
   }
 
   #createDOMForFile() {
@@ -5579,6 +5579,7 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
   #createDOMForImage() {
     const image = createElement("img");
     loadFileIntoImage(this.file, image);
+    console.debug("ES", image.naturalWidth);
     return image
   }
 

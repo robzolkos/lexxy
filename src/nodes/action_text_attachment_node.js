@@ -149,7 +149,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   #createDOMForImage() {
-    return createElement("img", { src: this.src, alt: this.altText, width: this.width, height: this.height })
+    return createElement("img", { src: this.src, alt: this.altText })
   }
 
   #createDOMForFile() {

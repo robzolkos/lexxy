@@ -53,6 +53,7 @@ export class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
   #createDOMForImage() {
     const image = createElement("img")
     loadFileIntoImage(this.file, image)
+    console.debug("ES", image.naturalWidth);
     return image
   }
 
