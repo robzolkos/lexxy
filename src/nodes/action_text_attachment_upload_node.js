@@ -37,7 +37,9 @@ export class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
     const progressBar = createElement("progress", { value: 0, max: 100 })
     figure.appendChild(progressBar)
 
-    this.#startUpload(progressBar, figure)
+    // We wait for images to download so that we can pass the dimensions down to the attachment. We do this
+    // so that we can render images in edit mode with the dimensions set, which prevent vertical layout shifts.
+    this.#loadFigure(figure).then(() => this.#startUpload(progressBar, figure))
 
     return figure
   }
@@ -51,9 +53,7 @@ export class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
   }
 
   #createDOMForImage() {
-    const image = createElement("img")
-    loadFileIntoImage(this.file, image)
-    return image
+    return createElement("img")
   }
 
   #createDOMForFile() {
@@ -77,6 +77,15 @@ export class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
     return figcaption
   }
 
+  #loadFigure(figure) {
+    const image = figure.querySelector("img")
+    if (!image) {
+      return Promise.resolve()
+    } else {
+      return loadFileIntoImage(this.file, image)
+    }
+  }
+
   #startUpload(progressBar, figure) {
     const upload = new DirectUpload(this.file, this.uploadUrl, this)
 
@@ -95,7 +104,10 @@ export class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
         this.#handleUploadError(figure)
       } else {
         this.src = `/rails/active_storage/blobs/redirect/${blob.signed_id}/${blob.filename}`
-        this.#showUploadedAttachment(figure, blob)
+
+        this.#loadFigurePreviewFromBlob(blob, figure).then(() => {
+          this.#showUploadedAttachment(figure, blob)
+        })
       }
     })
   }
@@ -106,9 +118,10 @@ export class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
     figure.appendChild(createElement("div", { innerText: `Error uploading ${this.file?.name ?? "image"}` }))
   }
 
-  #showUploadedAttachment(figure, blob) {
-    const image = figure.querySelector("img")
+  async #showUploadedAttachment(figure, blob) {
     this.editor.update(() => {
+      const image = figure.querySelector("img")
+
       const latest = $getNodeByKey(this.getKey())
       if (latest) {
         latest.replace(new ActionTextAttachmentNode({
@@ -118,11 +131,28 @@ export class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
           contentType: blob.content_type,
           fileName: blob.filename,
           fileSize: blob.byte_size,
-          width: image?.width,
+          width: image?.naturalWidth,
           previewable: blob.previewable,
-          height: image?.height
+          height: image?.naturalHeight
         }))
       }
     }, { tag: HISTORY_MERGE_TAG })
+  }
+
+  async #loadFigurePreviewFromBlob(blob, figure) {
+    if (blob.previewable) {
+      return new Promise((resolve) => {
+        this.editor.update(() => {
+          const image = this.#createDOMForImage()
+          image.addEventListener("load", () => {
+            resolve()
+          })
+          image.src = blob.url
+          figure.insertBefore(image, figure.firstChild)
+        })
+      })
+    } else {
+      return Promise.resolve()
+    }
   }
 }

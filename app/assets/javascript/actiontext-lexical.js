@@ -5459,7 +5459,15 @@ class ActionTextAttachmentNode extends gi {
   }
 
   #createDOMForImage() {
-    return createElement("img", { src: this.src, alt: this.altText })
+    return createElement("img", { src: this.src, alt: this.altText, ...this.#imageDimensions})
+  }
+
+  get #imageDimensions() {
+    if (this.width && this.height) {
+      return { width: this.width, height: this.height }
+    } else {
+      return {}
+    }
   }
 
   #createDOMForFile() {
@@ -5524,12 +5532,20 @@ class ActionTextAttachmentNode extends gi {
   }
 }
 
-function loadFileIntoImage(file, image) {
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    image.src = event.target.result || null;
-  };
-  reader.readAsDataURL(file);
+async function loadFileIntoImage(file, image) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+
+    image.addEventListener("load", () => {
+      resolve(image);
+    });
+
+    reader.onload = (event) => {
+      image.src = event.target.result || null;
+    };
+
+    reader.readAsDataURL(file);
+  })
 }
 
 class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
@@ -5563,7 +5579,9 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
     const progressBar = createElement("progress", { value: 0, max: 100 });
     figure.appendChild(progressBar);
 
-    this.#startUpload(progressBar, figure);
+    // We wait for images to download so that we can pass the dimensions down to the attachment. We do this
+    // so that we can render images in edit mode with the dimensions set, which prevent vertical layout shifts.
+    this.#loadFigure(figure).then(() => this.#startUpload(progressBar, figure));
 
     return figure
   }
@@ -5577,9 +5595,7 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
   }
 
   #createDOMForImage() {
-    const image = createElement("img");
-    loadFileIntoImage(this.file, image);
-    return image
+    return createElement("img")
   }
 
   #createDOMForFile() {
@@ -5603,6 +5619,15 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
     return figcaption
   }
 
+  #loadFigure(figure) {
+    const image = figure.querySelector("img");
+    if (!image) {
+      return Promise.resolve()
+    } else {
+      return loadFileIntoImage(this.file, image)
+    }
+  }
+
   #startUpload(progressBar, figure) {
     const upload = new DirectUpload(this.file, this.uploadUrl, this);
 
@@ -5621,7 +5646,10 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
         this.#handleUploadError(figure);
       } else {
         this.src = `/rails/active_storage/blobs/redirect/${blob.signed_id}/${blob.filename}`;
-        this.#showUploadedAttachment(figure, blob);
+
+        this.#loadFigurePreviewFromBlob(blob, figure).then(() => {
+          this.#showUploadedAttachment(figure, blob);
+        });
       }
     });
   }
@@ -5632,9 +5660,10 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
     figure.appendChild(createElement("div", { innerText: `Error uploading ${this.file?.name ?? "image"}` }));
   }
 
-  #showUploadedAttachment(figure, blob) {
-    const image = figure.querySelector("img");
+  async #showUploadedAttachment(figure, blob) {
     this.editor.update(() => {
+      const image = figure.querySelector("img");
+
       const latest = as(this.getKey());
       if (latest) {
         latest.replace(new ActionTextAttachmentNode({
@@ -5644,12 +5673,29 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
           contentType: blob.content_type,
           fileName: blob.filename,
           fileSize: blob.byte_size,
-          width: image?.width,
+          width: image?.naturalWidth,
           previewable: blob.previewable,
-          height: image?.height
+          height: image?.naturalHeight
         }));
       }
     }, { tag: Ti });
+  }
+
+  async #loadFigurePreviewFromBlob(blob, figure) {
+    if (blob.previewable) {
+      return new Promise((resolve) => {
+        this.editor.update(() => {
+          const image = this.#createDOMForImage();
+          image.addEventListener("load", () => {
+            resolve();
+          });
+          image.src = blob.url;
+          figure.insertBefore(image, figure.firstChild);
+        });
+      })
+    } else {
+      return Promise.resolve()
+    }
   }
 }
 
