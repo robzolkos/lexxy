@@ -5705,7 +5705,6 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
 const COMMANDS = [
   "bold",
   "rotateHeadingFormat",
-  "formatElement",
   "italic",
   "link",
   "unlink",
@@ -5811,57 +5810,13 @@ class CommandDispatcher {
       const selection = Nr();
       if (!cr(selection)) return
 
+      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow();
+
+      if (!Fi(topLevelElement)) return
+
       const codeNode = new M$2();
-
-      if (!selection.isCollapsed()) {
-        const nodes = selection.extract();
-
-        const focusNode = selection.focus.getNode();
-        const anchorNode = selection.anchor.getNode();
-        const insertionPoint = (focusNode && focusNode.getParent()) ||
-          (anchorNode && anchorNode.getParent());
-
-        for (const node of nodes) {
-          if (node.getParent()) {
-            codeNode.append(node);
-          }
-        }
-
-        if (insertionPoint && insertionPoint.getParent()) {
-          insertionPoint.insertBefore(codeNode);
-
-          if (insertionPoint.getTextContent().trim() === "") {
-            insertionPoint.remove();
-          }
-        } else {
-          _s().append(codeNode);
-        }
-      } else {
-        _s().append(codeNode);
-      }
-    });
-  }
-
-  dispatchFormatElement(type) {
-    this.editor.update(() => {
-      const selection = Nr();
-      if (!cr(selection)) return
-
-      const nodes = selection.extract();
-
-      for (const node of nodes) {
-        if (!node.getParent()) continue
-
-        let wrapper;
-        if (type === "quote") {
-          wrapper = xt$2();
-        } else {
-          wrapper = Pi();
-        }
-
-        node.insertBefore(wrapper);
-        wrapper.append(node);
-      }
+      codeNode.append(...topLevelElement.getChildren());
+      topLevelElement.replace(codeNode);
     });
   }
 

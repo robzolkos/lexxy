@@ -28,7 +28,6 @@ import { createElement } from "../helpers/html_helper"
 const COMMANDS = [
   "bold",
   "rotateHeadingFormat",
-  "formatElement",
   "italic",
   "link",
   "unlink",
@@ -134,57 +133,13 @@ export class CommandDispatcher {
       const selection = $getSelection()
       if (!$isRangeSelection(selection)) return
 
+      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow()
+
+      if (!$isParagraphNode(topLevelElement)) return
+
       const codeNode = new CodeNode()
-
-      if (!selection.isCollapsed()) {
-        const nodes = selection.extract()
-
-        const focusNode = selection.focus.getNode()
-        const anchorNode = selection.anchor.getNode()
-        const insertionPoint = (focusNode && focusNode.getParent()) ||
-          (anchorNode && anchorNode.getParent())
-
-        for (const node of nodes) {
-          if (node.getParent()) {
-            codeNode.append(node)
-          }
-        }
-
-        if (insertionPoint && insertionPoint.getParent()) {
-          insertionPoint.insertBefore(codeNode)
-
-          if (insertionPoint.getTextContent().trim() === "") {
-            insertionPoint.remove()
-          }
-        } else {
-          $getRoot().append(codeNode)
-        }
-      } else {
-        $getRoot().append(codeNode)
-      }
-    })
-  }
-
-  dispatchFormatElement(type) {
-    this.editor.update(() => {
-      const selection = $getSelection()
-      if (!$isRangeSelection(selection)) return
-
-      const nodes = selection.extract()
-
-      for (const node of nodes) {
-        if (!node.getParent()) continue
-
-        let wrapper
-        if (type === "quote") {
-          wrapper = $createQuoteNode()
-        } else {
-          wrapper = $createParagraphNode()
-        }
-
-        node.insertBefore(wrapper)
-        wrapper.append(node)
-      }
+      codeNode.append(...topLevelElement.getChildren())
+      topLevelElement.replace(codeNode)
     })
   }
 
