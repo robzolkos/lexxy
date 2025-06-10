@@ -5699,9 +5699,6 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
   }
 }
 
-// Rollup complained that this wasn't being exported and wouldn't build
-// import { createLinkDialog } from "../elements/link_dialog"
-
 const COMMANDS = [
   "bold",
   "rotateHeadingFormat",
@@ -5721,25 +5718,17 @@ class CommandDispatcher {
   }
 
   constructor(editorElement) {
-    this.editorElement = editorElement;
     this.editor = editorElement.editor;
     this.selection = editorElement.selection;
     this.contents = editorElement.contents;
+    this.clipboard = editorElement.clipboard;
 
     this.#registerCommands();
     this.#registerDragAndDropHandlers();
   }
 
   dispatchPaste(event) {
-    const clipboardData = event.clipboardData;
-    if (!clipboardData) return false
-
-    for (const item of clipboardData.items) {
-      const file = item.getAsFile();
-      if (!file) continue
-
-      this.contents.uploadFile(file);
-    }
+    this.clipboard.paste(event);
   }
 
   dispatchDeleteNodes() {
@@ -6131,6 +6120,38 @@ class Contents {
   }
 }
 
+class Clipboard {
+  constructor(editorElement) {
+    this.editor = editorElement.editor;
+    this.contents = editorElement.contents;
+    console.debug("this.contents=", this.contents);
+  }
+
+  paste(event) {
+    const clipboardData = event.clipboardData;
+
+    // console.log("Pasted MIME types:", Array.from(clipboardData?.items || []).map(item => item.type))
+    //
+    // for (const item of clipboardData?.items || []) {
+    //   if (item.type === "text/plain") {
+    //     item.getAsString((text) => console.log("Pasted text:", text))
+    //   }
+    //   if (item.type === "text/html") {
+    //     item.getAsString((html) => console.log("Pasted HTML:", html))
+    //   }
+    // }
+
+    if (!clipboardData) return false
+
+    for (const item of clipboardData.items) {
+      const file = item.getAsFile();
+      if (!file) continue
+
+      this.contents.uploadFile(file);
+    }
+  }
+}
+
 class LexicalEditorElement extends HTMLElement {
   static formAssociated = true
   static debug = true
@@ -6148,6 +6169,7 @@ class LexicalEditorElement extends HTMLElement {
     this.editor = this.#createEditor();
     this.contents = new Contents(this);
     this.selection = new Selection(this.editor);
+    this.clipboard = new Clipboard(this);
 
     CommandDispatcher.configureFor(this);
     this.#initialize();

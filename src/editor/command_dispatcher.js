@@ -1,29 +1,18 @@
 import {
-  $getRoot,
-  $createParagraphNode,
   $getSelection,
   $isRangeSelection,
-  $isNodeSelection,
-  $isParagraphNode,
-  $isElementNode,
-  $insertNodes,
   PASTE_COMMAND,
   KEY_DELETE_COMMAND,
   KEY_BACKSPACE_COMMAND,
   COMMAND_PRIORITY_LOW,
-  FORMAT_TEXT_COMMAND,
-  HISTORY_MERGE_TAG
+  FORMAT_TEXT_COMMAND
 } from "lexical"
 
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list"
 import { $createHeadingNode, $createQuoteNode, $isHeadingNode, $isQuoteNode } from "@lexical/rich-text"
 import { CodeNode } from "@lexical/code"
-import { $isLinkNode, $toggleLink } from "@lexical/link"
-
-import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
+import { $toggleLink } from "@lexical/link"
 import { createElement } from "../helpers/html_helper"
-// Rollup complained that this wasn't being exported and wouldn't build
-// import { createLinkDialog } from "../elements/link_dialog"
 
 const COMMANDS = [
   "bold",
@@ -44,25 +33,17 @@ export class CommandDispatcher {
   }
 
   constructor(editorElement) {
-    this.editorElement = editorElement
     this.editor = editorElement.editor
     this.selection = editorElement.selection
     this.contents = editorElement.contents
+    this.clipboard = editorElement.clipboard
 
     this.#registerCommands()
     this.#registerDragAndDropHandlers()
   }
 
   dispatchPaste(event) {
-    const clipboardData = event.clipboardData
-    if (!clipboardData) return false
-
-    for (const item of clipboardData.items) {
-      const file = item.getAsFile()
-      if (!file) continue
-
-      this.contents.uploadFile(file)
-    }
+    this.clipboard.paste(event)
   }
 
   dispatchDeleteNodes() {

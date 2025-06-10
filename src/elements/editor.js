@@ -15,6 +15,7 @@ import Selection from "../editor/selection"
 import { containsVisuallyRelevantChildren, createElement, dispatch, sanitize } from "../helpers/html_helper"
 import LexicalToolbar from "./toolbar"
 import Contents from "../editor/contents";
+import Clipboard from "../editor/clipboard";
 
 export default class LexicalEditorElement extends HTMLElement {
   static formAssociated = true
@@ -33,6 +34,7 @@ export default class LexicalEditorElement extends HTMLElement {
     this.editor = this.#createEditor()
     this.contents = new Contents(this)
     this.selection = new Selection(this.editor)
+    this.clipboard = new Clipboard(this)
 
     CommandDispatcher.configureFor(this)
     this.#initialize()
