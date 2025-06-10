@@ -5804,33 +5804,20 @@ class CommandDispatcher {
       const selection = Nr();
       if (!cr(selection)) return
 
-      const nodes = selection.extract();
-      if (nodes.length === 0) return
-
-      for (const node of nodes) {
-        const topLevel = node.getTopLevelElementOrThrow();
-
-        if (At(topLevel)) {
-          const currentTag = topLevel.getTag();
-          let nextTag;
-          if (currentTag === "h1") {
-            nextTag = "h2";
-          } else if (currentTag === "h2") {
-            nextTag = "h3";
-          } else {
-            nextTag = "h1";
-          }
-
-          const newHeading = _t$1(nextTag);
-          newHeading.append(...topLevel.getChildren());
-          topLevel.replace(newHeading);
-
-        } else if (Fi(topLevel) || wt$1(topLevel)) {
-          const newHeading = _t$1("h1");
-          newHeading.append(...topLevel.getChildren());
-          topLevel.replace(newHeading);
+      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow();
+      let nextTag = "h1";
+      if (At(topLevelElement)) {
+        const currentTag = topLevelElement.getTag();
+        if (currentTag === "h1") {
+          nextTag = "h2";
+        } else if (currentTag === "h2") {
+          nextTag = "h3";
+        } else {
+          nextTag = "h1";
         }
       }
+
+      this.contents.insertNodeWrappingSelection(() => _t$1(nextTag));
     });
   }
 
