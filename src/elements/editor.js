@@ -31,7 +31,7 @@ export default class LexicalEditorElement extends HTMLElement {
 
   connectedCallback() {
     this.editor = this.#createEditor()
-    this.contents = new Contents(this.editor)
+    this.contents = new Contents(this)
     this.selection = new Selection(this.editor)
 
     CommandDispatcher.configureFor(this)

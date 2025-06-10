@@ -61,7 +61,7 @@ export class CommandDispatcher {
       const file = item.getAsFile()
       if (!file) continue
 
-      this.#uploadFile(file)
+      this.contents.uploadFile(file)
     }
   }
 
@@ -167,7 +167,7 @@ export class CommandDispatcher {
         if (!files.length) return
 
         for (const file of files) {
-          this.#uploadFile(file)
+          this.contents.uploadFile(file)
         }
       }
     })
@@ -242,35 +242,10 @@ export class CommandDispatcher {
     if (!files.length) return
 
     for (const file of files) {
-      this.#uploadFile(file)
+      this.contents.uploadFile(file)
     }
 
     this.editor.focus()
-  }
-
-  #uploadFile(file) {
-    const uploadUrl = this.editorElement.directUploadUrl
-
-    this.editor.update(() => {
-      const selection = $getSelection()
-      const anchorNode = selection?.anchor.getNode()
-      const currentParagraph = anchorNode?.getTopLevelElementOrThrow()
-
-      const uploadedImageNode = new ActionTextAttachmentUploadNode( { file: file, uploadUrl: uploadUrl, editor: this.editor })
-
-      if (currentParagraph && $isParagraphNode(currentParagraph) && currentParagraph.getChildrenSize() === 0) {
-        currentParagraph.append(uploadedImageNode)
-      } else {
-        const newParagraph = $createParagraphNode()
-        newParagraph.append(uploadedImageNode)
-
-        if (currentParagraph && $isElementNode(currentParagraph)) {
-          currentParagraph.insertAfter(newParagraph)
-        } else {
-          $insertNodes([ newParagraph ])
-        }
-      }
-    }, { tag: HISTORY_MERGE_TAG })
   }
 }
 

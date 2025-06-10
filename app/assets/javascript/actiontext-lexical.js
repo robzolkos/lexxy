@@ -5738,7 +5738,7 @@ class CommandDispatcher {
       const file = item.getAsFile();
       if (!file) continue
 
-      this.#uploadFile(file);
+      this.contents.uploadFile(file);
     }
   }
 
@@ -5844,7 +5844,7 @@ class CommandDispatcher {
         if (!files.length) return
 
         for (const file of files) {
-          this.#uploadFile(file);
+          this.contents.uploadFile(file);
         }
       }
     });
@@ -5919,35 +5919,10 @@ class CommandDispatcher {
     if (!files.length) return
 
     for (const file of files) {
-      this.#uploadFile(file);
+      this.contents.uploadFile(file);
     }
 
     this.editor.focus();
-  }
-
-  #uploadFile(file) {
-    const uploadUrl = this.editorElement.directUploadUrl;
-
-    this.editor.update(() => {
-      const selection = Nr();
-      const anchorNode = selection?.anchor.getNode();
-      const currentParagraph = anchorNode?.getTopLevelElementOrThrow();
-
-      const uploadedImageNode = new ActionTextAttachmentUploadNode( { file: file, uploadUrl: uploadUrl, editor: this.editor });
-
-      if (currentParagraph && Fi(currentParagraph) && currentParagraph.getChildrenSize() === 0) {
-        currentParagraph.append(uploadedImageNode);
-      } else {
-        const newParagraph = Pi();
-        newParagraph.append(uploadedImageNode);
-
-        if (currentParagraph && di(currentParagraph)) {
-          currentParagraph.insertAfter(newParagraph);
-        } else {
-          Fr([ newParagraph ]);
-        }
-      }
-    }, { tag: Ti });
   }
 }
 
@@ -6069,8 +6044,9 @@ class Selection {
 }
 
 class Contents {
-  constructor(editor) {
-    this.editor = editor;
+  constructor(editorElement) {
+    this.editorElement = editorElement;
+    this.editor = editorElement.editor;
   }
 
   insertNodeWrappingSelection(newNodeFn) {
@@ -6084,6 +6060,31 @@ class Contents {
       wrappingNode.append(...topLevelElement.getChildren());
       topLevelElement.replace(wrappingNode);
     });
+  }
+
+  uploadFile(file) {
+    const uploadUrl = this.editorElement.directUploadUrl;
+
+    this.editor.update(() => {
+      const selection = Nr();
+      const anchorNode = selection?.anchor.getNode();
+      const currentParagraph = anchorNode?.getTopLevelElementOrThrow();
+
+      const uploadedImageNode = new ActionTextAttachmentUploadNode( { file: file, uploadUrl: uploadUrl, editor: this.editor });
+
+      if (currentParagraph && Fi(currentParagraph) && currentParagraph.getChildrenSize() === 0) {
+        currentParagraph.append(uploadedImageNode);
+      } else {
+        const newParagraph = Pi();
+        newParagraph.append(uploadedImageNode);
+
+        if (currentParagraph && di(currentParagraph)) {
+          currentParagraph.insertAfter(newParagraph);
+        } else {
+          Fr([ newParagraph ]);
+        }
+      }
+    }, { tag: Ti });
   }
 }
 
@@ -6102,7 +6103,7 @@ class LexicalEditorElement extends HTMLElement {
 
   connectedCallback() {
     this.editor = this.#createEditor();
-    this.contents = new Contents(this.editor);
+    this.contents = new Contents(this);
     this.selection = new Selection(this.editor);
 
     CommandDispatcher.configureFor(this);
