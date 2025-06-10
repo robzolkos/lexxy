@@ -5792,11 +5792,11 @@ class CommandDispatcher {
   }
 
   dispatchInsertQuoteBlock() {
-    this.contents.insertNodeWrappingSelection(() => xt$2());
+    this.contents.insertNodeWrappingEachSelectedLine(() => xt$2());
   }
 
   dispatchInsertCodeBlock() {
-    this.contents.insertNodeWrappingSelection(() => new M$2());
+    this.contents.insertNodeWrappingEachSelectedLine(() => new M$2());
   }
 
   dispatchRotateHeadingFormat() {
@@ -5817,7 +5817,7 @@ class CommandDispatcher {
         }
       }
 
-      this.contents.insertNodeWrappingSelection(() => _t$1(nextTag));
+      this.contents.insertNodeWrappingEachSelectedLine(() => _t$1(nextTag));
     });
   }
 
@@ -6036,16 +6036,27 @@ class Contents {
     this.editor = editorElement.editor;
   }
 
-  insertNodeWrappingSelection(newNodeFn) {
+  insertNodeWrappingEachSelectedLine(newNodeFn) {
     this.editor.update(() => {
       const selection = Nr();
       if (!cr(selection)) return
 
-      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow();
+      const selectedNodes = selection.extract();
 
-      const wrappingNode = newNodeFn();
-      wrappingNode.append(...topLevelElement.getChildren());
-      topLevelElement.replace(wrappingNode);
+      selectedNodes.forEach((node) => {
+        let topLevelElement;
+        try {
+          topLevelElement = node.getTopLevelElementOrThrow();
+          console.debug("Right", node);
+        } catch (error) {
+          console.warn("Node has no valid top-level element:", node, error);
+          return
+        }
+
+        const wrappingNode = newNodeFn();
+        wrappingNode.append(...topLevelElement.getChildren());
+        topLevelElement.replace(wrappingNode);
+      });
     });
   }
 

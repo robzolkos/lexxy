@@ -115,11 +115,11 @@ export class CommandDispatcher {
   }
 
   dispatchInsertQuoteBlock() {
-    this.contents.insertNodeWrappingSelection(() => $createQuoteNode())
+    this.contents.insertNodeWrappingEachSelectedLine(() => $createQuoteNode())
   }
 
   dispatchInsertCodeBlock() {
-    this.contents.insertNodeWrappingSelection(() => new CodeNode())
+    this.contents.insertNodeWrappingEachSelectedLine(() => new CodeNode())
   }
 
   dispatchRotateHeadingFormat() {
@@ -140,7 +140,7 @@ export class CommandDispatcher {
         }
       }
 
-      this.contents.insertNodeWrappingSelection(() => $createHeadingNode(nextTag))
+      this.contents.insertNodeWrappingEachSelectedLine(() => $createHeadingNode(nextTag))
     })
   }
 

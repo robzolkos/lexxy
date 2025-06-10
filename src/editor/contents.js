@@ -8,16 +8,19 @@ export default class Contents {
     this.editor = editorElement.editor
   }
 
-  insertNodeWrappingSelection(newNodeFn) {
+  insertNodeWrappingEachSelectedLine(newNodeFn) {
     this.editor.update(() => {
       const selection = $getSelection()
       if (!$isRangeSelection(selection)) return
 
-      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow()
+      const selectedNodes = selection.extract()
 
-      const wrappingNode = newNodeFn()
-      wrappingNode.append(...topLevelElement.getChildren())
-      topLevelElement.replace(wrappingNode)
+      selectedNodes.forEach((node) => {
+        const topLevelElement = node.getParent() ? node.getParent() ? node.getTopLevelElementOrThrow()
+        const wrappingNode = newNodeFn()
+        wrappingNode.append(...topLevelElement.getChildren())
+        topLevelElement.replace(wrappingNode)
+      })
     })
   }
 
