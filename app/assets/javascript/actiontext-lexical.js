@@ -5724,6 +5724,7 @@ class CommandDispatcher {
     this.editorElement = editorElement;
     this.editor = editorElement.editor;
     this.selection = editorElement.selection;
+    this.contents = editorElement.contents;
 
     this.#registerCommands();
     this.#registerDragAndDropHandlers();
@@ -5791,33 +5792,11 @@ class CommandDispatcher {
   }
 
   dispatchInsertQuoteBlock() {
-    this.editor.update(() => {
-      const selection = Nr();
-      if (!cr(selection)) return
-
-      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow();
-
-      if (!Fi(topLevelElement)) return
-
-      const quoteNode = xt$2();
-      quoteNode.append(...topLevelElement.getChildren());
-      topLevelElement.replace(quoteNode);
-    });
+    this.contents.insertNodeWrappingSelection(() => xt$2());
   }
 
   dispatchInsertCodeBlock() {
-    this.editor.update(() => {
-      const selection = Nr();
-      if (!cr(selection)) return
-
-      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow();
-
-      if (!Fi(topLevelElement)) return
-
-      const codeNode = new M$2();
-      codeNode.append(...topLevelElement.getChildren());
-      topLevelElement.replace(codeNode);
-    });
+    this.contents.insertNodeWrappingSelection(() => new M$2());
   }
 
   dispatchRotateHeadingFormat() {
@@ -5976,7 +5955,7 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-class NodesSelection {
+class Selection {
   constructor(editor) {
     this.editor = editor;
     this.previouslySelectedKeys = new Set();
@@ -6089,6 +6068,25 @@ class NodesSelection {
   }
 }
 
+class Contents {
+  constructor(editor) {
+    this.editor = editor;
+  }
+
+  insertNodeWrappingSelection(newNodeFn) {
+    this.editor.update(() => {
+      const selection = Nr();
+      if (!cr(selection)) return
+
+      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow();
+
+      const wrappingNode = newNodeFn();
+      wrappingNode.append(...topLevelElement.getChildren());
+      topLevelElement.replace(wrappingNode);
+    });
+  }
+}
+
 class LexicalEditorElement extends HTMLElement {
   static formAssociated = true
   static debug = true
@@ -6104,7 +6102,8 @@ class LexicalEditorElement extends HTMLElement {
 
   connectedCallback() {
     this.editor = this.#createEditor();
-    this.selection = new NodesSelection(this.editor);
+    this.contents = new Contents(this.editor);
+    this.selection = new Selection(this.editor);
 
     CommandDispatcher.configureFor(this);
     this.#initialize();
@@ -6343,6 +6342,7 @@ class LexicalEditorElement extends HTMLElement {
       this.editorContentElement = null;
     }
 
+    this.contents = null;
     this.editor = null;
 
     if (this.toolbar) {

@@ -47,6 +47,7 @@ export class CommandDispatcher {
     this.editorElement = editorElement
     this.editor = editorElement.editor
     this.selection = editorElement.selection
+    this.contents = editorElement.contents
 
     this.#registerCommands()
     this.#registerDragAndDropHandlers()
@@ -114,33 +115,11 @@ export class CommandDispatcher {
   }
 
   dispatchInsertQuoteBlock() {
-    this.editor.update(() => {
-      const selection = $getSelection()
-      if (!$isRangeSelection(selection)) return
-
-      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow()
-
-      if (!$isParagraphNode(topLevelElement)) return
-
-      const quoteNode = $createQuoteNode()
-      quoteNode.append(...topLevelElement.getChildren())
-      topLevelElement.replace(quoteNode)
-    })
+    this.contents.insertNodeWrappingSelection(() => $createQuoteNode())
   }
 
   dispatchInsertCodeBlock() {
-    this.editor.update(() => {
-      const selection = $getSelection()
-      if (!$isRangeSelection(selection)) return
-
-      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow()
-
-      if (!$isParagraphNode(topLevelElement)) return
-
-      const codeNode = new CodeNode()
-      codeNode.append(...topLevelElement.getChildren())
-      topLevelElement.replace(codeNode)
-    })
+    this.contents.insertNodeWrappingSelection(() => new CodeNode())
   }
 
   dispatchRotateHeadingFormat() {

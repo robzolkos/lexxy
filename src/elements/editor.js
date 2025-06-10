@@ -14,6 +14,7 @@ import { CommandDispatcher } from "../editor/command_dispatcher"
 import Selection from "../editor/selection"
 import { containsVisuallyRelevantChildren, createElement, dispatch, sanitize } from "../helpers/html_helper"
 import LexicalToolbar from "./toolbar"
+import Contents from "../editor/contents";
 
 export default class LexicalEditorElement extends HTMLElement {
   static formAssociated = true
@@ -30,6 +31,7 @@ export default class LexicalEditorElement extends HTMLElement {
 
   connectedCallback() {
     this.editor = this.#createEditor()
+    this.contents = new Contents(this.editor)
     this.selection = new Selection(this.editor)
 
     CommandDispatcher.configureFor(this)
@@ -269,6 +271,7 @@ export default class LexicalEditorElement extends HTMLElement {
       this.editorContentElement = null
     }
 
+    this.contents = null
     this.editor = null
 
     if (this.toolbar) {

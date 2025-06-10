@@ -4,7 +4,7 @@ import {
   KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND
 } from "lexical"
 
-export default class NodesSelection {
+export default class Selection {
   constructor(editor) {
     this.editor = editor
     this.previouslySelectedKeys = new Set()
