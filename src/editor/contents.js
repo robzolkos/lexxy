@@ -1,5 +1,7 @@
-import { $createParagraphNode, $getSelection, $setSelection, $insertNodes, $isElementNode, $isParagraphNode, $isTextNode,
-  $isRangeSelection, $createLineBreakNode, $createTextNode, HISTORY_MERGE_TAG } from "lexical"
+import {
+  $createParagraphNode, $getSelection, $setSelection, $insertNodes, $isElementNode, $isParagraphNode, $isTextNode,
+  $isRangeSelection, $createLineBreakNode, $createTextNode, HISTORY_MERGE_TAG, $isNodeSelection
+} from "lexical"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 
 export default class Contents {
@@ -92,5 +94,34 @@ export default class Contents {
         }
       }
     }, { tag: HISTORY_MERGE_TAG })
+  }
+
+  deleteSelectedNodes() {
+    this.editor.update(() => {
+      if ($isNodeSelection(this.#selection.current)) {
+        let nodesWereRemoved = false
+        this.#selection.current.getNodes().forEach((node) => {
+          const parent = node.getParent()
+
+          node.remove()
+
+          if (parent && parent.getChildrenSize() === 0 && (parent.getNextSibling() !== null || parent.getPreviousSibling() !== null)) {
+            parent.remove()
+          }
+          nodesWereRemoved = true
+        })
+
+        if (nodesWereRemoved) {
+          this.#selection.clear()
+          this.editor.focus()
+
+          return true
+        }
+      }
+    })
+  }
+
+  get #selection() {
+    return this.editorElement.selection
   }
 }

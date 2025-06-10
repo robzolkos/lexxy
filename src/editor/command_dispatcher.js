@@ -66,28 +66,7 @@ export class CommandDispatcher {
   }
 
   dispatchDeleteNodes() {
-    this.editor.update(() => {
-      if ($isNodeSelection(this.selection.current)) {
-        let nodesWereRemoved = false
-        this.selection.current.getNodes().forEach((node) => {
-          const parent = node.getParent()
-
-          node.remove()
-
-          if (parent && parent.getChildrenSize() === 0 && (parent.getNextSibling() !== null || parent.getPreviousSibling() !== null)) {
-            parent.remove()
-          }
-          nodesWereRemoved = true
-        })
-
-        if (nodesWereRemoved) {
-          this.selection.clear()
-          this.editor.focus()
-
-          return true
-        }
-      }
-    })
+    this.contents.deleteSelectedNodes()
   }
 
   dispatchBold() {
