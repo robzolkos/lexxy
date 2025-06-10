@@ -1,6 +1,6 @@
-import { $createParagraphNode, $getSelection, $insertNodes, $isElementNode, $isParagraphNode, $isRangeSelection, HISTORY_MERGE_TAG } from "lexical";
-import { $createQuoteNode } from "@lexical/rich-text";
-import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node";
+import { $createParagraphNode, $getSelection, $setSelection, $insertNodes, $isElementNode, $isParagraphNode, $isTextNode,
+  $isRangeSelection, $createLineBreakNode, $createTextNode, HISTORY_MERGE_TAG } from "lexical"
+import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 
 export default class Contents {
   constructor(editorElement) {
@@ -16,11 +16,56 @@ export default class Contents {
       const selectedNodes = selection.extract()
 
       selectedNodes.forEach((node) => {
-        const topLevelElement = node.getParent() ? node.getParent() ? node.getTopLevelElementOrThrow()
+        const parent = node.getParent()
+        if (!parent) { return }
+
+        const topLevelElement = node.getTopLevelElementOrThrow()
         const wrappingNode = newNodeFn()
         wrappingNode.append(...topLevelElement.getChildren())
         topLevelElement.replace(wrappingNode)
       })
+    })
+  }
+
+  insertNodeWrappingAllSelectedLines(newNodeFn) {
+    this.editor.update(() => {
+      const selection = $getSelection()
+      if (!$isRangeSelection(selection)) return
+
+      const selectedNodes = selection.extract()
+      $setSelection(null)
+      if (selectedNodes.length === 0) return
+
+      const lines = []
+      const nodesToDelete = new Set()
+      selectedNodes.forEach((node) => {
+        if (!$isTextNode(node)) return
+
+        const textContent = node.getTextContent()
+        if (textContent) {
+          const lineTexts = textContent.split('\n')
+          lines.push(...lineTexts)
+        }
+
+        if (node.getParent) { nodesToDelete.add(node.getParent()) }
+      })
+
+      if (lines.length === 0) return
+
+      const wrappingNode = newNodeFn()
+
+      lines.forEach((lineText) => {
+        const textNode = $createTextNode(lineText)
+        wrappingNode.append(textNode, $createLineBreakNode())
+      })
+
+      const anchorNode = selection.anchor.getNode()
+      const parent = anchorNode.getParent()
+      if (parent) {
+        parent.replace(wrappingNode)
+      }
+
+      nodesToDelete.forEach((node) => { node.remove() })
     })
   }
 
@@ -32,7 +77,7 @@ export default class Contents {
       const anchorNode = selection?.anchor.getNode()
       const currentParagraph = anchorNode?.getTopLevelElementOrThrow()
 
-      const uploadedImageNode = new ActionTextAttachmentUploadNode( { file: file, uploadUrl: uploadUrl, editor: this.editor })
+      const uploadedImageNode = new ActionTextAttachmentUploadNode({ file: file, uploadUrl: uploadUrl, editor: this.editor })
 
       if (currentParagraph && $isParagraphNode(currentParagraph) && currentParagraph.getChildrenSize() === 0) {
         currentParagraph.append(uploadedImageNode)

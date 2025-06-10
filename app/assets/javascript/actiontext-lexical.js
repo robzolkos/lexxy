@@ -5792,11 +5792,11 @@ class CommandDispatcher {
   }
 
   dispatchInsertQuoteBlock() {
-    this.contents.insertNodeWrappingEachSelectedLine(() => xt$2());
+    this.contents.insertNodeWrappingAllSelectedLines(() => xt$2());
   }
 
   dispatchInsertCodeBlock() {
-    this.contents.insertNodeWrappingEachSelectedLine(() => new M$2());
+    this.contents.insertNodeWrappingAllSelectedLines(() => new M$2());
   }
 
   dispatchRotateHeadingFormat() {
@@ -6044,19 +6044,56 @@ class Contents {
       const selectedNodes = selection.extract();
 
       selectedNodes.forEach((node) => {
-        let topLevelElement;
-        try {
-          topLevelElement = node.getTopLevelElementOrThrow();
-          console.debug("Right", node);
-        } catch (error) {
-          console.warn("Node has no valid top-level element:", node, error);
-          return
-        }
+        const parent = node.getParent();
+        if (!parent) { return }
 
+        const topLevelElement = node.getTopLevelElementOrThrow();
         const wrappingNode = newNodeFn();
         wrappingNode.append(...topLevelElement.getChildren());
         topLevelElement.replace(wrappingNode);
       });
+    });
+  }
+
+  insertNodeWrappingAllSelectedLines(newNodeFn) {
+    this.editor.update(() => {
+      const selection = Nr();
+      if (!cr(selection)) return
+
+      const selectedNodes = selection.extract();
+      ys(null);
+      if (selectedNodes.length === 0) return
+
+      const lines = [];
+      const nodesToDelete = new Set();
+      selectedNodes.forEach((node) => {
+        if (!Qn(node)) return
+
+        const textContent = node.getTextContent();
+        if (textContent) {
+          const lineTexts = textContent.split('\n');
+          lines.push(...lineTexts);
+        }
+
+        if (node.getParent) { nodesToDelete.add(node.getParent()); }
+      });
+
+      if (lines.length === 0) return
+
+      const wrappingNode = newNodeFn();
+
+      lines.forEach((lineText) => {
+        const textNode = Xn(lineText);
+        wrappingNode.append(textNode, Pn());
+      });
+
+      const anchorNode = selection.anchor.getNode();
+      const parent = anchorNode.getParent();
+      if (parent) {
+        parent.replace(wrappingNode);
+      }
+
+      nodesToDelete.forEach((node) => { node.remove(); });
     });
   }
 
@@ -6068,7 +6105,7 @@ class Contents {
       const anchorNode = selection?.anchor.getNode();
       const currentParagraph = anchorNode?.getTopLevelElementOrThrow();
 
-      const uploadedImageNode = new ActionTextAttachmentUploadNode( { file: file, uploadUrl: uploadUrl, editor: this.editor });
+      const uploadedImageNode = new ActionTextAttachmentUploadNode({ file: file, uploadUrl: uploadUrl, editor: this.editor });
 
       if (currentParagraph && Fi(currentParagraph) && currentParagraph.getChildrenSize() === 0) {
         currentParagraph.append(uploadedImageNode);
