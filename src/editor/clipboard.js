@@ -1,4 +1,5 @@
 import { marked } from "marked"
+import { isUrl } from "../helpers/string_helper";
 
 export default class Clipboard {
   constructor(editorElement) {
@@ -12,7 +13,7 @@ export default class Clipboard {
     if (!clipboardData) return false
 
     if (this.#isOnlyPlainTextPasted(clipboardData)) {
-      this.#pasteMarkdown(clipboardData)
+      this.#pastePlainText(clipboardData)
       return true
     }
 
@@ -29,11 +30,19 @@ export default class Clipboard {
     return types.length === 1 && types[0] === "text/plain"
   }
 
-  #pasteMarkdown(clipboardData) {
+  #pastePlainText(clipboardData) {
     const item = clipboardData.items[0]
-    item.getAsString((text)=>{
-      const html = marked(text)
-      this.contents.insertHtml(html)
+    item.getAsString((text) => {
+      if (isUrl(text) && this.contents.hasSelectedText()) {
+        this.contents.createLinkWithSelectedText(text)
+      } else {
+        this.#pasteMarkdown(text)
+      }
     })
+  }
+
+  #pasteMarkdown(text) {
+    const html = marked(text)
+    this.contents.insertHtml(html)
   }
 }

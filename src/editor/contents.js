@@ -5,6 +5,7 @@ import {
 
 import { $generateNodesFromDOM } from "@lexical/html"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
+import { $createLinkNode } from "@lexical/link"
 
 export default class Contents {
   constructor(editorElement) {
@@ -84,6 +85,34 @@ export default class Contents {
       }
 
       nodesToDelete.forEach((node) => { node.remove() })
+    })
+  }
+
+  hasSelectedText() {
+    let result = false
+
+    this.editor.read(() => {
+      const selection = $getSelection()
+      result = $isRangeSelection(selection) && !selection.isCollapsed()
+    })
+
+    console.debug("It's", result);
+
+    return result
+  }
+
+  createLinkWithSelectedText(url) {
+    if (!this.hasSelectedText()) return
+
+    console.debug("CALLED!");
+    this.editor.update(() => {
+      const selection = $getSelection()
+      const selectedText = selection.getTextContent()
+
+      const linkNode = $createLinkNode(url)
+      linkNode.append($createTextNode(selectedText))
+
+      selection.insertNodes([linkNode])
     })
   }
 

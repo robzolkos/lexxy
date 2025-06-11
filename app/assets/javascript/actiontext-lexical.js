@@ -6079,6 +6079,34 @@ class Contents {
     });
   }
 
+  hasSelectedText() {
+    let result = false;
+
+    this.editor.read(() => {
+      const selection = Nr();
+      result = cr(selection) && !selection.isCollapsed();
+    });
+
+    console.debug("It's", result);
+
+    return result
+  }
+
+  createLinkWithSelectedText(url) {
+    if (!this.hasSelectedText()) return
+
+    console.debug("CALLED!");
+    this.editor.update(() => {
+      const selection = Nr();
+      const selectedText = selection.getTextContent();
+
+      const linkNode = d(url);
+      linkNode.append(Xn(selectedText));
+
+      selection.insertNodes([linkNode]);
+    });
+  }
+
   uploadFile(file) {
     const uploadUrl = this.editorElement.directUploadUrl;
 
@@ -8300,6 +8328,15 @@ marked.parseInline;
 _Parser.parse;
 _Lexer.lex;
 
+function isUrl(string) {
+  try {
+    new URL(string);
+    return true
+  } catch (_) {
+    return false
+  }
+}
+
 class Clipboard {
   constructor(editorElement) {
     this.editor = editorElement.editor;
@@ -8312,7 +8349,7 @@ class Clipboard {
     if (!clipboardData) return false
 
     if (this.#isOnlyPlainTextPasted(clipboardData)) {
-      this.#pasteMarkdown(clipboardData);
+      this.#pastePlainText(clipboardData);
       return true
     }
 
@@ -8329,12 +8366,20 @@ class Clipboard {
     return types.length === 1 && types[0] === "text/plain"
   }
 
-  #pasteMarkdown(clipboardData) {
+  #pastePlainText(clipboardData) {
     const item = clipboardData.items[0];
-    item.getAsString((text)=>{
-      const html = marked(text);
-      this.contents.insertHtml(html);
+    item.getAsString((text) => {
+      if (isUrl(text) && this.contents.hasSelectedText()) {
+        this.contents.createLinkWithSelectedText(text);
+      } else {
+        this.#pasteMarkdown(text);
+      }
     });
+  }
+
+  #pasteMarkdown(text) {
+    const html = marked(text);
+    this.contents.insertHtml(html);
   }
 }
 
