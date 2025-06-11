@@ -1,34 +1,22 @@
 import {
-  $getRoot,
-  $createParagraphNode,
   $getSelection,
   $isRangeSelection,
-  $isNodeSelection,
-  $isParagraphNode,
-  $isElementNode,
-  $insertNodes,
   PASTE_COMMAND,
   KEY_DELETE_COMMAND,
   KEY_BACKSPACE_COMMAND,
   COMMAND_PRIORITY_LOW,
-  FORMAT_TEXT_COMMAND,
-  HISTORY_MERGE_TAG
+  FORMAT_TEXT_COMMAND
 } from "lexical"
 
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list"
 import { $createHeadingNode, $createQuoteNode, $isHeadingNode, $isQuoteNode } from "@lexical/rich-text"
 import { CodeNode } from "@lexical/code"
-import { $isLinkNode, $toggleLink } from "@lexical/link"
-
-import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
+import { $toggleLink } from "@lexical/link"
 import { createElement } from "../helpers/html_helper"
-// Rollup complained that this wasn't being exported and wouldn't build
-// import { createLinkDialog } from "../elements/link_dialog"
 
 const COMMANDS = [
   "bold",
   "rotateHeadingFormat",
-  "formatElement",
   "italic",
   "link",
   "unlink",
@@ -45,49 +33,21 @@ export class CommandDispatcher {
   }
 
   constructor(editorElement) {
-    this.editorElement = editorElement
     this.editor = editorElement.editor
     this.selection = editorElement.selection
+    this.contents = editorElement.contents
+    this.clipboard = editorElement.clipboard
 
     this.#registerCommands()
     this.#registerDragAndDropHandlers()
   }
 
   dispatchPaste(event) {
-    const clipboardData = event.clipboardData
-    if (!clipboardData) return false
-
-    for (const item of clipboardData.items) {
-      const file = item.getAsFile()
-      if (!file) continue
-
-      this.#uploadFile(file)
-    }
+    return this.clipboard.paste(event)
   }
 
   dispatchDeleteNodes() {
-    this.editor.update(() => {
-      if ($isNodeSelection(this.selection.current)) {
-        let nodesWereRemoved = false
-        this.selection.current.getNodes().forEach((node) => {
-          const parent = node.getParent()
-
-          node.remove()
-
-          if (parent && parent.getChildrenSize() === 0 && (parent.getNextSibling() !== null || parent.getPreviousSibling() !== null)) {
-            parent.remove()
-          }
-          nodesWereRemoved = true
-        })
-
-        if (nodesWereRemoved) {
-          this.selection.clear()
-          this.editor.focus()
-
-          return true
-        }
-      }
-    })
+    this.contents.deleteSelectedNodes()
   }
 
   dispatchBold() {
@@ -115,77 +75,11 @@ export class CommandDispatcher {
   }
 
   dispatchInsertQuoteBlock() {
-    this.editor.update(() => {
-      const selection = $getSelection()
-      if (!$isRangeSelection(selection)) return
-
-      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow()
-
-      if (!$isParagraphNode(topLevelElement)) return
-
-      const quoteNode = $createQuoteNode()
-      quoteNode.append(...topLevelElement.getChildren())
-      topLevelElement.replace(quoteNode)
-    })
+    this.contents.insertNodeWrappingAllSelectedLines(() => $createQuoteNode())
   }
 
   dispatchInsertCodeBlock() {
-    this.editor.update(() => {
-      const selection = $getSelection()
-      if (!$isRangeSelection(selection)) return
-
-      const codeNode = new CodeNode()
-
-      if (!selection.isCollapsed()) {
-        const nodes = selection.extract()
-
-        const focusNode = selection.focus.getNode()
-        const anchorNode = selection.anchor.getNode()
-        const insertionPoint = (focusNode && focusNode.getParent()) ||
-          (anchorNode && anchorNode.getParent())
-
-        for (const node of nodes) {
-          if (node.getParent()) {
-            codeNode.append(node)
-          }
-        }
-
-        if (insertionPoint && insertionPoint.getParent()) {
-          insertionPoint.insertBefore(codeNode)
-
-          if (insertionPoint.getTextContent().trim() === "") {
-            insertionPoint.remove()
-          }
-        } else {
-          $getRoot().append(codeNode)
-        }
-      } else {
-        $getRoot().append(codeNode)
-      }
-    })
-  }
-
-  dispatchFormatElement(type) {
-    this.editor.update(() => {
-      const selection = $getSelection()
-      if (!$isRangeSelection(selection)) return
-
-      const nodes = selection.extract()
-
-      for (const node of nodes) {
-        if (!node.getParent()) continue
-
-        let wrapper
-        if (type === "quote") {
-          wrapper = $createQuoteNode()
-        } else {
-          wrapper = $createParagraphNode()
-        }
-
-        node.insertBefore(wrapper)
-        wrapper.append(node)
-      }
-    })
+    this.contents.insertNodeWrappingAllSelectedLines(() => new CodeNode())
   }
 
   dispatchRotateHeadingFormat() {
@@ -193,33 +87,20 @@ export class CommandDispatcher {
       const selection = $getSelection()
       if (!$isRangeSelection(selection)) return
 
-      const nodes = selection.extract()
-      if (nodes.length === 0) return
-
-      for (const node of nodes) {
-        const topLevel = node.getTopLevelElementOrThrow()
-
-        if ($isHeadingNode(topLevel)) {
-          const currentTag = topLevel.getTag()
-          let nextTag
-          if (currentTag === "h1") {
-            nextTag = "h2"
-          } else if (currentTag === "h2") {
-            nextTag = "h3"
-          } else {
-            nextTag = "h1"
-          }
-
-          const newHeading = $createHeadingNode(nextTag)
-          newHeading.append(...topLevel.getChildren())
-          topLevel.replace(newHeading)
-
-        } else if ($isParagraphNode(topLevel) || $isQuoteNode(topLevel)) {
-          const newHeading = $createHeadingNode("h1")
-          newHeading.append(...topLevel.getChildren())
-          topLevel.replace(newHeading)
+      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow()
+      let nextTag = "h1"
+      if ($isHeadingNode(topLevelElement)) {
+        const currentTag = topLevelElement.getTag()
+        if (currentTag === "h1") {
+          nextTag = "h2"
+        } else if (currentTag === "h2") {
+          nextTag = "h3"
+        } else {
+          nextTag = "h1"
         }
       }
+
+      this.contents.insertNodeWrappingEachSelectedLine(() => $createHeadingNode(nextTag))
     })
   }
 
@@ -233,7 +114,7 @@ export class CommandDispatcher {
         if (!files.length) return
 
         for (const file of files) {
-          this.#uploadFile(file)
+          this.contents.uploadFile(file)
         }
       }
     })
@@ -308,35 +189,10 @@ export class CommandDispatcher {
     if (!files.length) return
 
     for (const file of files) {
-      this.#uploadFile(file)
+      this.contents.uploadFile(file)
     }
 
     this.editor.focus()
-  }
-
-  #uploadFile(file) {
-    const uploadUrl = this.editorElement.directUploadUrl
-
-    this.editor.update(() => {
-      const selection = $getSelection()
-      const anchorNode = selection?.anchor.getNode()
-      const currentParagraph = anchorNode?.getTopLevelElementOrThrow()
-
-      const uploadedImageNode = new ActionTextAttachmentUploadNode( { file: file, uploadUrl: uploadUrl, editor: this.editor })
-
-      if (currentParagraph && $isParagraphNode(currentParagraph) && currentParagraph.getChildrenSize() === 0) {
-        currentParagraph.append(uploadedImageNode)
-      } else {
-        const newParagraph = $createParagraphNode()
-        newParagraph.append(uploadedImageNode)
-
-        if (currentParagraph && $isElementNode(currentParagraph)) {
-          currentParagraph.insertAfter(newParagraph)
-        } else {
-          $insertNodes([ newParagraph ])
-        }
-      }
-    }, { tag: HISTORY_MERGE_TAG })
   }
 }
 
