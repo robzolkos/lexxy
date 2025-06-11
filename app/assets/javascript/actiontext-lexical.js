@@ -6044,41 +6044,52 @@ class Contents {
       if (!cr(selection)) return
 
       const selectedNodes = selection.extract();
+      const selectedParagraphs = selectedNodes.map((node) => Fi(node) ? node : Qn(node) && node.getParent() && Fi(node.getParent()) ? node.getParent() : null).filter(Boolean);
+
       ys(null);
-      if (selectedNodes.length === 0) return
+      if (selectedParagraphs.length === 0) return
 
-      const lines = [];
+      const lineSet = new Set();
       const nodesToDelete = new Set();
-      selectedNodes.forEach((node) => {
-        if (!Qn(node)) return
 
-        const textContent = node.getTextContent();
+      // Extract and deduplicate lines from paragraph content
+      selectedParagraphs.forEach((paragraphNode) => {
+        const textContent = paragraphNode.getTextContent();
         if (textContent) {
-          const lineTexts = textContent.split('\n');
-          lines.push(...lineTexts);
+          const lineTexts = textContent.split("\n");
+          lineTexts.forEach((line) => {
+            if (line.trim()) {
+              lineSet.add(line);
+            }
+          });
         }
-
-        if (node.getParent) { nodesToDelete.add(node.getParent()); }
+        nodesToDelete.add(paragraphNode);
       });
 
-      if (lines.length === 0) return
+      if (lineSet.size === 0) return
 
       const wrappingNode = newNodeFn();
 
-      lines.forEach((lineText) => {
-        const textNode = Xn(lineText);
-        wrappingNode.append(textNode, Pn());
+      // Append each unique line to the new wrapping node
+      Array.from(lineSet).forEach((lineText, index, arr) => {
+        wrappingNode.append(Xn(lineText));
+        if (index < arr.length - 1) {
+          wrappingNode.append(Pn());
+        }
       });
 
+      // Replace the current location with the new wrapping node
       const anchorNode = selection.anchor.getNode();
       const parent = anchorNode.getParent();
       if (parent) {
         parent.replace(wrappingNode);
       }
 
-      nodesToDelete.forEach((node) => { node.remove(); });
+      // Remove original nodes
+      nodesToDelete.forEach((node) => node.remove());
     });
   }
+
 
   hasSelectedText() {
     let result = false;
@@ -6104,7 +6115,7 @@ class Contents {
       const linkNode = d(url);
       linkNode.append(Xn(selectedText));
 
-      selection.insertNodes([linkNode]);
+      selection.insertNodes([ linkNode ]);
     });
   }
 

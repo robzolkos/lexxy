@@ -52,41 +52,52 @@ export default class Contents {
       if (!$isRangeSelection(selection)) return
 
       const selectedNodes = selection.extract()
+      const selectedParagraphs = selectedNodes.map((node) => $isParagraphNode(node) ? node : $isTextNode(node) && node.getParent() && $isParagraphNode(node.getParent()) ? node.getParent() : null).filter(Boolean)
+
       $setSelection(null)
-      if (selectedNodes.length === 0) return
+      if (selectedParagraphs.length === 0) return
 
-      const lines = []
+      const lineSet = new Set()
       const nodesToDelete = new Set()
-      selectedNodes.forEach((node) => {
-        if (!$isTextNode(node)) return
 
-        const textContent = node.getTextContent()
+      // Extract and deduplicate lines from paragraph content
+      selectedParagraphs.forEach((paragraphNode) => {
+        const textContent = paragraphNode.getTextContent()
         if (textContent) {
-          const lineTexts = textContent.split('\n')
-          lines.push(...lineTexts)
+          const lineTexts = textContent.split("\n")
+          lineTexts.forEach((line) => {
+            if (line.trim()) {
+              lineSet.add(line)
+            }
+          })
         }
-
-        if (node.getParent) { nodesToDelete.add(node.getParent()) }
+        nodesToDelete.add(paragraphNode)
       })
 
-      if (lines.length === 0) return
+      if (lineSet.size === 0) return
 
       const wrappingNode = newNodeFn()
 
-      lines.forEach((lineText) => {
-        const textNode = $createTextNode(lineText)
-        wrappingNode.append(textNode, $createLineBreakNode())
+      // Append each unique line to the new wrapping node
+      Array.from(lineSet).forEach((lineText, index, arr) => {
+        wrappingNode.append($createTextNode(lineText))
+        if (index < arr.length - 1) {
+          wrappingNode.append($createLineBreakNode())
+        }
       })
 
+      // Replace the current location with the new wrapping node
       const anchorNode = selection.anchor.getNode()
       const parent = anchorNode.getParent()
       if (parent) {
         parent.replace(wrappingNode)
       }
 
-      nodesToDelete.forEach((node) => { node.remove() })
+      // Remove original nodes
+      nodesToDelete.forEach((node) => node.remove())
     })
   }
+
 
   hasSelectedText() {
     let result = false
@@ -96,7 +107,7 @@ export default class Contents {
       result = $isRangeSelection(selection) && !selection.isCollapsed()
     })
 
-    console.debug("It's", result);
+    console.debug("It's", result)
 
     return result
   }
@@ -104,7 +115,7 @@ export default class Contents {
   createLinkWithSelectedText(url) {
     if (!this.hasSelectedText()) return
 
-    console.debug("CALLED!");
+    console.debug("CALLED!")
     this.editor.update(() => {
       const selection = $getSelection()
       const selectedText = selection.getTextContent()
@@ -112,7 +123,7 @@ export default class Contents {
       const linkNode = $createLinkNode(url)
       linkNode.append($createTextNode(selectedText))
 
-      selection.insertNodes([linkNode])
+      selection.insertNodes([ linkNode ])
     })
   }
 
