@@ -17,12 +17,7 @@ export default class Clipboard {
       return true
     }
 
-    for (const item of clipboardData.items) {
-      const file = item.getAsFile()
-      if (!file) continue
-
-      this.contents.uploadFile(file)
-    }
+    this.#handlePastedFiles(clipboardData)
   }
 
   #isOnlyPlainTextPasted(clipboardData) {
@@ -44,5 +39,14 @@ export default class Clipboard {
   #pasteMarkdown(text) {
     const html = marked(text)
     this.contents.insertHtml(html)
+  }
+
+  #handlePastedFiles(clipboardData) {
+    for (const item of clipboardData.items) {
+      const file = item.getAsFile()
+      if (!file) continue
+
+      this.contents.uploadFile(file)
+    }
   }
 }
