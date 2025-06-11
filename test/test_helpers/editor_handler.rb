@@ -39,6 +39,19 @@ class EditorHandler
     sleep 0.1
   end
 
+  def paste(text)
+    page.execute_script <<~JS, content_element
+      arguments[0].focus()
+      const pasteEvent = new ClipboardEvent("paste", {
+        bubbles: true,
+        cancelable: true,
+        clipboardData: new DataTransfer()
+      })
+      pasteEvent.clipboardData.setData("text/plain", "#{text}")
+      arguments[0].dispatchEvent(pasteEvent)
+    JS
+  end
+
   private
     def content_element
       @content_element ||= editor_element.find(".lexical-editor__content")
