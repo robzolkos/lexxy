@@ -14,6 +14,6 @@ class PateTest < ApplicationSystemTestCase
     visit edit_post_path(posts(:hello_world))
     find_editor.select("everyone")
     find_editor.paste "https://37signals.com"
-    assert_equal_html %{<p>Hello <a href="https://37signals.com">everyone</a></p>}, find_editor.value
+    assert_equal_html %(<p>Hello <a href="https://37signals.com">everyone</a></p>), find_editor.value
   end
 end
