@@ -5557,12 +5557,13 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
     return new ActionTextAttachmentUploadNode({ ...node }, node.__key);
   }
 
-  constructor({ file, uploadUrl, editor }, key) {
+  constructor({ file, uploadUrl, editor, progress }, key) {
     super({ contentType: file.type }, key);
     this.file = file;
     this.uploadUrl = uploadUrl;
     this.src = null;
     this.editor = editor;
+    this.progress = progress || 0;
   }
 
   createDOM() {
@@ -5576,7 +5577,7 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
 
     figure.appendChild(this.#createCaption());
 
-    const progressBar = createElement("progress", { value: 0, max: 100 });
+    const progressBar = createElement("progress", { value: this.progress, max: 100 });
     figure.appendChild(progressBar);
 
     // We wait for images to download so that we can pass the dimensions down to the attachment. We do this
