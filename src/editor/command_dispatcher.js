@@ -43,7 +43,7 @@ export class CommandDispatcher {
   }
 
   dispatchPaste(event) {
-    this.clipboard.paste(event)
+    return this.clipboard.paste(event)
   }
 
   dispatchDeleteNodes() {

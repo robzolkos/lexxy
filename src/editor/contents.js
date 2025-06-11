@@ -2,12 +2,28 @@ import {
   $createParagraphNode, $getSelection, $setSelection, $insertNodes, $isElementNode, $isParagraphNode, $isTextNode,
   $isRangeSelection, $createLineBreakNode, $createTextNode, HISTORY_MERGE_TAG, $isNodeSelection
 } from "lexical"
+
+import { $generateNodesFromDOM } from "@lexical/html"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 
 export default class Contents {
   constructor(editorElement) {
     this.editorElement = editorElement
     this.editor = editorElement.editor
+  }
+
+  insertHtml(html) {
+    this.editor.update(() => {
+      const selection = $getSelection()
+
+      if (!$isRangeSelection(selection)) return
+
+      const parser = new DOMParser()
+      const dom = parser.parseFromString(html, 'text/html')
+      const nodes = $generateNodesFromDOM(this.editor, dom)
+
+      selection.insertNodes(nodes)
+    })
   }
 
   insertNodeWrappingEachSelectedLine(newNodeFn) {

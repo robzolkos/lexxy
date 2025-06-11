@@ -1,25 +1,20 @@
+import { marked } from "marked"
+
 export default class Clipboard {
   constructor(editorElement) {
     this.editor = editorElement.editor
     this.contents = editorElement.contents
-    console.debug("this.contents=", this.contents);
   }
 
   paste(event) {
     const clipboardData = event.clipboardData
 
-    // console.log("Pasted MIME types:", Array.from(clipboardData?.items || []).map(item => item.type))
-    //
-    // for (const item of clipboardData?.items || []) {
-    //   if (item.type === "text/plain") {
-    //     item.getAsString((text) => console.log("Pasted text:", text))
-    //   }
-    //   if (item.type === "text/html") {
-    //     item.getAsString((html) => console.log("Pasted HTML:", html))
-    //   }
-    // }
-
     if (!clipboardData) return false
+
+    if (this.#isOnlyPlainTextPasted(clipboardData)) {
+      this.#pasteMarkdown(clipboardData)
+      return true
+    }
 
     for (const item of clipboardData.items) {
       const file = item.getAsFile()
@@ -27,5 +22,18 @@ export default class Clipboard {
 
       this.contents.uploadFile(file)
     }
+  }
+
+  #isOnlyPlainTextPasted(clipboardData) {
+    const types = Array.from(clipboardData.types)
+    return types.length === 1 && types[0] === "text/plain"
+  }
+
+  #pasteMarkdown(clipboardData) {
+    const item = clipboardData.items[0]
+    item.getAsString((text)=>{
+      const html = marked(text)
+      this.contents.insertHtml(html)
+    })
   }
 }
