@@ -6099,15 +6099,12 @@ class Contents {
       result = cr(selection) && !selection.isCollapsed();
     });
 
-    console.debug("It's", result);
-
     return result
   }
 
   createLinkWithSelectedText(url) {
     if (!this.hasSelectedText()) return
 
-    console.debug("CALLED!");
     this.editor.update(() => {
       const selection = Nr();
       const selectedText = selection.getTextContent();

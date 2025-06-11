@@ -107,15 +107,12 @@ export default class Contents {
       result = $isRangeSelection(selection) && !selection.isCollapsed()
     })
 
-    console.debug("It's", result)
-
     return result
   }
 
   createLinkWithSelectedText(url) {
     if (!this.hasSelectedText()) return
 
-    console.debug("CALLED!")
     this.editor.update(() => {
       const selection = $getSelection()
       const selectedText = selection.getTextContent()
