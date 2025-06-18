@@ -6157,7 +6157,6 @@ class Contents {
     });
   }
 
-
   hasSelectedText() {
     let result = false;
 
@@ -6181,6 +6180,55 @@ class Contents {
 
       selection.insertNodes([ linkNode ]);
     });
+  }
+
+  textBefore(string) {
+    let result = "";
+
+    this.editor.getEditorState().read(() => {
+      const selection = Nr();
+      if (!selection || !selection.isCollapsed()) return
+
+      const anchor = selection.anchor;
+      const anchorNode = anchor.getNode();
+
+      if (!Qn(anchorNode)) return
+
+      const fullText = anchorNode.getTextContent();
+      const offset = anchor.offset;
+
+      const textBeforeCursor = fullText.slice(0, offset);
+
+      const lastIndex = textBeforeCursor.lastIndexOf(string);
+      if (lastIndex !== -1) {
+        result = textBeforeCursor.slice(lastIndex + string.length);
+      }
+    });
+
+    return result
+  }
+
+  containsBackwardsFromCursor(string) {
+    let result = false;
+
+    this.editor.getEditorState().read(() => {
+      const selection = Nr();
+      if (!selection || !selection.isCollapsed()) return
+
+      const anchor = selection.anchor;
+      const anchorNode = anchor.getNode();
+
+      if (!Qn(anchorNode)) return
+
+      const fullText = anchorNode.getTextContent();
+      const offset = anchor.offset;
+
+      const textBeforeCursor = fullText.slice(0, offset);
+
+      result = textBeforeCursor.includes(string);
+    });
+
+    return result
   }
 
   uploadFile(file) {
@@ -8810,8 +8858,18 @@ class PromptInlineSource {
     this.promptItemElements = Array.from(promptItemElements);
   }
 
-  buildListItemElements() {
-    return this.promptItemElements.map(promptItemElement => this.#buildListItemElementFor(promptItemElement))
+  buildListItemElements(filter = "") {
+    const listItems = [];
+
+    this.promptItemElements.forEach((promptItemElement) => {
+      const searchableText = promptItemElement.getAttribute("search");
+
+      if (!filter || searchableText.toLowerCase().includes(filter.toLowerCase())) {
+        listItems.push(this.#buildListItemElementFor(promptItemElement));
+      }
+    });
+
+    return listItems
   }
 
   #buildListItemElementFor(promptItemElement) {
@@ -8850,12 +8908,11 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   #addTriggerListener() {
-    console.debug("INVOKED!");
     this.#editorElement.addEventListener("keydown", (event) => {
       if (event.key === this.trigger) {
         this.#showPopover();
       }
-    }, Ki);
+    });
   }
 
   get #editor() {
@@ -8872,17 +8929,44 @@ class LexicalPromptElement extends HTMLElement {
 
   #showPopover() {
     this.#popoverElement.classList.toggle("lexical-prompt-menu--visible", true);
+    this.#positionPopover();
+    this.#editorElement.addEventListener("actiontext:change", this.#filterOptions);
+  }
 
+  #positionPopover() {
     const { x, y } = this.#selection.cursorPosition;
     const popoverRect = this.#popoverElement.getBoundingClientRect();
-
-    console.debug("Es", y);
     this.#popoverElement.style.left = `${x}px`;
     this.#popoverElement.style.top = `${y + popoverRect.height/2 }px`;
   }
+
+  #hidePopover() {
+    this.#popoverElement.classList.toggle("lexical-prompt-menu--visible", false);
+    this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions);
+  }
+
+  #filterOptions = () => {
+    if (this.#editorContents.containsBackwardsFromCursor(this.trigger)) {
+      this.#showFilteredOptions();
+    } else {
+      this.#hidePopover();
+    }
+  }
+
+  #showFilteredOptions() {
+    const filter = this.#editorContents.textBefore(this.trigger);
+    const filteredListItems = this.source.buildListItemElements(filter);
+    this.#popoverElement.innerHTML = "";
+    this.#popoverElement.append(...filteredListItems);
+  }
+
   get #popoverElement() {
     this.popoverElement ??= this.#buildPopover();
     return this.popoverElement
+  }
+
+  get #editorContents() {
+    return this.#editorElement.contents
   }
 
   #buildPopover() {

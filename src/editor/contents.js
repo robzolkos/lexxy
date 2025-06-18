@@ -98,7 +98,6 @@ export default class Contents {
     })
   }
 
-
   hasSelectedText() {
     let result = false
 
@@ -122,6 +121,55 @@ export default class Contents {
 
       selection.insertNodes([ linkNode ])
     })
+  }
+
+  textBefore(string) {
+    let result = ""
+
+    this.editor.getEditorState().read(() => {
+      const selection = $getSelection()
+      if (!selection || !selection.isCollapsed()) return
+
+      const anchor = selection.anchor
+      const anchorNode = anchor.getNode()
+
+      if (!$isTextNode(anchorNode)) return
+
+      const fullText = anchorNode.getTextContent()
+      const offset = anchor.offset
+
+      const textBeforeCursor = fullText.slice(0, offset)
+
+      const lastIndex = textBeforeCursor.lastIndexOf(string)
+      if (lastIndex !== -1) {
+        result = textBeforeCursor.slice(lastIndex + string.length)
+      }
+    })
+
+    return result
+  }
+
+  containsBackwardsFromCursor(string) {
+    let result = false
+
+    this.editor.getEditorState().read(() => {
+      const selection = $getSelection()
+      if (!selection || !selection.isCollapsed()) return
+
+      const anchor = selection.anchor
+      const anchorNode = anchor.getNode()
+
+      if (!$isTextNode(anchorNode)) return
+
+      const fullText = anchorNode.getTextContent()
+      const offset = anchor.offset
+
+      const textBeforeCursor = fullText.slice(0, offset)
+
+      result = textBeforeCursor.includes(string)
+    })
+
+    return result
   }
 
   uploadFile(file) {

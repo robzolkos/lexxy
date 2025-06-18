@@ -5,8 +5,18 @@ export default class PromptInlineSource {
     this.promptItemElements = Array.from(promptItemElements)
   }
 
-  buildListItemElements() {
-    return this.promptItemElements.map(promptItemElement => this.#buildListItemElementFor(promptItemElement))
+  buildListItemElements(filter = "") {
+    const listItems = []
+
+    this.promptItemElements.forEach((promptItemElement) => {
+      const searchableText = promptItemElement.getAttribute("search")
+
+      if (!filter || searchableText.toLowerCase().includes(filter.toLowerCase())) {
+        listItems.push(this.#buildListItemElementFor(promptItemElement))
+      }
+    })
+
+    return listItems
   }
 
   #buildListItemElementFor(promptItemElement) {

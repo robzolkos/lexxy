@@ -1,5 +1,4 @@
 import PromptInlineSource from "../editor/prompt/inline_source"
-import { COMMAND_PRIORITY_HIGH } from "lexical";
 import { createElement } from "../helpers/html_helper";
 
 export default class LexicalPromptElement extends HTMLElement {
@@ -29,12 +28,11 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #addTriggerListener() {
-    console.debug("INVOKED!");
     this.#editorElement.addEventListener("keydown", (event) => {
       if (event.key === this.trigger) {
         this.#showPopover()
       }
-    }, COMMAND_PRIORITY_HIGH)
+    })
   }
 
   get #editor() {
@@ -51,17 +49,44 @@ export default class LexicalPromptElement extends HTMLElement {
 
   #showPopover() {
     this.#popoverElement.classList.toggle("lexical-prompt-menu--visible", true)
+    this.#positionPopover()
+    this.#editorElement.addEventListener("actiontext:change", this.#filterOptions)
+  }
 
+  #positionPopover() {
     const { x, y } = this.#selection.cursorPosition
     const popoverRect = this.#popoverElement.getBoundingClientRect()
-
-    console.debug("Es", y);
     this.#popoverElement.style.left = `${x}px`
     this.#popoverElement.style.top = `${y + popoverRect.height/2 }px`
   }
+
+  #hidePopover() {
+    this.#popoverElement.classList.toggle("lexical-prompt-menu--visible", false)
+    this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions)
+  }
+
+  #filterOptions = () => {
+    if (this.#editorContents.containsBackwardsFromCursor(this.trigger)) {
+      this.#showFilteredOptions()
+    } else {
+      this.#hidePopover()
+    }
+  }
+
+  #showFilteredOptions() {
+    const filter = this.#editorContents.textBefore(this.trigger)
+    const filteredListItems = this.source.buildListItemElements(filter)
+    this.#popoverElement.innerHTML = ""
+    this.#popoverElement.append(...filteredListItems)
+  }
+
   get #popoverElement() {
     this.popoverElement ??= this.#buildPopover()
     return this.popoverElement
+  }
+
+  get #editorContents() {
+    return this.#editorElement.contents
   }
 
   #buildPopover() {
