@@ -5,7 +5,7 @@ module ActionText
         options = options.symbolize_keys
         form = options.delete(:form)
 
-        value = value.try(:body_before_type_cast).presence
+        value = render_custom_attachments_in(value)
         value = "<div>#{value}</div>" if value
 
         options[:name] ||= name
@@ -17,6 +17,19 @@ module ActionText
         editor_tag = content_tag("lexical-editor", "", options, &block)
         editor_tag
       end
+
+      private
+        # Tempoary: we need to *adaptarize* action text
+        def render_custom_attachments_in(value)
+          if html = value.try(:body_before_type_cast).presence
+            Nokogiri::HTML.fragment(html).css("action-text-attachment").each do |node|
+              if node["url"].blank?
+                attachment = ActionText::Attachment.from_node(node)
+                node["content"] = render_action_text_attachment(attachment).to_json
+              end
+            end.to_html
+          end
+        end
     end
   end
 end

@@ -9,17 +9,16 @@
     <%= form.rich_text_area :body, placeholder: "Write something..." do %>
       <lexical-prompt-source id="inline-source">
         <%= Person.find_each do |person| %>
-          <lexical-prompt-item search="<%= "#{person.name} #{person.initials}" %>">
+          <lexical-prompt-item search="<%= "#{person.name} #{person.initials}" %>" sgid="<%= person.attachable_sgid %>">
             <template type="menu"><%= person.name %></template>
             <template type="editor">
-              <strong><%= person.initials %></strong>
-              <em><%= person.name %></em>
+              <%= render "people/person", person: person %>
             </template>
           </lexical-prompt-item>
         <% end %>
       </lexical-prompt-source>
 
-      <lexical-prompt trigger="@" source="inline-source">
+      <lexical-prompt trigger="@" source="inline-source" name="inline-mention">
       </lexical-prompt>
     <% end %>
   </div>

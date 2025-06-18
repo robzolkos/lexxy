@@ -1,6 +1,7 @@
 import PromptInlineSource from "../editor/prompt/inline_source"
 import { createElement } from "../helpers/html_helper";
 import { COMMAND_PRIORITY_HIGH, KEY_ENTER_COMMAND } from "lexical";
+import { CustomActionTextAttachmentNode } from "../nodes/custom_action_text_attachment_node";
 
 export default class LexicalPromptElement extends HTMLElement {
   constructor() {
@@ -17,6 +18,10 @@ export default class LexicalPromptElement extends HTMLElement {
     this.source = null
     this.popoverElement = null
     this.#popoverElement.remove()
+  }
+
+  get name() {
+    return this.getAttribute("name")
   }
 
   get trigger() {
@@ -97,7 +102,7 @@ export default class LexicalPromptElement extends HTMLElement {
       return
     }
 
-    if (this.#editorContents.containsBackwardsFromCursor(this.trigger)) {
+    if (this.#editorContents.containsTextBackUntil(this.trigger)) {
       this.#showFilteredOptions()
     } else {
       this.#hidePopover()
@@ -105,7 +110,7 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #showFilteredOptions() {
-    const filter = this.#editorContents.textBefore(this.trigger)
+    const filter = this.#editorContents.textBackUntil(this.trigger)
     const filteredListItems = this.source.buildListItemElements(filter)
     this.#popoverElement.innerHTML = ""
     this.#popoverElement.append(...filteredListItems)
@@ -146,8 +151,13 @@ export default class LexicalPromptElement extends HTMLElement {
   #handleSelectedOption(event) {
     event.preventDefault()
 
-    const template = this.source.editorTemplateFor(this.#selectedListItem)
-    console.debug("Finding template", template)
+    const promptItem = this.source.promptItemFor(this.#selectedListItem)
+    const template = promptItem.querySelector("template[type='editor']")
+    const stringToReplace = `${this.trigger}${this.#editorContents.textBackUntil(this.trigger)}`
+    console.debug("REPLACING #", stringToReplace);
+
+    const attachmentNode = new CustomActionTextAttachmentNode({ sgid: promptItem.getAttribute("sgid"), alt: "Some attachment", innerHtml: template.innerHTML })
+    this.#editorContents.replaceTextBackUntil(stringToReplace, attachmentNode)
 
     this.#hidePopover()
     this.#editorElement.focus()

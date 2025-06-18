@@ -123,7 +123,7 @@ export default class Contents {
     })
   }
 
-  textBefore(string) {
+  textBackUntil(string) {
     let result = ""
 
     this.editor.getEditorState().read(() => {
@@ -149,7 +149,7 @@ export default class Contents {
     return result
   }
 
-  containsBackwardsFromCursor(string) {
+  containsTextBackUntil(string) {
     let result = false
 
     this.editor.getEditorState().read(() => {
@@ -170,6 +170,44 @@ export default class Contents {
     })
 
     return result
+  }
+
+  replaceTextBackUntil(stringToReplace, replacementNode) {
+    this.editor.update(() => {
+      const selection = $getSelection()
+      if (!selection || !selection.isCollapsed()) return
+
+      const anchor = selection.anchor
+      const anchorNode = anchor.getNode()
+
+      if (!$isTextNode(anchorNode)) return
+
+      const fullText = anchorNode.getTextContent()
+      const offset = anchor.offset
+
+      const textBeforeCursor = fullText.slice(0, offset)
+      const lastIndex = textBeforeCursor.lastIndexOf(stringToReplace)
+
+      if (lastIndex === -1) return
+
+      // Split the text node at the position where the string starts
+      const textBeforeString = fullText.slice(0, lastIndex)
+      const textAfterCursor = fullText.slice(offset)
+
+      // Create a text node for the text before the string
+      const textNodeBefore = $createTextNode(textBeforeString)
+
+      // Create a text node for the text after the cursor
+      const textNodeAfter = $createTextNode(textAfterCursor)
+
+      // Replace the current node with the sequence: textBefore + replacementNode + textAfter
+      anchorNode.replace(textNodeBefore)
+      textNodeBefore.insertAfter(replacementNode)
+      replacementNode.insertAfter(textNodeAfter)
+
+      // Set the selection after the replacement node
+      textNodeAfter.select(0, 0)
+    })
   }
 
   uploadFile(file) {

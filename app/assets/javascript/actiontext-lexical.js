@@ -6182,7 +6182,7 @@ class Contents {
     });
   }
 
-  textBefore(string) {
+  textBackUntil(string) {
     let result = "";
 
     this.editor.getEditorState().read(() => {
@@ -6208,7 +6208,7 @@ class Contents {
     return result
   }
 
-  containsBackwardsFromCursor(string) {
+  containsTextBackUntil(string) {
     let result = false;
 
     this.editor.getEditorState().read(() => {
@@ -6229,6 +6229,44 @@ class Contents {
     });
 
     return result
+  }
+
+  replaceTextBackUntil(stringToReplace, replacementNode) {
+    this.editor.update(() => {
+      const selection = Nr();
+      if (!selection || !selection.isCollapsed()) return
+
+      const anchor = selection.anchor;
+      const anchorNode = anchor.getNode();
+
+      if (!Qn(anchorNode)) return
+
+      const fullText = anchorNode.getTextContent();
+      const offset = anchor.offset;
+
+      const textBeforeCursor = fullText.slice(0, offset);
+      const lastIndex = textBeforeCursor.lastIndexOf(stringToReplace);
+
+      if (lastIndex === -1) return
+
+      // Split the text node at the position where the string starts
+      const textBeforeString = fullText.slice(0, lastIndex);
+      const textAfterCursor = fullText.slice(offset);
+
+      // Create a text node for the text before the string
+      const textNodeBefore = Xn(textBeforeString);
+
+      // Create a text node for the text after the cursor
+      const textNodeAfter = Xn(textAfterCursor);
+
+      // Replace the current node with the sequence: textBefore + replacementNode + textAfter
+      anchorNode.replace(textNodeBefore);
+      textNodeBefore.insertAfter(replacementNode);
+      replacementNode.insertAfter(textNodeAfter);
+
+      // Set the selection after the replacement node
+      textNodeAfter.select(0, 0);
+    });
   }
 
   uploadFile(file) {
@@ -8511,6 +8549,93 @@ class Clipboard {
   }
 }
 
+class CustomActionTextAttachmentNode extends gi {
+  static getType() {
+    return "custom_action_text_attachment"
+  }
+
+  static clone(node) {
+    return new CustomActionTextAttachmentNode({ ...node }, node.__key);
+  }
+
+  static importJSON(serializedNode) {
+    return new CustomActionTextAttachmentNode({ serializedNode })
+  }
+
+  static importDOM() {
+    return {
+      "action-text-attachment": (attachment) => {
+        if (!attachment.getAttribute("content")) {
+          return null
+        }
+
+        return {
+          conversion: () => {
+            return {
+              node: new CustomActionTextAttachmentNode({
+                sgid: attachment.getAttribute("sgid"),
+                innerHtml: JSON.parse(attachment.getAttribute("content")),
+                contentType: attachment.getAttribute("content-type")
+              })
+            }
+          },
+          priority: 2
+        }
+      }
+    }
+  }
+
+  constructor({ sgid, contentType, innerHtml }, key) {
+    super(key);
+
+    this.sgid = sgid;
+    this.contentType = contentType || "";
+    this.innerHtml = innerHtml;
+  }
+
+  createDOM() {
+    const figure = createElement("figure", { className: `attachment attachment--custom`, "data-content-type": this.contentType });
+
+    figure.addEventListener("click", (event) => {
+      dispatchCustomEvent(figure, "lexical:node-selected", { key: this.getKey() });
+    });
+
+    figure.insertAdjacentHTML("beforeend", this.innerHtml);
+
+    return figure
+  }
+
+  updateDOM() {
+    return true
+  }
+
+  isInline() {
+    return true
+  }
+
+  exportDOM() {
+    const attachment = createElement("action-text-attachment", {
+      sgid: this.sgid,
+      alt: this.altText
+    });
+
+    return { element: attachment }
+  }
+
+  exportJSON() {
+    return {
+      type: "custom_action_text_attachment",
+      version: 1,
+      sgid: this.sgid,
+      altText: this.altText
+    }
+  }
+
+  decorate() {
+    return null
+  }
+}
+
 class LexicalEditorElement extends HTMLElement {
   static formAssociated = true
   static debug = true
@@ -8622,6 +8747,7 @@ class LexicalEditorElement extends HTMLElement {
         g$2,
         m$2,
 
+        CustomActionTextAttachmentNode,
         ActionTextAttachmentNode,
         ActionTextAttachmentUploadNode
       ]
@@ -8663,6 +8789,7 @@ class LexicalEditorElement extends HTMLElement {
 
   #loadInitialValue() {
     const initialHtml = this.getAttribute("value") || "<p></p>";
+    console.debug("INITIAL", initialHtml);
     this.value = initialHtml;
   }
 
@@ -8875,9 +9002,8 @@ class PromptInlineSource {
     return listItems
   }
 
-  editorTemplateFor(listItem) {
-    const promptItemElement = this.promptItemByListItem.get(listItem);
-    return promptItemElement.querySelector("template[type='editor']")
+  promptItemFor(listItem) {
+    return this.promptItemByListItem.get(listItem)
   }
 
   #buildListItemElementFor(promptItemElement) {
@@ -8905,6 +9031,10 @@ class LexicalPromptElement extends HTMLElement {
     this.source = null;
     this.popoverElement = null;
     this.#popoverElement.remove();
+  }
+
+  get name() {
+    return this.getAttribute("name")
   }
 
   get trigger() {
@@ -8949,19 +9079,19 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   #selectFirstOption() {
-    const firstOption = this.listItemElements[0];
+    const firstOption = this.#listItemElements[0];
 
     if (firstOption) {
       this.#selectOption(firstOption);
     }
   }
 
-  get listItemElements() {
+  get #listItemElements() {
     return Array.from(this.#popoverElement.querySelectorAll("li"))
   }
 
   #selectOption(option) {
-    this.listItemElements.forEach((item) => { item.toggleAttribute("aria-selected", false); });
+    this.#listItemElements.forEach((item) => { item.toggleAttribute("aria-selected", false); });
     option.toggleAttribute("aria-selected", true);
   }
 
@@ -8985,7 +9115,7 @@ class LexicalPromptElement extends HTMLElement {
       return
     }
 
-    if (this.#editorContents.containsBackwardsFromCursor(this.trigger)) {
+    if (this.#editorContents.containsTextBackUntil(this.trigger)) {
       this.#showFilteredOptions();
     } else {
       this.#hidePopover();
@@ -8993,7 +9123,7 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   #showFilteredOptions() {
-    const filter = this.#editorContents.textBefore(this.trigger);
+    const filter = this.#editorContents.textBackUntil(this.trigger);
     const filteredListItems = this.source.buildListItemElements(filter);
     this.#popoverElement.innerHTML = "";
     this.#popoverElement.append(...filteredListItems);
@@ -9015,27 +9145,32 @@ class LexicalPromptElement extends HTMLElement {
 
   #moveSelectionDown() {
     const nextIndex = this.#selectedIndex + 1;
-    if (nextIndex < this.listItemElements.length) this.#selectOption(this.listItemElements[nextIndex]);
+    if (nextIndex < this.#listItemElements.length) this.#selectOption(this.#listItemElements[nextIndex]);
   }
 
   #moveSelectionUp() {
     const nextIndex = this.#selectedIndex - 1;
-    if (nextIndex >= 0) this.#selectOption(this.listItemElements[nextIndex]);
+    if (nextIndex >= 0) this.#selectOption(this.#listItemElements[nextIndex]);
   }
 
   get #selectedIndex() {
-    return this.listItemElements.findIndex((item) => item.hasAttribute("aria-selected"))
+    return this.#listItemElements.findIndex((item) => item.hasAttribute("aria-selected"))
   }
 
   get #selectedListItem() {
-    return this.listItemElements[this.#selectedIndex]
+    return this.#listItemElements[this.#selectedIndex]
   }
 
   #handleSelectedOption(event) {
     event.preventDefault();
 
-    const template = this.source.editorTemplateFor(this.#selectedListItem);
-    console.debug("Finding template", template);
+    const promptItem = this.source.promptItemFor(this.#selectedListItem);
+    const template = promptItem.querySelector("template[type='editor']");
+    const stringToReplace = `${this.trigger}${this.#editorContents.textBackUntil(this.trigger)}`;
+    console.debug("REPLACING #", stringToReplace);
+
+    const attachmentNode = new CustomActionTextAttachmentNode({ sgid: promptItem.getAttribute("sgid"), alt: "Some attachment", innerHtml: template.innerHTML });
+    this.#editorContents.replaceTextBackUntil(stringToReplace, attachmentNode);
 
     this.#hidePopover();
     this.#editorElement.focus();

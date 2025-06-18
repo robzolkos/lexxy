@@ -16,6 +16,7 @@ import { containsVisuallyRelevantChildren, createElement, dispatch, sanitize } f
 import LexicalToolbar from "./toolbar"
 import Contents from "../editor/contents";
 import Clipboard from "../editor/clipboard";
+import { CustomActionTextAttachmentNode } from "../nodes/custom_action_text_attachment_node";
 
 export default class LexicalEditorElement extends HTMLElement {
   static formAssociated = true
@@ -128,6 +129,7 @@ export default class LexicalEditorElement extends HTMLElement {
         LinkNode,
         AutoLinkNode,
 
+        CustomActionTextAttachmentNode,
         ActionTextAttachmentNode,
         ActionTextAttachmentUploadNode
       ]
@@ -169,6 +171,7 @@ export default class LexicalEditorElement extends HTMLElement {
 
   #loadInitialValue() {
     const initialHtml = this.getAttribute("value") || "<p></p>"
+    console.debug("INITIAL", initialHtml);
     this.value = initialHtml
   }
 

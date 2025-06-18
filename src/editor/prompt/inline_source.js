@@ -22,9 +22,8 @@ export default class PromptInlineSource {
     return listItems
   }
 
-  editorTemplateFor(listItem) {
-    const promptItemElement = this.promptItemByListItem.get(listItem)
-    return promptItemElement.querySelector("template[type='editor']")
+  promptItemFor(listItem) {
+    return this.promptItemByListItem.get(listItem)
   }
 
   #buildListItemElementFor(promptItemElement) {
