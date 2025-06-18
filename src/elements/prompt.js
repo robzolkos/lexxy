@@ -17,7 +17,6 @@ export default class LexicalPromptElement extends HTMLElement {
   disconnectedCallback() {
     this.source = null
     this.popoverElement = null
-    this.#popoverElement.remove()
   }
 
   get name() {
@@ -56,6 +55,7 @@ export default class LexicalPromptElement extends HTMLElement {
 
   #showPopover() {
     this.#popoverElement.classList.toggle("lexical-prompt-menu--visible", true)
+    this.#filterOptions()
     this.#selectFirstOption()
     this.#positionPopover()
 
