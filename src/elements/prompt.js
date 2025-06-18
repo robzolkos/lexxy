@@ -137,8 +137,8 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #moveSelectionUp() {
-    const nextIndex = this.#selectedIndex - 1
-    if (nextIndex >= 0) this.#selectOption(this.#listItemElements[nextIndex])
+    const previousIndex = this.#selectedIndex - 1
+    if (previousIndex >= 0) this.#selectOption(this.#listItemElements[previousIndex])
   }
 
   get #selectedIndex() {
