@@ -9150,8 +9150,8 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   #moveSelectionUp() {
-    const nextIndex = this.#selectedIndex - 1;
-    if (nextIndex >= 0) this.#selectOption(this.#listItemElements[nextIndex]);
+    const previousIndex = this.#selectedIndex - 1;
+    if (previousIndex >= 0) this.#selectOption(this.#listItemElements[previousIndex]);
   }
 
   get #selectedIndex() {
@@ -9165,20 +9165,22 @@ class LexicalPromptElement extends HTMLElement {
   #handleSelectedOption(event) {
     event.preventDefault();
 
+    this.#replaceTriggerWithSelectedItem();
+    this.#hidePopover();
+    this.#editorElement.focus();
+
+    return true
+  }
+
+  #replaceTriggerWithSelectedItem() {
     const promptItem = this.source.promptItemFor(this.#selectedListItem);
 
     if (!promptItem) { return }
 
     const template = promptItem.querySelector("template[type='editor']");
     const stringToReplace = `${this.trigger}${this.#editorContents.textBackUntil(this.trigger)}`;
-
     const attachmentNode = new CustomActionTextAttachmentNode({ sgid: promptItem.getAttribute("sgid"), alt: "Some attachment", innerHtml: template.innerHTML });
     this.#editorContents.replaceTextBackUntil(stringToReplace, attachmentNode);
-
-    this.#hidePopover();
-    this.#editorElement.focus();
-
-    return true
   }
 
   get #popoverElement() {

@@ -152,20 +152,22 @@ export default class LexicalPromptElement extends HTMLElement {
   #handleSelectedOption(event) {
     event.preventDefault()
 
+    this.#replaceTriggerWithSelectedItem()
+    this.#hidePopover()
+    this.#editorElement.focus()
+
+    return true
+  }
+
+  #replaceTriggerWithSelectedItem() {
     const promptItem = this.source.promptItemFor(this.#selectedListItem)
 
     if (!promptItem) { return }
 
     const template = promptItem.querySelector("template[type='editor']")
     const stringToReplace = `${this.trigger}${this.#editorContents.textBackUntil(this.trigger)}`
-
     const attachmentNode = new CustomActionTextAttachmentNode({ sgid: promptItem.getAttribute("sgid"), alt: "Some attachment", innerHtml: template.innerHTML })
     this.#editorContents.replaceTextBackUntil(stringToReplace, attachmentNode)
-
-    this.#hidePopover()
-    this.#editorElement.focus()
-
-    return true
   }
 
   get #popoverElement() {
