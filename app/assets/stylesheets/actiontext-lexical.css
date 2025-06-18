@@ -3,6 +3,8 @@
 }
 
 lexical-editor {
+  position: relative;
+
   .node--selected:has(img) {
     img {
       border: 2px solid blue;

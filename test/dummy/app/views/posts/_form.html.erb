@@ -6,8 +6,37 @@
 
   <div>
     <%= form.label :body, style: "display: block" %>
-      <%= form.rich_text_area :body, placeholder: "Write something..." %>
-    </div>
+    <%= form.rich_text_area :body, placeholder: "Write something..." do %>
+      <lexical-prompt-source id="inline-source">
+        <lexical-prompt-item searchable="Jason Zimdars">
+          <template type="menu">Jason Zimdars</template>
+          <template type="editor">Jason Zimdards</template>
+        </lexical-prompt-item>
+        <lexical-prompt-item searchable="Emily Rodriguez">
+          <template type="menu">Emily Rodriguez</template>
+          <template type="editor">Emily Rodriguez</template>
+        </lexical-prompt-item>
+        <lexical-prompt-item searchable="Michael Chen">
+          <template type="menu">Michael Chen</template>
+          <template type="editor">Michael Chen</template>
+        </lexical-prompt-item>
+        <lexical-prompt-item searchable="Sarah Thompson">
+          <template type="menu">Sarah Thompson</template>
+          <template type="editor">Sarah Thompson</template>
+        </lexical-prompt-item>
+        <lexical-prompt-item searchable="James Wilson">
+          <template type="menu">James Wilson</template>
+          <template type="editor">James Wilson</template>
+        </lexical-prompt-item>
+        <lexical-prompt-item searchable="Maria Garcia">
+          <template type="menu">Maria Garcia</template>
+          <template type="editor">Maria Garcia</template>
+        </lexical-prompt-item>
+
+      <lexical-prompt trigger="@" source="inline-source">
+      </lexical-prompt>
+    <% end %>
+  </div>
   </div>
 
   <div>

@@ -34,6 +34,46 @@ export default class Selection {
     return this._current
   }
 
+  get cursorPosition() {
+    let position = null
+
+    this.editor.getEditorState().read(() => {
+      const lexicalSelection = $getSelection()
+      if (!lexicalSelection || !lexicalSelection.isCollapsed()) return
+
+      const nativeSelection = window.getSelection()
+      if (!nativeSelection || nativeSelection.rangeCount === 0) return
+
+      const range = nativeSelection.getRangeAt(0)
+      let rect = range.getBoundingClientRect()
+
+      // Some browsers give an empty rect for a caret-only range. Fallback:
+      if (
+        (rect.width === 0 && rect.height === 0) ||
+        (rect.top === 0 && rect.left === 0)
+      ) {
+        const marker = document.createElement("span")
+        marker.textContent = "\u200b"
+        range.insertNode(marker)
+        rect = marker.getBoundingClientRect()
+        marker.remove()
+
+        nativeSelection.removeAllRanges()
+        nativeSelection.addRange(range)
+      }
+
+      if (!rect) return
+
+      const rootRect = this.editor.getRootElement().getBoundingClientRect()
+      position = {
+        x: rect.left - rootRect.left,
+        y: rect.top - rootRect.top,
+      }
+    })
+
+    return position
+  }
+
   #processSelectionChangeCommands() {
     this.editor.registerCommand(KEY_ARROW_LEFT_COMMAND, this.#selectPreviousNode.bind(this), COMMAND_PRIORITY_LOW)
     this.editor.registerCommand(KEY_ARROW_RIGHT_COMMAND, this.#selectNextNode.bind(this), COMMAND_PRIORITY_LOW)

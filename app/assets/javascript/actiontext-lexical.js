@@ -5916,6 +5916,46 @@ class Selection {
     return this._current
   }
 
+  get cursorPosition() {
+    let position = null;
+
+    this.editor.getEditorState().read(() => {
+      const lexicalSelection = Nr();
+      if (!lexicalSelection || !lexicalSelection.isCollapsed()) return
+
+      const nativeSelection = window.getSelection();
+      if (!nativeSelection || nativeSelection.rangeCount === 0) return
+
+      const range = nativeSelection.getRangeAt(0);
+      let rect = range.getBoundingClientRect();
+
+      // Some browsers give an empty rect for a caret-only range. Fallback:
+      if (
+        (rect.width === 0 && rect.height === 0) ||
+        (rect.top === 0 && rect.left === 0)
+      ) {
+        const marker = document.createElement("span");
+        marker.textContent = "\u200b";
+        range.insertNode(marker);
+        rect = marker.getBoundingClientRect();
+        marker.remove();
+
+        nativeSelection.removeAllRanges();
+        nativeSelection.addRange(range);
+      }
+
+      if (!rect) return
+
+      const rootRect = this.editor.getRootElement().getBoundingClientRect();
+      position = {
+        x: rect.left - rootRect.left,
+        y: rect.top - rootRect.top,
+      };
+    });
+
+    return position
+  }
+
   #processSelectionChangeCommands() {
     this.editor.registerCommand(Te, this.#selectPreviousNode.bind(this), Ii);
     this.editor.registerCommand(ve, this.#selectNextNode.bind(this), Ii);
@@ -8737,6 +8777,96 @@ class LinkDialog extends HTMLElement {
 // We should extend the native dialog and avoid the intermediary <dialog> but not
 // supported by Safari yet: customElements.define("lexical-link-dialog", LinkDialog, { extends: "dialog" })
 customElements.define("lexical-link-dialog", LinkDialog);
+
+class PromptInlineSource {
+  constructor(promptItemElements) {
+    this.promptItemElements = Array.from(promptItemElements);
+  }
+
+  buildListItemElements() {
+    return this.promptItemElements.map(promptItemElement => this.#buildListItemElementFor(promptItemElement))
+  }
+
+  #buildListItemElementFor(promptItemElement) {
+    const template = promptItemElement.querySelector("template[type='menu']");
+    const fragment = template.content.cloneNode(true);
+    const listItemElement = createElement("li");
+    listItemElement.appendChild(fragment);
+    return listItemElement
+  }
+}
+
+class LexicalPromptElement extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    this.source = this.#createSource();
+
+    this.#addTriggerListener();
+  }
+
+  disconnectedCallback() {
+    this.source = null;
+    this.popoverElement = null;
+    this.#popoverElement.remove();
+  }
+
+  get trigger() {
+    return this.getAttribute("trigger")
+  }
+
+  #createSource() {
+    const sourceElement = document.getElementById(this.getAttribute("source"));
+    return new PromptInlineSource(sourceElement.querySelectorAll("lexical-prompt-item"))
+  }
+
+  #addTriggerListener() {
+    console.debug("INVOKED!");
+    this.#editorElement.addEventListener("keydown", (event) => {
+      if (event.key === this.trigger) {
+        this.#showPopover();
+      }
+    }, Ki);
+  }
+
+  get #editor() {
+    return this.#editorElement.editor
+  }
+
+  get #editorElement() {
+    return this.closest("lexical-editor")
+  }
+
+  get #selection() {
+    return this.#editorElement.selection
+  }
+
+  #showPopover() {
+    console.debug("Show popover at", this.#selection.cursorPosition);
+    const { x, y } = this.#selection.cursorPosition;
+
+    this.#popoverElement.style.left = `${x}px`;
+    this.#popoverElement.style.top = `${y}px`;
+    this.#popoverElement.toggleAttribute("hidden", false);
+  }
+
+  get #popoverElement() {
+    this.popoverElement ??= this.#buildPopover();
+    return this.popoverElement
+  }
+
+  #buildPopover() {
+    const popoverContainer = createElement("div", { hidden: true }); // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
+    popoverContainer.style.position = "absolute";
+    popoverContainer.append(...this.source.buildListItemElements());
+    this.#editorElement.appendChild(popoverContainer);
+    return popoverContainer
+  }
+}
+
+customElements.define("lexical-prompt", LexicalPromptElement);
 
 /**
  * Original by Samuel Flores
