@@ -1,5 +1,6 @@
 import PromptInlineSource from "../editor/prompt/inline_source"
 import { createElement } from "../helpers/html_helper";
+import { COMMAND_PRIORITY_HIGH, KEY_ENTER_COMMAND } from "lexical";
 
 export default class LexicalPromptElement extends HTMLElement {
   constructor() {
@@ -30,6 +31,7 @@ export default class LexicalPromptElement extends HTMLElement {
   #addTriggerListener() {
     this.#editorElement.addEventListener("keydown", (event) => {
       if (event.key === this.trigger) {
+        this.initialPrompt = true
         this.#showPopover()
       }
     })
@@ -49,8 +51,30 @@ export default class LexicalPromptElement extends HTMLElement {
 
   #showPopover() {
     this.#popoverElement.classList.toggle("lexical-prompt-menu--visible", true)
+    this.#selectFirstOption()
     this.#positionPopover()
+
+    this.#editorElement.addEventListener("keydown", this.#handleKeydownOnPopover)
     this.#editorElement.addEventListener("actiontext:change", this.#filterOptions)
+    // We can't use a regular keydown for Enter as Lexical handles it first
+    this.unregisterEnterListener = this.#editor.registerCommand(KEY_ENTER_COMMAND, this.#handleSelectedOption.bind(this), COMMAND_PRIORITY_HIGH)
+  }
+
+  #selectFirstOption() {
+    const firstOption = this.listItemElements[0]
+
+    if (firstOption) {
+      this.#selectOption(firstOption)
+    }
+  }
+
+  get listItemElements() {
+    return Array.from(this.#popoverElement.querySelectorAll("li"))
+  }
+
+  #selectOption(option) {
+    this.listItemElements.forEach((item) => { item.toggleAttribute("aria-selected", false) })
+    option.toggleAttribute("aria-selected", true)
   }
 
   #positionPopover() {
@@ -63,9 +87,16 @@ export default class LexicalPromptElement extends HTMLElement {
   #hidePopover() {
     this.#popoverElement.classList.toggle("lexical-prompt-menu--visible", false)
     this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions)
+    this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover)
+    this.unregisterEnterListener()
   }
 
   #filterOptions = () => {
+    if (this.initialPrompt) {
+      this.initialPrompt = false
+      return
+    }
+
     if (this.#editorContents.containsBackwardsFromCursor(this.trigger)) {
       this.#showFilteredOptions()
     } else {
@@ -78,6 +109,43 @@ export default class LexicalPromptElement extends HTMLElement {
     const filteredListItems = this.source.buildListItemElements(filter)
     this.#popoverElement.innerHTML = ""
     this.#popoverElement.append(...filteredListItems)
+  }
+
+  #handleKeydownOnPopover = (event) => {
+    if (event.key === "Escape") {
+      this.#hidePopover()
+      this.#editorElement.focus()
+      event.stopPropagation()
+    } else if (event.key === "ArrowDown") {
+      this.#moveSelectionDown()
+      event.preventDefault()
+    } else if (event.key === "ArrowUp") {
+      this.#moveSelectionUp()
+      event.preventDefault()
+    }
+  }
+
+  #moveSelectionDown() {
+    const nextIndex = this.#selectedIndex + 1
+    if (nextIndex < this.listItemElements.length) this.#selectOption(this.listItemElements[nextIndex])
+  }
+
+  #moveSelectionUp() {
+    const nextIndex = this.#selectedIndex - 1
+    if (nextIndex >= 0) this.#selectOption(this.listItemElements[nextIndex])
+  }
+
+  get #selectedIndex() {
+    return this.listItemElements.findIndex((item) => item.hasAttribute("aria-selected"))
+  }
+
+  #handleSelectedOption(event) {
+    event.preventDefault()
+
+    this.#hidePopover()
+    this.#editorElement.focus()
+
+    return true
   }
 
   get #popoverElement() {
