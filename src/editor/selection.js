@@ -65,9 +65,26 @@ export default class Selection {
       if (!rect) return
 
       const rootRect = this.editor.getRootElement().getBoundingClientRect()
+      let y = rect.top - rootRect.top
+
+      // Try to get the font size at the caret's container
+      let fontSize = 0
+      const anchorNode = nativeSelection.anchorNode
+      if (anchorNode && anchorNode.nodeType === Node.TEXT_NODE) {
+        const parentElement = anchorNode.parentElement
+        if (parentElement) {
+          const computedStyle = window.getComputedStyle(parentElement)
+          const fontSizePx = parseFloat(computedStyle.fontSize)
+          if (!isNaN(fontSizePx)) {
+            fontSize = fontSizePx
+          }
+        }
+      }
+
+      // Adjust y by subtracting font size
       position = {
         x: rect.left - rootRect.left,
-        y: rect.top - rootRect.top,
+        y: y + fontSize
       }
     })
 

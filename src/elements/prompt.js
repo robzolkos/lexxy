@@ -50,21 +50,20 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #showPopover() {
-    console.debug("Show popover at", this.#selection.cursorPosition)
     const { x, y } = this.#selection.cursorPosition
+    const popoverRect = this.#popoverElement.getBoundingClientRect()
 
     this.#popoverElement.style.left = `${x}px`
-    this.#popoverElement.style.top = `${y}px`
-    this.#popoverElement.toggleAttribute("hidden", false)
+    this.#popoverElement.style.top = `${y + popoverRect.height/2 }px`
   }
-
   get #popoverElement() {
     this.popoverElement ??= this.#buildPopover()
     return this.popoverElement
   }
 
   #buildPopover() {
-    const popoverContainer = createElement("div", { hidden: true }) // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
+    const popoverContainer = createElement("ul") // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
+    popoverContainer.classList.add("lexical-prompt-menu")
     popoverContainer.style.position = "absolute"
     popoverContainer.append(...this.source.buildListItemElements())
     this.#editorElement.appendChild(popoverContainer)
