@@ -5929,45 +5929,55 @@ class Selection {
       const range = nativeSelection.getRangeAt(0);
       let rect = range.getBoundingClientRect();
 
-      // Some browsers give an empty rect for a caret-only range. Fallback:
-      if (
-        (rect.width === 0 && rect.height === 0) ||
-        (rect.top === 0 && rect.left === 0)
-      ) {
-        const marker = document.createElement("span");
+      // Create a span marker if the rect is unreliable
+      let marker;
+      if ((rect.width === 0 && rect.height === 0) || (rect.top === 0 && rect.left === 0)) {
+        marker = document.createElement("span");
         marker.textContent = "\u200b";
+        marker.style.display = "inline-block";
+        marker.style.width = "1px";
+        marker.style.height = "1em";
+        marker.style.lineHeight = "normal";
+
         range.insertNode(marker);
         rect = marker.getBoundingClientRect();
-        marker.remove();
 
+        // Reset selection after inserting the marker
         nativeSelection.removeAllRanges();
-        nativeSelection.addRange(range);
+        const newRange = document.createRange();
+        newRange.setStartAfter(marker);
+        newRange.collapse(true);
+        nativeSelection.addRange(newRange);
       }
 
       if (!rect) return
 
       const rootRect = this.editor.getRootElement().getBoundingClientRect();
+      let x = rect.left - rootRect.left;
       let y = rect.top - rootRect.top;
 
-      // Try to get the font size at the caret's container
+      // Try to get the font size from the marker or its parent
       let fontSize = 0;
-      const anchorNode = nativeSelection.anchorNode;
-      if (anchorNode && anchorNode.nodeType === Node.TEXT_NODE) {
-        const parentElement = anchorNode.parentElement;
-        if (parentElement) {
-          const computedStyle = window.getComputedStyle(parentElement);
-          const fontSizePx = parseFloat(computedStyle.fontSize);
-          if (!isNaN(fontSizePx)) {
-            fontSize = fontSizePx;
-          }
+      if (marker) {
+        const computed = window.getComputedStyle(marker);
+        fontSize = parseFloat(computed.fontSize);
+        marker.remove();
+      } else {
+        const anchorNode = nativeSelection.anchorNode;
+        const parentElement = anchorNode?.nodeType === Node.TEXT_NODE
+          ? anchorNode.parentElement
+          : anchorNode;
+        if (parentElement instanceof HTMLElement) {
+          const computed = window.getComputedStyle(parentElement);
+          fontSize = parseFloat(computed.fontSize);
         }
       }
 
-      // Adjust y by subtracting font size
-      position = {
-        x: rect.left - rootRect.left,
-        y: y + fontSize
-      };
+      if (!isNaN(fontSize)) {
+        y += fontSize;
+      }
+
+      position = { x, y };
     });
 
     return position
@@ -8861,9 +8871,12 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   #showPopover() {
+    this.#popoverElement.classList.toggle("lexical-prompt-menu--visible", true);
+
     const { x, y } = this.#selection.cursorPosition;
     const popoverRect = this.#popoverElement.getBoundingClientRect();
 
+    console.debug("Es", y);
     this.#popoverElement.style.left = `${x}px`;
     this.#popoverElement.style.top = `${y + popoverRect.height/2 }px`;
   }

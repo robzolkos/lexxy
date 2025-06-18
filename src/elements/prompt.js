@@ -50,9 +50,12 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #showPopover() {
+    this.#popoverElement.classList.toggle("lexical-prompt-menu--visible", true)
+
     const { x, y } = this.#selection.cursorPosition
     const popoverRect = this.#popoverElement.getBoundingClientRect()
 
+    console.debug("Es", y);
     this.#popoverElement.style.left = `${x}px`
     this.#popoverElement.style.top = `${y + popoverRect.height/2 }px`
   }
