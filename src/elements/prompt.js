@@ -114,6 +114,7 @@ export default class LexicalPromptElement extends HTMLElement {
     const filteredListItems = this.source.buildListItemElements(filter)
     this.#popoverElement.innerHTML = ""
     this.#popoverElement.append(...filteredListItems)
+    this.#selectFirstOption()
   }
 
   #handleKeydownOnPopover = (event) => {
@@ -152,9 +153,11 @@ export default class LexicalPromptElement extends HTMLElement {
     event.preventDefault()
 
     const promptItem = this.source.promptItemFor(this.#selectedListItem)
+
+    if (!promptItem) { return }
+
     const template = promptItem.querySelector("template[type='editor']")
     const stringToReplace = `${this.trigger}${this.#editorContents.textBackUntil(this.trigger)}`
-    console.debug("REPLACING #", stringToReplace);
 
     const attachmentNode = new CustomActionTextAttachmentNode({ sgid: promptItem.getAttribute("sgid"), alt: "Some attachment", innerHtml: template.innerHTML })
     this.#editorContents.replaceTextBackUntil(stringToReplace, attachmentNode)
