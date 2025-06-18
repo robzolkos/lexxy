@@ -61,19 +61,19 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #selectFirstOption() {
-    const firstOption = this.listItemElements[0]
+    const firstOption = this.#listItemElements[0]
 
     if (firstOption) {
       this.#selectOption(firstOption)
     }
   }
 
-  get listItemElements() {
+  get #listItemElements() {
     return Array.from(this.#popoverElement.querySelectorAll("li"))
   }
 
   #selectOption(option) {
-    this.listItemElements.forEach((item) => { item.toggleAttribute("aria-selected", false) })
+    this.#listItemElements.forEach((item) => { item.toggleAttribute("aria-selected", false) })
     option.toggleAttribute("aria-selected", true)
   }
 
@@ -127,20 +127,20 @@ export default class LexicalPromptElement extends HTMLElement {
 
   #moveSelectionDown() {
     const nextIndex = this.#selectedIndex + 1
-    if (nextIndex < this.listItemElements.length) this.#selectOption(this.listItemElements[nextIndex])
+    if (nextIndex < this.#listItemElements.length) this.#selectOption(this.#listItemElements[nextIndex])
   }
 
   #moveSelectionUp() {
     const nextIndex = this.#selectedIndex - 1
-    if (nextIndex >= 0) this.#selectOption(this.listItemElements[nextIndex])
+    if (nextIndex >= 0) this.#selectOption(this.#listItemElements[nextIndex])
   }
 
   get #selectedIndex() {
-    return this.listItemElements.findIndex((item) => item.hasAttribute("aria-selected"))
+    return this.#listItemElements.findIndex((item) => item.hasAttribute("aria-selected"))
   }
 
   get #selectedListItem() {
-    return this.listItemElements[this.#selectedIndex]
+    return this.#listItemElements[this.#selectedIndex]
   }
 
   #handleSelectedOption(event) {
