@@ -139,8 +139,15 @@ export default class LexicalPromptElement extends HTMLElement {
     return this.listItemElements.findIndex((item) => item.hasAttribute("aria-selected"))
   }
 
+  get #selectedListItem() {
+    return this.listItemElements[this.#selectedIndex]
+  }
+
   #handleSelectedOption(event) {
     event.preventDefault()
+
+    const template = this.source.editorTemplateFor(this.#selectedListItem)
+    console.debug("Finding template", template)
 
     this.#hidePopover()
     this.#editorElement.focus()

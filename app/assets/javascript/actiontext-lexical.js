@@ -8860,22 +8860,31 @@ class PromptInlineSource {
 
   buildListItemElements(filter = "") {
     const listItems = [];
+    this.promptItemByListItem = new WeakMap();
 
     this.promptItemElements.forEach((promptItemElement) => {
       const searchableText = promptItemElement.getAttribute("search");
 
       if (!filter || searchableText.toLowerCase().includes(filter.toLowerCase())) {
-        listItems.push(this.#buildListItemElementFor(promptItemElement));
+        let listItem = this.#buildListItemElementFor(promptItemElement);
+        this.promptItemByListItem.set(listItem, promptItemElement);
+        listItems.push(listItem);
       }
     });
 
     return listItems
   }
 
+  editorTemplateFor(listItem) {
+    const promptItemElement = this.promptItemByListItem.get(listItem);
+    return promptItemElement.querySelector("template[type='editor']")
+  }
+
   #buildListItemElementFor(promptItemElement) {
     const template = promptItemElement.querySelector("template[type='menu']");
     const fragment = template.content.cloneNode(true);
     const listItemElement = createElement("li");
+    listItemElement.classList.add("lexical-prompt-menu__item");
     listItemElement.appendChild(fragment);
     return listItemElement
   }
@@ -9018,8 +9027,15 @@ class LexicalPromptElement extends HTMLElement {
     return this.listItemElements.findIndex((item) => item.hasAttribute("aria-selected"))
   }
 
+  get #selectedListItem() {
+    return this.listItemElements[this.#selectedIndex]
+  }
+
   #handleSelectedOption(event) {
     event.preventDefault();
+
+    const template = this.source.editorTemplateFor(this.#selectedListItem);
+    console.debug("Finding template", template);
 
     this.#hidePopover();
     this.#editorElement.focus();
