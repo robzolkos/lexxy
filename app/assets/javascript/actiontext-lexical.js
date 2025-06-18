@@ -8565,19 +8565,34 @@ class CustomActionTextAttachmentNode extends gi {
   static importDOM() {
     return {
       "action-text-attachment": (attachment) => {
+        const content = attachment.getAttribute("content");
         if (!attachment.getAttribute("content")) {
           return null
         }
 
         return {
           conversion: () => {
-            return {
-              node: new CustomActionTextAttachmentNode({
-                sgid: attachment.getAttribute("sgid"),
-                innerHtml: JSON.parse(attachment.getAttribute("content")),
-                contentType: attachment.getAttribute("content-type")
-              })
+            const nodes = [];
+
+            // Check if there's a leading space in the DOM before the attachment
+            const previousSibling = attachment.previousSibling;
+            if (
+              previousSibling &&
+              previousSibling.nodeType === Node.TEXT_NODE &&
+              /\s$/.test(previousSibling.textContent)
+            ) {
+              nodes.push(Xn(" "));
             }
+
+            nodes.push(new CustomActionTextAttachmentNode({
+              sgid: attachment.getAttribute("sgid"),
+              innerHtml: JSON.parse(content),
+              contentType: attachment.getAttribute("content-type")
+            }));
+
+            nodes.push(Xn(" "));
+            
+            return { node: nodes };
           },
           priority: 2
         }

@@ -22,10 +22,12 @@ module ActionText
         # Tempoary: we need to *adaptarize* action text
         def render_custom_attachments_in(value)
           if html = value.try(:body_before_type_cast).presence
-            Nokogiri::HTML.fragment(html).css("action-text-attachment").each do |node|
-              if node["url"].blank?
-                attachment = ActionText::Attachment.from_node(node)
-                node["content"] = render_action_text_attachment(attachment).to_json
+            Nokogiri::HTML.fragment(html).tap do |fragment|
+              fragment.css("action-text-attachment").each do |node|
+                if node["url"].blank?
+                  attachment = ActionText::Attachment.from_node(node)
+                  node["content"] = render_action_text_attachment(attachment).to_json
+                end
               end
             end.to_html
           end
