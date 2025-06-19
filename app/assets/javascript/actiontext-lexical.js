@@ -5312,6 +5312,11 @@ function dispatch(element, eventName, detail = null, cancelable = false) {
   return element.dispatchEvent(new CustomEvent(eventName, { bubbles: true, detail, cancelable }))
 }
 
+function generateDomId(prefix) {
+  const randomPart = Math.random().toString(36).slice(2, 10);
+  return `${prefix}-${randomPart}`
+}
+
 class ActionTextAttachmentNode extends gi {
   static getType() {
     return "action_text_attachment"
@@ -8669,6 +8674,7 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this.id ??= generateDomId("lexical-editor");
     this.editor = this.#createEditor();
     this.contents = new Contents(this);
     this.selection = new Selection(this.editor);
@@ -8779,6 +8785,7 @@ class LexicalEditorElement extends HTMLElement {
 
   #createEditorContentElement() {
     const editorContentElement = createElement("div", { classList: "lexical-editor__content", contenteditable: true, placeholder: this.getAttribute("placeholder") });
+    editorContentElement.id = `${this.id}-content`;
     this.appendChild(editorContentElement);
 
     if (this.getAttribute("tabindex")) {
@@ -9020,7 +9027,7 @@ class BaseSource {
   buildListItemElementFor(promptItemElement) {
     const template = promptItemElement.querySelector("template[type='menu']");
     const fragment = template.content.cloneNode(true);
-    const listItemElement = createElement("li");
+    const listItemElement = createElement("li", { role: "option" });
     listItemElement.classList.add("lexical-prompt-menu__item");
     listItemElement.appendChild(fragment);
     return listItemElement
@@ -9333,7 +9340,7 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   async #buildPopover() {
-    const popoverContainer = createElement("ul"); // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
+    const popoverContainer = createElement("ul", { role: "listbox" }); // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
     popoverContainer.classList.add("lexical-prompt-menu");
     popoverContainer.style.position = "absolute";
     popoverContainer.append(...(await this.source.buildListItems()));

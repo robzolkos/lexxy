@@ -187,7 +187,7 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   async #buildPopover() {
-    const popoverContainer = createElement("ul") // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
+    const popoverContainer = createElement("ul", { role: "listbox" }) // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
     popoverContainer.classList.add("lexical-prompt-menu")
     popoverContainer.style.position = "absolute"
     popoverContainer.append(...(await this.source.buildListItems()))

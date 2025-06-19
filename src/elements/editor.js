@@ -12,7 +12,7 @@ import { ActionTextAttachmentNode } from "../nodes/action_text_attachment_node"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { CommandDispatcher } from "../editor/command_dispatcher"
 import Selection from "../editor/selection"
-import { containsVisuallyRelevantChildren, createElement, dispatch, sanitize } from "../helpers/html_helper"
+import { containsVisuallyRelevantChildren, createElement, dispatch, generateDomId, sanitize } from "../helpers/html_helper"
 import LexicalToolbar from "./toolbar"
 import Contents from "../editor/contents";
 import Clipboard from "../editor/clipboard";
@@ -32,6 +32,7 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this.id ??= generateDomId("lexical-editor")
     this.editor = this.#createEditor()
     this.contents = new Contents(this)
     this.selection = new Selection(this.editor)
@@ -142,6 +143,7 @@ export default class LexicalEditorElement extends HTMLElement {
 
   #createEditorContentElement() {
     const editorContentElement = createElement("div", { classList: "lexical-editor__content", contenteditable: true, placeholder: this.getAttribute("placeholder") })
+    editorContentElement.id = `${this.id}-content`
     this.appendChild(editorContentElement)
 
     if (this.getAttribute("tabindex")) {

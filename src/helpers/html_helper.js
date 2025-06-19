@@ -61,4 +61,9 @@ export function dispatch(element, eventName, detail = null, cancelable = false) 
   return element.dispatchEvent(new CustomEvent(eventName, { bubbles: true, detail, cancelable }))
 }
 
+export function generateDomId(prefix) {
+  const randomPart = Math.random().toString(36).slice(2, 10)
+  return `${prefix}-${randomPart}`
+}
+
 
