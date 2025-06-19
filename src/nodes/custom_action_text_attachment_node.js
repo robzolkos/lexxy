@@ -37,13 +37,10 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
               nodes.push($createTextNode(" "));
             }
 
-            const contenType = attachment.getAttribute("content-type")
-            const name = contenType ? contenType.split(".").pop() : "unknown"
-
             nodes.push(new CustomActionTextAttachmentNode({
               sgid: attachment.getAttribute("sgid"),
               innerHtml: JSON.parse(content),
-              name: name
+              contentType: attachment.getAttribute("content-type")
             }));
 
             nodes.push($createTextNode(" "));
@@ -56,16 +53,16 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
     }
   }
 
-  constructor({ sgid, name, innerHtml }, key) {
+  constructor({ sgid, contentType, innerHtml }, key) {
     super(key)
 
     this.sgid = sgid
-    this.name = name
+    this.contentType = contentType || "application/vnd.actiontext.unknown"
     this.innerHtml = innerHtml
   }
 
   createDOM() {
-    const figure = createElement("figure", { className: `attachment attachment--custom attachment--${this.name}`, "data-content-type": this.contentType })
+    const figure = createElement("figure", { className: `attachment attachment--custom`, "data-content-type": this.contentType })
 
     figure.addEventListener("click", (event) => {
       dispatchCustomEvent(figure, "lexical:node-selected", { key: this.getKey() })
@@ -74,10 +71,6 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
     figure.insertAdjacentHTML("beforeend", this.innerHtml)
 
     return figure
-  }
-
-  get contentType() {
-    return `application/vnd.actiontext.${this.name}`
   }
 
   updateDOM() {
@@ -104,7 +97,7 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
       version: 1,
       sgid: this.sgid,
       altText: this.altText,
-      name: this.name
+      contentType: this.contentType
     }
   }
 
