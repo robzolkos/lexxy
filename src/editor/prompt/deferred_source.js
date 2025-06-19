@@ -1,22 +1,16 @@
-import { createElement } from "../../helpers/html_helper";
-import BaseSource from "./base_source"
+import LocalFilterSource from "./local_filter_source"
 
-export default class DeferredPromptSource extends BaseSource {
+export default class DeferredPromptSource extends LocalFilterSource {
   constructor(url) {
     super()
     this.url = url
+
+    this.fetchPromptItems()
   }
 
   async fetchPromptItems() {
-    try {
-      const response = await fetch(this.url)
-      const html = await response.text()
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(html, "text/html")
-      const promptItems = doc.querySelectorAll("lexical-prompt-item")
-      return Promise.resolve(Array.from(promptItems))
-    } catch (error) {
-      return Promise.reject(error)
-    }
+    this.promptItems ??= await this.loadPromptItemsFromUrl(this.url)
+
+    return Promise.resolve(this.promptItems)
   }
 }

@@ -4,6 +4,7 @@ import { CustomActionTextAttachmentNode } from "../nodes/custom_action_text_atta
 import { isPath, isUrl } from "../helpers/string_helper";
 import InlinePromptSource from "../editor/prompt/inline_source";
 import DeferredPromptSource from "../editor/prompt/deferred_source";
+import RemoteFilterSource from "../editor/prompt/remote_filter_source";
 
 export default class LexicalPromptElement extends HTMLElement {
   constructor() {
@@ -32,10 +33,13 @@ export default class LexicalPromptElement extends HTMLElement {
   #createSource() {
     const src = this.getAttribute("src");
     if (isUrl(src) || isPath(src)) {
-      return new DeferredPromptSource(src)
+      if (this.hasAttribute("remote-filtering")) {
+        return new RemoteFilterSource(src)
+      } else {
+        return new DeferredPromptSource(src)
+      }
     } else {
-      const sourceElement = document.getElementById(src)
-      return new InlinePromptSource(sourceElement.querySelectorAll("lexical-prompt-item"))
+      return new InlinePromptSource(document.getElementById(src).querySelectorAll("lexical-prompt-item"))
     }
   }
 
@@ -119,7 +123,7 @@ export default class LexicalPromptElement extends HTMLElement {
 
   async #showFilteredOptions() {
     const filter = this.#editorContents.textBackUntil(this.trigger)
-    const filteredListItems = await this.source.buildListItemElements(filter)
+    const filteredListItems = await this.source.buildListItems(filter)
     this.popoverElement.innerHTML = ""
     this.popoverElement.append(...filteredListItems)
     this.#selectFirstOption()
@@ -186,7 +190,7 @@ export default class LexicalPromptElement extends HTMLElement {
     const popoverContainer = createElement("ul") // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
     popoverContainer.classList.add("lexical-prompt-menu")
     popoverContainer.style.position = "absolute"
-    popoverContainer.append(...(await this.source.buildListItemElements()))
+    popoverContainer.append(...(await this.source.buildListItems()))
     this.#editorElement.appendChild(popoverContainer)
     return popoverContainer
   }

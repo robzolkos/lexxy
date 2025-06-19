@@ -13,10 +13,13 @@
         <% end %>
       </lexical-prompt-source>
 
-      <lexical-prompt trigger="@" src="inline-source" name="inline-mention">
+      <lexical-prompt trigger="@" src="inline-source" name="mention">
       </lexical-prompt>
 
-      <lexical-prompt trigger="#" src="<%= people_path %>" name="inline-mention">
+      <lexical-prompt trigger="#" src="<%= people_path %>" name="mention">
+      </lexical-prompt>
+
+      <lexical-prompt trigger="/" src="<%= people_path %>" name="mention" remote-filtering>
       </lexical-prompt>
     <% end %>
   </div>

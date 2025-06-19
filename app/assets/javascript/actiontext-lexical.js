@@ -9000,7 +9000,48 @@ class LinkDialog extends HTMLElement {
 customElements.define("lexical-link-dialog", LinkDialog);
 
 class BaseSource {
-  async buildListItemElements(filter = "") {
+  // Template method to override
+  async buildListItems(filter = "") {
+    return []
+  }
+
+  // Template method to override
+  async fetchPromptItems(filter) {
+    return Promise.resolve([])
+  }
+
+  // Template method to override
+  promptItemFor(listItem) {
+    return null
+  }
+
+  // Protected
+
+  buildListItemElementFor(promptItemElement) {
+    const template = promptItemElement.querySelector("template[type='menu']");
+    const fragment = template.content.cloneNode(true);
+    const listItemElement = createElement("li");
+    listItemElement.classList.add("lexical-prompt-menu__item");
+    listItemElement.appendChild(fragment);
+    return listItemElement
+  }
+
+  async loadPromptItemsFromUrl(url) {
+    try {
+      const response = await fetch(url);
+      const html = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+      const promptItems = doc.querySelectorAll("lexical-prompt-item");
+      return Promise.resolve(Array.from(promptItems))
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+}
+
+class LocalFilterSource extends BaseSource {
+  async buildListItems(filter = "") {
     const listItems = [];
     this.promptItemByListItem = new WeakMap();
 
@@ -9009,7 +9050,7 @@ class BaseSource {
       const searchableText = promptItem.getAttribute("search");
 
       if (!filter || searchableText.toLowerCase().includes(filter.toLowerCase())) {
-        let listItem = this.#buildListItemElementFor(promptItem);
+        const listItem = this.buildListItemElementFor(promptItem);
         this.promptItemByListItem.set(listItem, promptItem);
         listItems.push(listItem);
       }
@@ -9018,26 +9059,12 @@ class BaseSource {
     return listItems
   }
 
-  // Template method to override
-  async fetchPromptItems() {
-    return Promise.resolve([])
-  }
-
   promptItemFor(listItem) {
     return this.promptItemByListItem.get(listItem)
   }
-
-  #buildListItemElementFor(promptItemElement) {
-    const template = promptItemElement.querySelector("template[type='menu']");
-    const fragment = template.content.cloneNode(true);
-    const listItemElement = createElement("li");
-    listItemElement.classList.add("lexical-prompt-menu__item");
-    listItemElement.appendChild(fragment);
-    return listItemElement
-  }
 }
 
-class InlinePromptSource extends BaseSource {
+class InlinePromptSource extends LocalFilterSource {
   constructor(inlinePromptItems) {
     super();
     this.inlinePromptItemElements = Array.from(inlinePromptItems);
@@ -9048,23 +9075,54 @@ class InlinePromptSource extends BaseSource {
   }
 }
 
-class DeferredPromptSource extends BaseSource {
+class DeferredPromptSource extends LocalFilterSource {
   constructor(url) {
     super();
     this.url = url;
+
+    this.fetchPromptItems();
   }
 
   async fetchPromptItems() {
-    try {
-      const response = await fetch(this.url);
-      const html = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, "text/html");
-      const promptItems = doc.querySelectorAll("lexical-prompt-item");
-      return Promise.resolve(Array.from(promptItems))
-    } catch (error) {
-      return Promise.reject(error)
-    }
+    this.promptItems ??= await this.loadPromptItemsFromUrl(this.url);
+
+    return Promise.resolve(this.promptItems)
+  }
+}
+
+class RemoteFilterSource extends BaseSource {
+  constructor(url) {
+    super();
+    this.baseURL = url;
+  }
+
+  async buildListItems(filter = "") {
+    const promptItems = await this.loadPromptItemsFromUrl(this.#urlFor(filter));
+    const listItems = this.#buildListItemsFromPromptItems(promptItems);
+
+    return Promise.resolve(listItems)
+  }
+
+  promptItemFor(listItem) {
+    return this.promptItemByListItem.get(listItem)
+  }
+
+  #urlFor(filter) {
+    const url = new URL(this.baseURL, window.location.origin);
+    url.searchParams.append("filter", filter);
+    console.debug("URL=", url.toString());
+    return url.toString()
+  }
+
+  #buildListItemsFromPromptItems(promptItems) {
+    const listItems = [];
+    this.promptItemByListItem = new WeakMap();
+    promptItems.forEach((promptItem) => {
+      const listItem = this.buildListItemElementFor(promptItem);
+      this.promptItemByListItem.set(listItem, promptItem);
+      listItems.push(listItem);
+    });
+    return listItems
   }
 }
 
@@ -9095,10 +9153,13 @@ class LexicalPromptElement extends HTMLElement {
   #createSource() {
     const src = this.getAttribute("src");
     if (isUrl(src) || isPath(src)) {
-      return new DeferredPromptSource(src)
+      if (this.hasAttribute("remote-filtering")) {
+        return new RemoteFilterSource(src)
+      } else {
+        return new DeferredPromptSource(src)
+      }
     } else {
-      const sourceElement = document.getElementById(src);
-      return new InlinePromptSource(sourceElement.querySelectorAll("lexical-prompt-item"))
+      return new InlinePromptSource(document.getElementById(src).querySelectorAll("lexical-prompt-item"))
     }
   }
 
@@ -9182,7 +9243,7 @@ class LexicalPromptElement extends HTMLElement {
 
   async #showFilteredOptions() {
     const filter = this.#editorContents.textBackUntil(this.trigger);
-    const filteredListItems = await this.source.buildListItemElements(filter);
+    const filteredListItems = await this.source.buildListItems(filter);
     this.popoverElement.innerHTML = "";
     this.popoverElement.append(...filteredListItems);
     this.#selectFirstOption();
@@ -9249,7 +9310,7 @@ class LexicalPromptElement extends HTMLElement {
     const popoverContainer = createElement("ul"); // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
     popoverContainer.classList.add("lexical-prompt-menu");
     popoverContainer.style.position = "absolute";
-    popoverContainer.append(...(await this.source.buildListItemElements()));
+    popoverContainer.append(...(await this.source.buildListItems()));
     this.#editorElement.appendChild(popoverContainer);
     return popoverContainer
   }

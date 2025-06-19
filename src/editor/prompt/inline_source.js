@@ -1,7 +1,6 @@
-import { createElement } from "../../helpers/html_helper";
-import BaseSource from "./base_source"
+import LocalFilterSource from "./local_filter_source"
 
-export default class InlinePromptSource extends BaseSource {
+export default class InlinePromptSource extends LocalFilterSource {
   constructor(inlinePromptItems) {
     super()
     this.inlinePromptItemElements = Array.from(inlinePromptItems)
