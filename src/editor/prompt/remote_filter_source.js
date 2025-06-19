@@ -21,7 +21,6 @@ export default class RemoteFilterSource extends BaseSource {
   #urlFor(filter) {
     const url = new URL(this.baseURL, window.location.origin)
     url.searchParams.append("filter", filter)
-    console.debug("URL=", url.toString());
     return url.toString()
   }
 
