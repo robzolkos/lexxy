@@ -28,7 +28,7 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #createSource() {
-    const sourceElement = document.getElementById(this.getAttribute("source"))
+    const sourceElement = document.getElementById(this.getAttribute("src"))
     return new PromptInlineSource(sourceElement.querySelectorAll("lexical-prompt-item"))
   }
 

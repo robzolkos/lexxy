@@ -35,7 +35,7 @@ export default class Selection {
   }
 
   get cursorPosition() {
-    let position = null
+    let position = { x: 0, y: 0}
 
     this.editor.getEditorState().read(() => {
       const lexicalSelection = $getSelection()

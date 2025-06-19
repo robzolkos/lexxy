@@ -5917,7 +5917,7 @@ class Selection {
   }
 
   get cursorPosition() {
-    let position = null;
+    let position = { x: 0, y: 0};
 
     this.editor.getEditorState().read(() => {
       const lexicalSelection = Nr();
@@ -8591,7 +8591,7 @@ class CustomActionTextAttachmentNode extends gi {
             }));
 
             nodes.push(Xn(" "));
-            
+
             return { node: nodes };
           },
           priority: 2
@@ -9056,7 +9056,7 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   #createSource() {
-    const sourceElement = document.getElementById(this.getAttribute("source"));
+    const sourceElement = document.getElementById(this.getAttribute("src"));
     return new PromptInlineSource(sourceElement.querySelectorAll("lexical-prompt-item"))
   }
 
