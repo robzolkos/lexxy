@@ -1,21 +1,27 @@
-import { createElement } from "../../helpers/html_helper"
 import BaseSource from "./base_source"
+import { debounceAsync } from "../../helpers/timing_helpers";
+
+const DEBOUNCE_INTERVAL = 200
 
 export default class RemoteFilterSource extends BaseSource {
   constructor(url) {
     super()
+
     this.baseURL = url
+    this.loadAndBuildListItems = debounceAsync(this.#loadAndBuildListItems.bind(this), DEBOUNCE_INTERVAL)
   }
 
   async buildListItems(filter = "") {
-    const promptItems = await this.loadPromptItemsFromUrl(this.#urlFor(filter))
-    const listItems = this.#buildListItemsFromPromptItems(promptItems)
-
-    return Promise.resolve(listItems)
+    return await this.loadAndBuildListItems(filter)
   }
 
   promptItemFor(listItem) {
     return this.promptItemByListItem.get(listItem)
+  }
+
+  async #loadAndBuildListItems(filter) {
+    const promptItems = await this.loadPromptItemsFromUrl(this.#urlFor(filter))
+    return this.#buildListItemsFromPromptItems(promptItems)
   }
 
   #urlFor(filter) {
@@ -27,11 +33,13 @@ export default class RemoteFilterSource extends BaseSource {
   #buildListItemsFromPromptItems(promptItems) {
     const listItems = []
     this.promptItemByListItem = new WeakMap()
-    promptItems.forEach((promptItem) => {
+
+    for (const promptItem of promptItems) {
       const listItem = this.buildListItemElementFor(promptItem)
       this.promptItemByListItem.set(listItem, promptItem)
       listItems.push(listItem)
-    })
+    }
+
     return listItems
   }
 }

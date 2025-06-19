@@ -9090,38 +9090,64 @@ class DeferredPromptSource extends LocalFilterSource {
   }
 }
 
+function debounceAsync(fn, wait) {
+  let timeout;
+
+  return (...args) => {
+    clearTimeout(timeout);
+
+    return new Promise((resolve, reject) => {
+      timeout = setTimeout(async () => {
+        try {
+          const result = await fn(...args);
+          resolve(result);
+        } catch (err) {
+          reject(err);
+        }
+      }, wait);
+    })
+  }
+}
+
+const DEBOUNCE_INTERVAL = 200;
+
 class RemoteFilterSource extends BaseSource {
   constructor(url) {
     super();
+
     this.baseURL = url;
+    this.loadAndBuildListItems = debounceAsync(this.#loadAndBuildListItems.bind(this), DEBOUNCE_INTERVAL);
   }
 
   async buildListItems(filter = "") {
-    const promptItems = await this.loadPromptItemsFromUrl(this.#urlFor(filter));
-    const listItems = this.#buildListItemsFromPromptItems(promptItems);
-
-    return Promise.resolve(listItems)
+    return await this.loadAndBuildListItems(filter)
   }
 
   promptItemFor(listItem) {
     return this.promptItemByListItem.get(listItem)
   }
 
+  async #loadAndBuildListItems(filter) {
+    const promptItems = await this.loadPromptItemsFromUrl(this.#urlFor(filter));
+    return this.#buildListItemsFromPromptItems(promptItems)
+  }
+
   #urlFor(filter) {
     const url = new URL(this.baseURL, window.location.origin);
     url.searchParams.append("filter", filter);
-    console.debug("URL=", url.toString());
     return url.toString()
   }
 
   #buildListItemsFromPromptItems(promptItems) {
     const listItems = [];
     this.promptItemByListItem = new WeakMap();
-    promptItems.forEach((promptItem) => {
+
+    for (const promptItem of promptItems) {
       const listItem = this.buildListItemElementFor(promptItem);
       this.promptItemByListItem.set(listItem, promptItem);
       listItems.push(listItem);
-    });
+    }
+
     return listItems
   }
 }
