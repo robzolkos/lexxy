@@ -1,10 +1,11 @@
-import { createElement, generateDomId } from "../helpers/html_helper";
+import { createElement, generateDomId, parseHtml } from "../helpers/html_helper";
 import { COMMAND_PRIORITY_HIGH, KEY_ENTER_COMMAND } from "lexical";
 import { CustomActionTextAttachmentNode } from "../nodes/custom_action_text_attachment_node";
 import { isPath, isUrl } from "../helpers/string_helper";
 import InlinePromptSource from "../editor/prompt/inline_source";
 import DeferredPromptSource from "../editor/prompt/deferred_source";
 import RemoteFilterSource from "../editor/prompt/remote_filter_source";
+import { $generateNodesFromDOM } from "@lexical/html";
 
 export default class LexicalPromptElement extends HTMLElement {
   constructor() {
@@ -189,6 +190,20 @@ export default class LexicalPromptElement extends HTMLElement {
 
     const template = promptItem.querySelector("template[type='editor']")
     const stringToReplace = `${this.trigger}${this.#editorContents.textBackUntil(this.trigger)}`
+
+    if (this.hasAttribute("insert-editable-text")) {
+      this.#insertTemplateAsEditableText(template, stringToReplace)
+    } else {
+      this.#insertTemplateAsAttachment(promptItem, template, stringToReplace)
+    }
+  }
+
+  #insertTemplateAsEditableText(template, stringToReplace) {
+    const nodes = $generateNodesFromDOM(this.#editor, parseHtml(`${template.innerHTML}`))
+    this.#editorContents.replaceTextBackUntil(stringToReplace, nodes)
+  }
+
+  #insertTemplateAsAttachment(promptItem, template, stringToReplace) {
     const attachmentNode = new CustomActionTextAttachmentNode({ sgid: promptItem.getAttribute("sgid"), alt: "Some attachment", innerHtml: template.innerHTML })
     this.#editorContents.replaceTextBackUntil(stringToReplace, attachmentNode)
   }

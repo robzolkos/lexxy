@@ -170,7 +170,9 @@ export default class Contents {
     return result
   }
 
-  replaceTextBackUntil(stringToReplace, replacementNode) {
+  replaceTextBackUntil(stringToReplace, replacementNodes) {
+    replacementNodes = Array.isArray(replacementNodes) ? replacementNodes : [replacementNodes]
+
     this.editor.update(() => {
       const selection = $getSelection()
       if (!selection || !selection.isCollapsed()) return
@@ -188,22 +190,26 @@ export default class Contents {
 
       if (lastIndex === -1) return
 
-      // Split the text node at the position where the string starts
       const textBeforeString = fullText.slice(0, lastIndex)
       const textAfterCursor = fullText.slice(offset)
 
-      // Create a text node for the text before the string
       const textNodeBefore = $createTextNode(textBeforeString)
-
-      // Create a text node for the text after the cursor
       const textNodeAfter = $createTextNode(textAfterCursor)
 
-      // Replace the current node with the sequence: textBefore + replacementNode + textAfter
+      // Replace the anchor node with the first node
       anchorNode.replace(textNodeBefore)
-      textNodeBefore.insertAfter(replacementNode)
-      replacementNode.insertAfter(textNodeAfter)
 
-      // Set the selection after the replacement node
+      // Insert replacement nodes in sequence
+      let previousNode = textNodeBefore
+      for (const node of replacementNodes) {
+        previousNode.insertAfter(node)
+        previousNode = node
+      }
+
+      // Insert the text after cursor
+      previousNode.insertAfter(textNodeAfter)
+
+      // Place the cursor at the start of textNodeAfter
       textNodeAfter.select(0, 0)
     })
   }
