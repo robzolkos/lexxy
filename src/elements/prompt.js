@@ -87,7 +87,7 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   get #listItemElements() {
-    return Array.from(this.popoverElement.querySelectorAll("li"))
+    return Array.from(this.popoverElement.querySelectorAll(".lexical-prompt-menu__item"))
   }
 
   #selectOption(listItem) {
@@ -179,11 +179,15 @@ export default class LexicalPromptElement extends HTMLElement {
   #handleSelectedOption(event) {
     event.preventDefault()
 
+    this.#optionWasSelected()
+
+    return true
+  }
+
+  #optionWasSelected() {
     this.#replaceTriggerWithSelectedItem()
     this.#hidePopover()
     this.#editorElement.focus()
-
-    return true
   }
 
   #replaceTriggerWithSelectedItem() {
@@ -202,13 +206,17 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #insertTemplateAsEditableText(template, stringToReplace) {
-    const nodes = $generateNodesFromDOM(this.#editor, parseHtml(`${template.innerHTML}`))
-    this.#editorContents.replaceTextBackUntil(stringToReplace, nodes)
+    this.#editor.update(() => {
+      const nodes = $generateNodesFromDOM(this.#editor, parseHtml(`${template.innerHTML}`))
+      this.#editorContents.replaceTextBackUntil(stringToReplace, nodes)
+    })
   }
 
   #insertTemplateAsAttachment(promptItem, template, stringToReplace) {
-    const attachmentNode = new CustomActionTextAttachmentNode({ sgid: promptItem.getAttribute("sgid"), name: this.name, innerHtml: template.innerHTML })
-    this.#editorContents.replaceTextBackUntil(stringToReplace, attachmentNode)
+    this.#editor.update(() => {
+      const attachmentNode = new CustomActionTextAttachmentNode({ sgid: promptItem.getAttribute("sgid"), name: this.name, innerHtml: template.innerHTML })
+      this.#editorContents.replaceTextBackUntil(stringToReplace, attachmentNode)
+    })
   }
 
   get #editorContents() {
@@ -224,8 +232,17 @@ export default class LexicalPromptElement extends HTMLElement {
     popoverContainer.classList.add("lexical-prompt-menu")
     popoverContainer.style.position = "absolute"
     popoverContainer.append(...(await this.source.buildListItems()))
+    popoverContainer.addEventListener("click", this.#handlePopoverClick)
     this.#editorElement.appendChild(popoverContainer)
     return popoverContainer
+  }
+
+  #handlePopoverClick = (event) => {
+    const listItem = event.target.closest(".lexical-prompt-menu__item")
+    if (listItem) {
+      this.#selectOption(listItem)
+      this.#optionWasSelected()
+    }
   }
 }
 
