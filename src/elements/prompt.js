@@ -178,9 +178,7 @@ export default class LexicalPromptElement extends HTMLElement {
 
   #handleSelectedOption(event) {
     event.preventDefault()
-
     this.#optionWasSelected()
-
     return true
   }
 
