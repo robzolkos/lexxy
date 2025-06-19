@@ -3,11 +3,6 @@ import { createElement } from "../../helpers/html_helper"
 export default class BaseSource {
   // Template method to override
   async buildListItems(filter = "") {
-    return []
-  }
-
-  // Template method to override
-  async fetchPromptItems(filter) {
     return Promise.resolve([])
   }
 

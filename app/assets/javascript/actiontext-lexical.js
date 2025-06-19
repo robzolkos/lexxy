@@ -9009,11 +9009,6 @@ customElements.define("lexical-link-dialog", LinkDialog);
 class BaseSource {
   // Template method to override
   async buildListItems(filter = "") {
-    return []
-  }
-
-  // Template method to override
-  async fetchPromptItems(filter) {
     return Promise.resolve([])
   }
 
@@ -9051,6 +9046,11 @@ class LocalFilterSource extends BaseSource {
   async buildListItems(filter = "") {
     const promptItems = await this.fetchPromptItems();
     return this.#buildListItemsFromPromptItems(promptItems, filter)
+  }
+
+  // Template method to override
+  async fetchPromptItems(filter) {
+    return Promise.resolve([])
   }
 
   promptItemFor(listItem) {

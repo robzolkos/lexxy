@@ -7,6 +7,11 @@ export default class LocalFilterSource extends BaseSource {
     return this.#buildListItemsFromPromptItems(promptItems, filter)
   }
 
+  // Template method to override
+  async fetchPromptItems(filter) {
+    return Promise.resolve([])
+  }
+
   promptItemFor(listItem) {
     return this.promptItemByListItem.get(listItem)
   }
