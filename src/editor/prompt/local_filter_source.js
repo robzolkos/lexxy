@@ -3,10 +3,17 @@ import BaseSource from "./base_source"
 
 export default class LocalFilterSource extends BaseSource {
   async buildListItems(filter = "") {
+    const promptItems = await this.fetchPromptItems()
+    return this.#buildListItemsFromPromptItems(promptItems, filter)
+  }
+
+  promptItemFor(listItem) {
+    return this.promptItemByListItem.get(listItem)
+  }
+
+  #buildListItemsFromPromptItems(promptItems, filter) {
     const listItems = []
     this.promptItemByListItem = new WeakMap()
-
-    const promptItems = await this.fetchPromptItems()
     promptItems.forEach((promptItem) => {
       const searchableText = promptItem.getAttribute("search")
 
@@ -18,9 +25,5 @@ export default class LocalFilterSource extends BaseSource {
     })
 
     return listItems
-  }
-
-  promptItemFor(listItem) {
-    return this.promptItemByListItem.get(listItem)
   }
 }
