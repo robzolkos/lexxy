@@ -9265,9 +9265,12 @@ class LexicalPromptElement extends HTMLElement {
 
   #positionPopover() {
     const { x, y } = this.#selection.cursorPosition;
-    const popoverRect = this.popoverElement.getBoundingClientRect();
+    const editorRect = this.#editorElement.getBoundingClientRect();
+    const contentRect = this.#editorContentElement.getBoundingClientRect();
+    const verticalOffset = contentRect.top - editorRect.top;
+
     this.popoverElement.style.left = `${x}px`;
-    this.popoverElement.style.top = `${y + popoverRect.height/2 }px`;
+    this.popoverElement.style.top = `${y + verticalOffset}px`;
   }
 
   #hidePopover() {
