@@ -1,7 +1,9 @@
-import PromptInlineSource from "../editor/prompt/inline_source"
 import { createElement } from "../helpers/html_helper";
 import { COMMAND_PRIORITY_HIGH, KEY_ENTER_COMMAND } from "lexical";
 import { CustomActionTextAttachmentNode } from "../nodes/custom_action_text_attachment_node";
+import { isPath, isUrl } from "../helpers/string_helper";
+import InlinePromptSource from "../editor/prompt/inline_source";
+import DeferredPromptSource from "../editor/prompt/deferred_source";
 
 export default class LexicalPromptElement extends HTMLElement {
   constructor() {
@@ -28,8 +30,13 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #createSource() {
-    const sourceElement = document.getElementById(this.getAttribute("src"))
-    return new PromptInlineSource(sourceElement.querySelectorAll("lexical-prompt-item"))
+    const src = this.getAttribute("src");
+    if (isUrl(src) || isPath(src)) {
+      return new DeferredPromptSource(src)
+    } else {
+      const sourceElement = document.getElementById(src)
+      return new InlinePromptSource(sourceElement.querySelectorAll("lexical-prompt-item"))
+    }
   }
 
   #addTriggerListener() {
@@ -53,9 +60,10 @@ export default class LexicalPromptElement extends HTMLElement {
     return this.#editorElement.selection
   }
 
-  #showPopover() {
-    this.#popoverElement.classList.toggle("lexical-prompt-menu--visible", true)
-    this.#filterOptions()
+  async #showPopover() {
+    this.popoverElement ??= await this.#buildPopover()
+    this.popoverElement.classList.toggle("lexical-prompt-menu--visible", true)
+    await this.#filterOptions()
     this.#selectFirstOption()
     this.#positionPopover()
 
@@ -74,7 +82,7 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   get #listItemElements() {
-    return Array.from(this.#popoverElement.querySelectorAll("li"))
+    return Array.from(this.popoverElement.querySelectorAll("li"))
   }
 
   #selectOption(option) {
@@ -84,36 +92,36 @@ export default class LexicalPromptElement extends HTMLElement {
 
   #positionPopover() {
     const { x, y } = this.#selection.cursorPosition
-    const popoverRect = this.#popoverElement.getBoundingClientRect()
-    this.#popoverElement.style.left = `${x}px`
-    this.#popoverElement.style.top = `${y + popoverRect.height/2 }px`
+    const popoverRect = this.popoverElement.getBoundingClientRect()
+    this.popoverElement.style.left = `${x}px`
+    this.popoverElement.style.top = `${y + popoverRect.height/2 }px`
   }
 
   #hidePopover() {
-    this.#popoverElement.classList.toggle("lexical-prompt-menu--visible", false)
+    this.popoverElement.classList.toggle("lexical-prompt-menu--visible", false)
     this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions)
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover)
     this.unregisterEnterListener()
   }
 
-  #filterOptions = () => {
+  #filterOptions = async () => {
     if (this.initialPrompt) {
       this.initialPrompt = false
       return
     }
 
     if (this.#editorContents.containsTextBackUntil(this.trigger)) {
-      this.#showFilteredOptions()
+      await this.#showFilteredOptions()
     } else {
       this.#hidePopover()
     }
   }
 
-  #showFilteredOptions() {
+  async #showFilteredOptions() {
     const filter = this.#editorContents.textBackUntil(this.trigger)
-    const filteredListItems = this.source.buildListItemElements(filter)
-    this.#popoverElement.innerHTML = ""
-    this.#popoverElement.append(...filteredListItems)
+    const filteredListItems = await this.source.buildListItemElements(filter)
+    this.popoverElement.innerHTML = ""
+    this.popoverElement.append(...filteredListItems)
     this.#selectFirstOption()
   }
 
@@ -170,20 +178,15 @@ export default class LexicalPromptElement extends HTMLElement {
     this.#editorContents.replaceTextBackUntil(stringToReplace, attachmentNode)
   }
 
-  get #popoverElement() {
-    this.popoverElement ??= this.#buildPopover()
-    return this.popoverElement
-  }
-
   get #editorContents() {
     return this.#editorElement.contents
   }
 
-  #buildPopover() {
+  async #buildPopover() {
     const popoverContainer = createElement("ul") // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
     popoverContainer.classList.add("lexical-prompt-menu")
     popoverContainer.style.position = "absolute"
-    popoverContainer.append(...this.source.buildListItemElements())
+    popoverContainer.append(...(await this.source.buildListItemElements()))
     this.#editorElement.appendChild(popoverContainer)
     return popoverContainer
   }

@@ -5,12 +5,13 @@ export default class BaseSource {
     const listItems = []
     this.promptItemByListItem = new WeakMap()
 
-    (await this.promptItemElements).forEach((promptItemElement) => {
-      const searchableText = promptItemElement.getAttribute("search")
+    const promptItems = await this.fetchPromptItems()
+    promptItems.forEach((promptItem) => {
+      const searchableText = promptItem.getAttribute("search")
 
       if (!filter || searchableText.toLowerCase().includes(filter.toLowerCase())) {
-        let listItem = this.#buildListItemElementFor(promptItemElement)
-        this.promptItemByListItem.set(listItem, promptItemElement)
+        let listItem = this.#buildListItemElementFor(promptItem)
+        this.promptItemByListItem.set(listItem, promptItem)
         listItems.push(listItem)
       }
     })
@@ -19,7 +20,7 @@ export default class BaseSource {
   }
 
   // Template method to override
-  async get promptItemElements() {
+  async fetchPromptItems() {
     return Promise.resolve([])
   }
 

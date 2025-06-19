@@ -8499,6 +8499,10 @@ function isUrl(string) {
   }
 }
 
+function isPath(string) {
+  return /^\/.*$/.test(string);
+}
+
 class Clipboard {
   constructor(editorElement) {
     this.editor = editorElement.editor;
@@ -8995,26 +8999,28 @@ class LinkDialog extends HTMLElement {
 // supported by Safari yet: customElements.define("lexical-link-dialog", LinkDialog, { extends: "dialog" })
 customElements.define("lexical-link-dialog", LinkDialog);
 
-class PromptInlineSource {
-  constructor(promptItemElements) {
-    this.promptItemElements = Array.from(promptItemElements);
-  }
-
-  buildListItemElements(filter = "") {
+class BaseSource {
+  async buildListItemElements(filter = "") {
     const listItems = [];
     this.promptItemByListItem = new WeakMap();
 
-    this.promptItemElements.forEach((promptItemElement) => {
-      const searchableText = promptItemElement.getAttribute("search");
+    const promptItems = await this.fetchPromptItems();
+    promptItems.forEach((promptItem) => {
+      const searchableText = promptItem.getAttribute("search");
 
       if (!filter || searchableText.toLowerCase().includes(filter.toLowerCase())) {
-        let listItem = this.#buildListItemElementFor(promptItemElement);
-        this.promptItemByListItem.set(listItem, promptItemElement);
+        let listItem = this.#buildListItemElementFor(promptItem);
+        this.promptItemByListItem.set(listItem, promptItem);
         listItems.push(listItem);
       }
     });
 
     return listItems
+  }
+
+  // Template method to override
+  async fetchPromptItems() {
+    return Promise.resolve([])
   }
 
   promptItemFor(listItem) {
@@ -9028,6 +9034,37 @@ class PromptInlineSource {
     listItemElement.classList.add("lexical-prompt-menu__item");
     listItemElement.appendChild(fragment);
     return listItemElement
+  }
+}
+
+class InlinePromptSource extends BaseSource {
+  constructor(inlinePromptItems) {
+    super();
+    this.inlinePromptItemElements = Array.from(inlinePromptItems);
+  }
+
+  async fetchPromptItems() {
+    return Promise.resolve(this.inlinePromptItemElements)
+  }
+}
+
+class DeferredPromptSource extends BaseSource {
+  constructor(url) {
+    super();
+    this.url = url;
+  }
+
+  async fetchPromptItems() {
+    try {
+      const response = await fetch(this.url);
+      const html = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+      const promptItems = doc.querySelectorAll("lexical-prompt-item");
+      return Promise.resolve(Array.from(promptItems))
+    } catch (error) {
+      return Promise.reject(error)
+    }
   }
 }
 
@@ -9056,8 +9093,13 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   #createSource() {
-    const sourceElement = document.getElementById(this.getAttribute("src"));
-    return new PromptInlineSource(sourceElement.querySelectorAll("lexical-prompt-item"))
+    const src = this.getAttribute("src");
+    if (isUrl(src) || isPath(src)) {
+      return new DeferredPromptSource(src)
+    } else {
+      const sourceElement = document.getElementById(src);
+      return new InlinePromptSource(sourceElement.querySelectorAll("lexical-prompt-item"))
+    }
   }
 
   #addTriggerListener() {
@@ -9081,9 +9123,10 @@ class LexicalPromptElement extends HTMLElement {
     return this.#editorElement.selection
   }
 
-  #showPopover() {
-    this.#popoverElement.classList.toggle("lexical-prompt-menu--visible", true);
-    this.#filterOptions();
+  async #showPopover() {
+    this.popoverElement ??= await this.#buildPopover();
+    this.popoverElement.classList.toggle("lexical-prompt-menu--visible", true);
+    await this.#filterOptions();
     this.#selectFirstOption();
     this.#positionPopover();
 
@@ -9102,7 +9145,7 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   get #listItemElements() {
-    return Array.from(this.#popoverElement.querySelectorAll("li"))
+    return Array.from(this.popoverElement.querySelectorAll("li"))
   }
 
   #selectOption(option) {
@@ -9112,36 +9155,36 @@ class LexicalPromptElement extends HTMLElement {
 
   #positionPopover() {
     const { x, y } = this.#selection.cursorPosition;
-    const popoverRect = this.#popoverElement.getBoundingClientRect();
-    this.#popoverElement.style.left = `${x}px`;
-    this.#popoverElement.style.top = `${y + popoverRect.height/2 }px`;
+    const popoverRect = this.popoverElement.getBoundingClientRect();
+    this.popoverElement.style.left = `${x}px`;
+    this.popoverElement.style.top = `${y + popoverRect.height/2 }px`;
   }
 
   #hidePopover() {
-    this.#popoverElement.classList.toggle("lexical-prompt-menu--visible", false);
+    this.popoverElement.classList.toggle("lexical-prompt-menu--visible", false);
     this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions);
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover);
     this.unregisterEnterListener();
   }
 
-  #filterOptions = () => {
+  #filterOptions = async () => {
     if (this.initialPrompt) {
       this.initialPrompt = false;
       return
     }
 
     if (this.#editorContents.containsTextBackUntil(this.trigger)) {
-      this.#showFilteredOptions();
+      await this.#showFilteredOptions();
     } else {
       this.#hidePopover();
     }
   }
 
-  #showFilteredOptions() {
+  async #showFilteredOptions() {
     const filter = this.#editorContents.textBackUntil(this.trigger);
-    const filteredListItems = this.source.buildListItemElements(filter);
-    this.#popoverElement.innerHTML = "";
-    this.#popoverElement.append(...filteredListItems);
+    const filteredListItems = await this.source.buildListItemElements(filter);
+    this.popoverElement.innerHTML = "";
+    this.popoverElement.append(...filteredListItems);
     this.#selectFirstOption();
   }
 
@@ -9198,20 +9241,15 @@ class LexicalPromptElement extends HTMLElement {
     this.#editorContents.replaceTextBackUntil(stringToReplace, attachmentNode);
   }
 
-  get #popoverElement() {
-    this.popoverElement ??= this.#buildPopover();
-    return this.popoverElement
-  }
-
   get #editorContents() {
     return this.#editorElement.contents
   }
 
-  #buildPopover() {
+  async #buildPopover() {
     const popoverContainer = createElement("ul"); // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
     popoverContainer.classList.add("lexical-prompt-menu");
     popoverContainer.style.position = "absolute";
-    popoverContainer.append(...this.source.buildListItemElements());
+    popoverContainer.append(...(await this.source.buildListItemElements()));
     this.#editorElement.appendChild(popoverContainer);
     return popoverContainer
   }
