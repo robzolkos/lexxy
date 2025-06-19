@@ -1,4 +1,4 @@
-import { createElement, parseHtml } from "../../helpers/html_helper"
+import { createElement, generateDomId, parseHtml } from "../../helpers/html_helper"
 
 export default class BaseSource {
   // Template method to override
@@ -16,7 +16,7 @@ export default class BaseSource {
   buildListItemElementFor(promptItemElement) {
     const template = promptItemElement.querySelector("template[type='menu']")
     const fragment = template.content.cloneNode(true)
-    const listItemElement = createElement("li", { role: "option" })
+    const listItemElement = createElement("li", { role: "option", id: generateDomId("prompt-item") })
     listItemElement.classList.add("lexical-prompt-menu__item")
     listItemElement.appendChild(fragment)
     return listItemElement

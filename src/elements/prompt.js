@@ -1,4 +1,4 @@
-import { createElement } from "../helpers/html_helper";
+import { createElement, generateDomId } from "../helpers/html_helper";
 import { COMMAND_PRIORITY_HIGH, KEY_ENTER_COMMAND } from "lexical";
 import { CustomActionTextAttachmentNode } from "../nodes/custom_action_text_attachment_node";
 import { isPath, isUrl } from "../helpers/string_helper";
@@ -89,9 +89,19 @@ export default class LexicalPromptElement extends HTMLElement {
     return Array.from(this.popoverElement.querySelectorAll("li"))
   }
 
-  #selectOption(option) {
+  #selectOption(listItem) {
+    this.#clearSelection();
+    listItem.toggleAttribute("aria-selected", true)
+    this.#editorContentElement.setAttribute("aria-controls", this.popoverElement.id)
+    this.#editorContentElement.setAttribute("aria-activedescendant", listItem.id)
+    this.#editorContentElement.setAttribute("aria-haspopup", "listbox")
+  }
+
+  #clearSelection() {
     this.#listItemElements.forEach((item) => { item.toggleAttribute("aria-selected", false) })
-    option.toggleAttribute("aria-selected", true)
+    this.#editorContentElement.removeAttribute("aria-controls")
+    this.#editorContentElement.removeAttribute("aria-activedescendant")
+    this.#editorContentElement.removeAttribute("aria-haspopup")
   }
 
   #positionPopover() {
@@ -102,6 +112,7 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #hidePopover() {
+    this.#clearSelection()
     this.popoverElement.classList.toggle("lexical-prompt-menu--visible", false)
     this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions)
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover)
@@ -186,8 +197,12 @@ export default class LexicalPromptElement extends HTMLElement {
     return this.#editorElement.contents
   }
 
+  get #editorContentElement() {
+    return this.#editorElement.editorContentElement
+  }
+
   async #buildPopover() {
-    const popoverContainer = createElement("ul", { role: "listbox" }) // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
+    const popoverContainer = createElement("ul", { role: "listbox", id: generateDomId("prompt-popover") }) // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
     popoverContainer.classList.add("lexical-prompt-menu")
     popoverContainer.style.position = "absolute"
     popoverContainer.append(...(await this.source.buildListItems()))
