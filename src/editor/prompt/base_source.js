@@ -1,4 +1,4 @@
-import { createElement } from "../../helpers/html_helper"
+import { createElement, parseHtml } from "../../helpers/html_helper"
 
 export default class BaseSource {
   // Template method to override
@@ -26,9 +26,7 @@ export default class BaseSource {
     try {
       const response = await fetch(url)
       const html = await response.text()
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(html, "text/html")
-      const promptItems = doc.querySelectorAll("lexical-prompt-item")
+      const promptItems = parseHtml(html).querySelectorAll("lexical-prompt-item")
       return Promise.resolve(Array.from(promptItems))
     } catch (error) {
       return Promise.reject(error)

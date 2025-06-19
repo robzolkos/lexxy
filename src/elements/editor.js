@@ -12,7 +12,7 @@ import { ActionTextAttachmentNode } from "../nodes/action_text_attachment_node"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { CommandDispatcher } from "../editor/command_dispatcher"
 import Selection from "../editor/selection"
-import { containsVisuallyRelevantChildren, createElement, dispatch, generateDomId, sanitize } from "../helpers/html_helper"
+import { containsVisuallyRelevantChildren, createElement, dispatch, generateDomId, parseHtml, sanitize } from "../helpers/html_helper"
 import LexicalToolbar from "./toolbar"
 import Contents from "../editor/contents";
 import Clipboard from "../editor/clipboard";
@@ -81,14 +81,11 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   set value(html) {
-    const parser = new DOMParser()
-    const dom = parser.parseFromString(`<div>${html}</div>`, "text/html")
-
     this.editor.update(() => {
       $addUpdateTag(SKIP_DOM_SELECTION_TAG)
       const root = $getRoot()
       root.clear()
-      const nodes = $generateNodesFromDOM(this.editor, dom)
+      const nodes = $generateNodesFromDOM(this.editor, parseHtml(`<div>${html}</div>`))
       root.append(...nodes)
       root.select()
 

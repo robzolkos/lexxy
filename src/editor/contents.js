@@ -6,6 +6,7 @@ import {
 import { $generateNodesFromDOM } from "@lexical/html"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { $createLinkNode } from "@lexical/link"
+import { parseHtml } from "../helpers/html_helper";
 
 export default class Contents {
   constructor(editorElement) {
@@ -19,10 +20,7 @@ export default class Contents {
 
       if (!$isRangeSelection(selection)) return
 
-      const parser = new DOMParser()
-      const dom = parser.parseFromString(html, 'text/html')
-      const nodes = $generateNodesFromDOM(this.editor, dom)
-
+      const nodes = $generateNodesFromDOM(this.editor, parseHtml(html))
       selection.insertNodes(nodes)
     })
   }

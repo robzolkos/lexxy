@@ -25,6 +25,11 @@ export function createElement(name, properties) {
   return element
 }
 
+export function parseHtml(html) {
+  const parser = new DOMParser()
+  return parser.parseFromString(html, "text/html")
+}
+
 export function createAttachmentFigure(contentType, isPreviewable, fileName) {
   const extension = fileName ? fileName.split('.').pop().toLowerCase() : "unknown"
   return createElement("figure", {

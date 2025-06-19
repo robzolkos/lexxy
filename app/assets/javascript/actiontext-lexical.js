@@ -5276,6 +5276,11 @@ function createElement(name, properties) {
   return element
 }
 
+function parseHtml(html) {
+  const parser = new DOMParser();
+  return parser.parseFromString(html, "text/html")
+}
+
 function createAttachmentFigure(contentType, isPreviewable, fileName) {
   const extension = fileName ? fileName.split('.').pop().toLowerCase() : "unknown";
   return createElement("figure", {
@@ -6083,10 +6088,7 @@ class Contents {
 
       if (!cr(selection)) return
 
-      const parser = new DOMParser();
-      const dom = parser.parseFromString(html, 'text/html');
-      const nodes = h$1(this.editor, dom);
-
+      const nodes = h$1(this.editor, parseHtml(html));
       selection.insertNodes(nodes);
     });
   }
@@ -8723,14 +8725,11 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   set value(html) {
-    const parser = new DOMParser();
-    const dom = parser.parseFromString(`<div>${html}</div>`, "text/html");
-
     this.editor.update(() => {
       Vs(Mi);
       const root = _s();
       root.clear();
-      const nodes = h$1(this.editor, dom);
+      const nodes = h$1(this.editor, parseHtml(`<div>${html}</div>`));
       root.append(...nodes);
       root.select();
 
@@ -9032,9 +9031,7 @@ class BaseSource {
     try {
       const response = await fetch(url);
       const html = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, "text/html");
-      const promptItems = doc.querySelectorAll("lexical-prompt-item");
+      const promptItems = parseHtml(html).querySelectorAll("lexical-prompt-item");
       return Promise.resolve(Array.from(promptItems))
     } catch (error) {
       return Promise.reject(error)
