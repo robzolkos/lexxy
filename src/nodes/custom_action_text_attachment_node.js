@@ -37,10 +37,12 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
               nodes.push($createTextNode(" "));
             }
 
+            const name = attachment.getAttribute("content-type").split(".").pop()
+
             nodes.push(new CustomActionTextAttachmentNode({
               sgid: attachment.getAttribute("sgid"),
               innerHtml: JSON.parse(content),
-              contentType: attachment.getAttribute("content-type")
+              name: name
             }));
 
             nodes.push($createTextNode(" "));
@@ -53,16 +55,16 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
     }
   }
 
-  constructor({ sgid, contentType, innerHtml }, key) {
+  constructor({ sgid, name, innerHtml }, key) {
     super(key)
 
     this.sgid = sgid
-    this.contentType = contentType || ""
+    this.name = name
     this.innerHtml = innerHtml
   }
 
   createDOM() {
-    const figure = createElement("figure", { className: `attachment attachment--custom`, "data-content-type": this.contentType })
+    const figure = createElement("figure", { className: `attachment attachment--custom attachment--${this.name}`, "data-content-type": this.contentType })
 
     figure.addEventListener("click", (event) => {
       dispatchCustomEvent(figure, "lexical:node-selected", { key: this.getKey() })
@@ -71,6 +73,10 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
     figure.insertAdjacentHTML("beforeend", this.innerHtml)
 
     return figure
+  }
+
+  get contentType() {
+    return `application/vnd.actiontext.${this.name}`
   }
 
   updateDOM() {
@@ -84,7 +90,8 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
   exportDOM() {
     const attachment = createElement("action-text-attachment", {
       sgid: this.sgid,
-      alt: this.altText
+      alt: this.altText,
+      "content-type": this.contentType
     })
 
     return { element: attachment }
@@ -95,7 +102,8 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
       type: "custom_action_text_attachment",
       version: 1,
       sgid: this.sgid,
-      altText: this.altText
+      altText: this.altText,
+      name: this.name
     }
   }
 

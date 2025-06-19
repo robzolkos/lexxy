@@ -8601,10 +8601,12 @@ class CustomActionTextAttachmentNode extends gi {
               nodes.push(Xn(" "));
             }
 
+            const name = attachment.getAttribute("content-type").split(".").pop();
+
             nodes.push(new CustomActionTextAttachmentNode({
               sgid: attachment.getAttribute("sgid"),
               innerHtml: JSON.parse(content),
-              contentType: attachment.getAttribute("content-type")
+              name: name
             }));
 
             nodes.push(Xn(" "));
@@ -8617,16 +8619,16 @@ class CustomActionTextAttachmentNode extends gi {
     }
   }
 
-  constructor({ sgid, contentType, innerHtml }, key) {
+  constructor({ sgid, name, innerHtml }, key) {
     super(key);
 
     this.sgid = sgid;
-    this.contentType = contentType || "";
+    this.name = name;
     this.innerHtml = innerHtml;
   }
 
   createDOM() {
-    const figure = createElement("figure", { className: `attachment attachment--custom`, "data-content-type": this.contentType });
+    const figure = createElement("figure", { className: `attachment attachment--custom attachment--${this.name}`, "data-content-type": this.contentType });
 
     figure.addEventListener("click", (event) => {
       dispatchCustomEvent(figure, "lexical:node-selected", { key: this.getKey() });
@@ -8635,6 +8637,10 @@ class CustomActionTextAttachmentNode extends gi {
     figure.insertAdjacentHTML("beforeend", this.innerHtml);
 
     return figure
+  }
+
+  get contentType() {
+    return `application/vnd.actiontext.${this.name}`
   }
 
   updateDOM() {
@@ -8648,7 +8654,8 @@ class CustomActionTextAttachmentNode extends gi {
   exportDOM() {
     const attachment = createElement("action-text-attachment", {
       sgid: this.sgid,
-      alt: this.altText
+      alt: this.altText,
+      "content-type": this.contentType
     });
 
     return { element: attachment }
@@ -8659,7 +8666,8 @@ class CustomActionTextAttachmentNode extends gi {
       type: "custom_action_text_attachment",
       version: 1,
       sgid: this.sgid,
-      altText: this.altText
+      altText: this.altText,
+      name: this.name
     }
   }
 
@@ -9365,7 +9373,7 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   #insertTemplateAsAttachment(promptItem, template, stringToReplace) {
-    const attachmentNode = new CustomActionTextAttachmentNode({ sgid: promptItem.getAttribute("sgid"), alt: "Some attachment", innerHtml: template.innerHTML });
+    const attachmentNode = new CustomActionTextAttachmentNode({ sgid: promptItem.getAttribute("sgid"), name: this.name, innerHtml: template.innerHTML });
     this.#editorContents.replaceTextBackUntil(stringToReplace, attachmentNode);
   }
 
