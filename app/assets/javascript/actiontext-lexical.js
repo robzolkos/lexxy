@@ -8601,7 +8601,8 @@ class CustomActionTextAttachmentNode extends gi {
               nodes.push(Xn(" "));
             }
 
-            const name = attachment.getAttribute("content-type").split(".").pop();
+            const contenType = attachment.getAttribute("content-type");
+            const name = contenType ? contenType.split(".").pop() : "unknown";
 
             nodes.push(new CustomActionTextAttachmentNode({
               sgid: attachment.getAttribute("sgid"),
