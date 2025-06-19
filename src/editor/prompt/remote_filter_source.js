@@ -8,18 +8,18 @@ export default class RemoteFilterSource extends BaseSource {
     super()
 
     this.baseURL = url
-    this.loadAndBuildListItems = debounceAsync(this.#loadAndBuildListItems.bind(this), DEBOUNCE_INTERVAL)
+    this.loadAndFilterListItems = debounceAsync(this.fetchFilteredListItems.bind(this), DEBOUNCE_INTERVAL)
   }
 
   async buildListItems(filter = "") {
-    return await this.loadAndBuildListItems(filter)
+    return await this.loadAndFilterListItems(filter)
   }
 
   promptItemFor(listItem) {
     return this.promptItemByListItem.get(listItem)
   }
 
-  async #loadAndBuildListItems(filter) {
+  async fetchFilteredListItems(filter) {
     const promptItems = await this.loadPromptItemsFromUrl(this.#urlFor(filter))
     return this.#buildListItemsFromPromptItems(promptItems)
   }
