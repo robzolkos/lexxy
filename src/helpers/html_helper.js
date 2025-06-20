@@ -55,13 +55,11 @@ export function containsVisuallyRelevantChildren(element) {
 }
 
 export function sanitize(html) {
-  console.debug("BEFORE", html);
   const sanitizedHtml = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: ALLOWED_HTML_TAGS,
     ALLOWED_ATTR: ALLOWED_HTML_ATTRIBUTES,
     SAFE_FOR_XML: false // So that it does not stripe attributes that contains serialized HTML (like content)
   })
-  console.debug("AFTER", sanitizedHtml);
   return sanitizedHtml
 }
 

@@ -8649,7 +8649,6 @@ class CustomActionTextAttachmentNode extends gi {
       "content-type": this.contentType
     });
 
-    console.debug("CALLED WITH", this.innerHtml, attachment);
     return { element: attachment }
   }
 
