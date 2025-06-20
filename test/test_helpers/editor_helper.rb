@@ -27,4 +27,10 @@ module EditorHelper
       end
     end
   end
+
+  def assert_mention_attachment(user)
+    assert_figure_attachment content_type: "application/vnd.actiontext.mention" do
+      assert user.name
+    end
+  end
 end
