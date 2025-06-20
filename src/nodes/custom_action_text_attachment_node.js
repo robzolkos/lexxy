@@ -1,6 +1,6 @@
 import { $createTextNode, DecoratorNode } from "lexical"
-import { createAttachmentFigure, createElement, dispatchCustomEvent, isPreviewableImage } from "../helpers/html_helper";
-import { bytesToHumanSize, mimeTypeToExtension } from "../helpers/storage_helper";
+import { createAttachmentFigure, createElement, dispatchCustomEvent, isPreviewableImage } from "../helpers/html_helper"
+import { bytesToHumanSize, mimeTypeToExtension } from "../helpers/storage_helper"
 
 export class CustomActionTextAttachmentNode extends DecoratorNode {
   static getType() {
@@ -8,7 +8,7 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
   }
 
   static clone(node) {
-    return new CustomActionTextAttachmentNode({ ...node }, node.__key);
+    return new CustomActionTextAttachmentNode({ ...node }, node.__key)
   }
 
   static importJSON(serializedNode) {
@@ -25,27 +25,22 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
 
         return {
           conversion: () => {
-            const nodes = [];
-
-            // Check if there's a leading space in the DOM before the attachment
-            const previousSibling = attachment.previousSibling;
-            if (
-              previousSibling &&
-              previousSibling.nodeType === Node.TEXT_NODE &&
-              /\s$/.test(previousSibling.textContent)
-            ) {
-              nodes.push($createTextNode(" "));
+            // Preserve initial space if present since Lexical removes it
+            const nodes = []
+            const previousSibling = attachment.previousSibling
+            if (previousSibling && previousSibling.nodeType === Node.TEXT_NODE && /\s$/.test(previousSibling.textContent)) {
+              nodes.push($createTextNode(" "))
             }
 
             nodes.push(new CustomActionTextAttachmentNode({
               sgid: attachment.getAttribute("sgid"),
               innerHtml: JSON.parse(content),
               contentType: attachment.getAttribute("content-type")
-            }));
+            }))
 
-            nodes.push($createTextNode(" "));
+            nodes.push($createTextNode(" "))
 
-            return { node: nodes };
+            return { node: nodes }
           },
           priority: 2
         }
