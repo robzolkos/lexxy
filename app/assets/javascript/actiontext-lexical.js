@@ -9297,8 +9297,27 @@ class LexicalPromptElement extends HTMLElement {
     const filter = this.#editorContents.textBackUntil(this.trigger);
     const filteredListItems = await this.source.buildListItems(filter);
     this.popoverElement.innerHTML = "";
-    this.popoverElement.append(...filteredListItems);
+
+    if (filteredListItems.length > 0) {
+      this.#showResults(filteredListItems);
+    } else {
+      this.#showEmptyResults();
+    }
     this.#selectFirstOption();
+  }
+
+  #showResults(filteredListItems) {
+    this.popoverElement.classList.remove("lexical-prompt-menu--empty");
+    this.popoverElement.append(...filteredListItems);
+  }
+
+  #showEmptyResults() {
+    this.popoverElement.classList.add("lexical-prompt-menu--empty");
+    this.popoverElement.append(createElement("li", {  innerHTML: this.#emptyResultsMessage}));
+  }
+
+  get #emptyResultsMessage() {
+    return this.getAttribute("empty-results") || "Nothing found"
   }
 
   #handleKeydownOnPopover = (event) => {
