@@ -5260,7 +5260,7 @@ const VISUALLY_RELEVANT_ELEMENTS_SELECTOR = [
 const ALLOWED_HTML_TAGS = [ "a", "action-text-attachment", "b", "blockquote", "br", "code", "em",
   "figcaption", "figure", "h1", "h2", "h3", "h4", "h5", "h6", "i", "img", "li", "ol", "p", "pre", "q", "strong", "ul" ];
 
-const ALLOWED_HTML_ATTRIBUTES = [ "alt", "caption", "class", "content-type", "contenteditable",
+const ALLOWED_HTML_ATTRIBUTES = [ "alt", "caption", "class", "content", "content-type", "contenteditable",
   "data-direct-upload-id", "data-sgid", "filename", "filesize", "height", "href", "presentation",
   "previewable", "sgid", "src", "title", "url", "width" ];
 
@@ -5308,7 +5308,8 @@ function containsVisuallyRelevantChildren(element) {
 function sanitize(html) {
   const sanitizedHtml = purify.sanitize(html, {
     ALLOWED_TAGS: ALLOWED_HTML_TAGS,
-    ALLOWED_ATTR: ALLOWED_HTML_ATTRIBUTES
+    ALLOWED_ATTR: ALLOWED_HTML_ATTRIBUTES,
+    SAFE_FOR_XML: false // So that it does not stripe attributes that contains serialized HTML (like content)
   });
   return sanitizedHtml
 }
@@ -8572,7 +8573,7 @@ class CustomActionTextAttachmentNode extends gi {
   }
 
   static clone(node) {
-    return new CustomActionTextAttachmentNode({ ...node }, node.__key);
+    return new CustomActionTextAttachmentNode({ ...node }, node.__key)
   }
 
   static importJSON(serializedNode) {
@@ -8589,15 +8590,10 @@ class CustomActionTextAttachmentNode extends gi {
 
         return {
           conversion: () => {
+            // Preserve initial space if present since Lexical removes it
             const nodes = [];
-
-            // Check if there's a leading space in the DOM before the attachment
             const previousSibling = attachment.previousSibling;
-            if (
-              previousSibling &&
-              previousSibling.nodeType === Node.TEXT_NODE &&
-              /\s$/.test(previousSibling.textContent)
-            ) {
+            if (previousSibling && previousSibling.nodeType === Node.TEXT_NODE && /\s$/.test(previousSibling.textContent)) {
               nodes.push(Xn(" "));
             }
 
@@ -8609,7 +8605,7 @@ class CustomActionTextAttachmentNode extends gi {
 
             nodes.push(Xn(" "));
 
-            return { node: nodes };
+            return { node: nodes }
           },
           priority: 2
         }
@@ -8649,9 +8645,11 @@ class CustomActionTextAttachmentNode extends gi {
     const attachment = createElement("action-text-attachment", {
       sgid: this.sgid,
       alt: this.altText,
+      content: JSON.stringify(this.innerHtml),
       "content-type": this.contentType
     });
 
+    console.debug("CALLED WITH", this.innerHtml, attachment);
     return { element: attachment }
   }
 

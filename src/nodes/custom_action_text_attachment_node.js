@@ -80,6 +80,7 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
     const attachment = createElement("action-text-attachment", {
       sgid: this.sgid,
       alt: this.altText,
+      content: JSON.stringify(this.innerHtml),
       "content-type": this.contentType
     })
 
