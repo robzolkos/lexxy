@@ -9164,6 +9164,8 @@ class RemoteFilterSource extends BaseSource {
   }
 }
 
+const NOTHING_FOUND_DEFAULT_MESSAGE = "Nothing found";
+
 class LexicalPromptElement extends HTMLElement {
   constructor() {
     super();
@@ -9317,7 +9319,7 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   get #emptyResultsMessage() {
-    return this.getAttribute("empty-results") || "Nothing found"
+    return this.getAttribute("empty-results") || NOTHING_FOUND_DEFAULT_MESSAGE
   }
 
   #handleKeydownOnPopover = (event) => {

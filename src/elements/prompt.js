@@ -7,6 +7,8 @@ import DeferredPromptSource from "../editor/prompt/deferred_source";
 import RemoteFilterSource from "../editor/prompt/remote_filter_source";
 import { $generateNodesFromDOM } from "@lexical/html";
 
+const NOTHING_FOUND_DEFAULT_MESSAGE = "Nothing found"
+
 export default class LexicalPromptElement extends HTMLElement {
   constructor() {
     super()
@@ -160,7 +162,7 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   get #emptyResultsMessage() {
-    return this.getAttribute("empty-results") || "Nothing found"
+    return this.getAttribute("empty-results") || NOTHING_FOUND_DEFAULT_MESSAGE
   }
 
   #handleKeydownOnPopover = (event) => {
