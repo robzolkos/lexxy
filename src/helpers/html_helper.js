@@ -9,7 +9,7 @@ const VISUALLY_RELEVANT_ELEMENTS_SELECTOR = [
 const ALLOWED_HTML_TAGS = [ "a", "action-text-attachment", "b", "blockquote", "br", "code", "em",
   "figcaption", "figure", "h1", "h2", "h3", "h4", "h5", "h6", "i", "img", "li", "ol", "p", "pre", "q", "strong", "ul" ]
 
-const ALLOWED_HTML_ATTRIBUTES = [ "alt", "caption", "class", "content-type", "contenteditable",
+const ALLOWED_HTML_ATTRIBUTES = [ "alt", "caption", "class", "content", "content-type", "contenteditable",
   "data-direct-upload-id", "data-sgid", "filename", "filesize", "height", "href", "presentation",
   "previewable", "sgid", "src", "title", "url", "width" ]
 
@@ -23,6 +23,11 @@ export function createElement(name, properties) {
     }
   }
   return element
+}
+
+export function parseHtml(html) {
+  const parser = new DOMParser()
+  return parser.parseFromString(html, "text/html")
 }
 
 export function createAttachmentFigure(contentType, isPreviewable, fileName) {
@@ -52,13 +57,19 @@ export function containsVisuallyRelevantChildren(element) {
 export function sanitize(html) {
   const sanitizedHtml = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: ALLOWED_HTML_TAGS,
-    ALLOWED_ATTR: ALLOWED_HTML_ATTRIBUTES
+    ALLOWED_ATTR: ALLOWED_HTML_ATTRIBUTES,
+    SAFE_FOR_XML: false // So that it does not stripe attributes that contains serialized HTML (like content)
   })
   return sanitizedHtml
 }
 
 export function dispatch(element, eventName, detail = null, cancelable = false) {
   return element.dispatchEvent(new CustomEvent(eventName, { bubbles: true, detail, cancelable }))
+}
+
+export function generateDomId(prefix) {
+  const randomPart = Math.random().toString(36).slice(2, 10)
+  return `${prefix}-${randomPart}`
 }
 
 

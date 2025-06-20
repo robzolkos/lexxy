@@ -5260,7 +5260,7 @@ const VISUALLY_RELEVANT_ELEMENTS_SELECTOR = [
 const ALLOWED_HTML_TAGS = [ "a", "action-text-attachment", "b", "blockquote", "br", "code", "em",
   "figcaption", "figure", "h1", "h2", "h3", "h4", "h5", "h6", "i", "img", "li", "ol", "p", "pre", "q", "strong", "ul" ];
 
-const ALLOWED_HTML_ATTRIBUTES = [ "alt", "caption", "class", "content-type", "contenteditable",
+const ALLOWED_HTML_ATTRIBUTES = [ "alt", "caption", "class", "content", "content-type", "contenteditable",
   "data-direct-upload-id", "data-sgid", "filename", "filesize", "height", "href", "presentation",
   "previewable", "sgid", "src", "title", "url", "width" ];
 
@@ -5274,6 +5274,11 @@ function createElement(name, properties) {
     }
   }
   return element
+}
+
+function parseHtml(html) {
+  const parser = new DOMParser();
+  return parser.parseFromString(html, "text/html")
 }
 
 function createAttachmentFigure(contentType, isPreviewable, fileName) {
@@ -5303,13 +5308,19 @@ function containsVisuallyRelevantChildren(element) {
 function sanitize(html) {
   const sanitizedHtml = purify.sanitize(html, {
     ALLOWED_TAGS: ALLOWED_HTML_TAGS,
-    ALLOWED_ATTR: ALLOWED_HTML_ATTRIBUTES
+    ALLOWED_ATTR: ALLOWED_HTML_ATTRIBUTES,
+    SAFE_FOR_XML: false // So that it does not stripe attributes that contains serialized HTML (like content)
   });
   return sanitizedHtml
 }
 
 function dispatch(element, eventName, detail = null, cancelable = false) {
   return element.dispatchEvent(new CustomEvent(eventName, { bubbles: true, detail, cancelable }))
+}
+
+function generateDomId(prefix) {
+  const randomPart = Math.random().toString(36).slice(2, 10);
+  return `${prefix}-${randomPart}`
 }
 
 class ActionTextAttachmentNode extends gi {
@@ -5916,6 +5927,73 @@ class Selection {
     return this._current
   }
 
+  get cursorPosition() {
+    let position = { x: 0, y: 0};
+
+    this.editor.getEditorState().read(() => {
+      const lexicalSelection = Nr();
+      if (!lexicalSelection || !lexicalSelection.isCollapsed()) return
+
+      const nativeSelection = window.getSelection();
+      if (!nativeSelection || nativeSelection.rangeCount === 0) return
+
+      const range = nativeSelection.getRangeAt(0);
+      let rect = range.getBoundingClientRect();
+
+      // Create a span marker if the rect is unreliable
+      let marker;
+      if ((rect.width === 0 && rect.height === 0) || (rect.top === 0 && rect.left === 0)) {
+        marker = document.createElement("span");
+        marker.textContent = "\u200b";
+        marker.style.display = "inline-block";
+        marker.style.width = "1px";
+        marker.style.height = "1em";
+        marker.style.lineHeight = "normal";
+
+        range.insertNode(marker);
+        rect = marker.getBoundingClientRect();
+
+        // Reset selection after inserting the marker
+        nativeSelection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.setStartAfter(marker);
+        newRange.collapse(true);
+        nativeSelection.addRange(newRange);
+      }
+
+      if (!rect) return
+
+      const rootRect = this.editor.getRootElement().getBoundingClientRect();
+      let x = rect.left - rootRect.left;
+      let y = rect.top - rootRect.top;
+
+      // Try to get the font size from the marker or its parent
+      let fontSize = 0;
+      if (marker) {
+        const computed = window.getComputedStyle(marker);
+        fontSize = parseFloat(computed.fontSize);
+        marker.remove();
+      } else {
+        const anchorNode = nativeSelection.anchorNode;
+        const parentElement = anchorNode?.nodeType === Node.TEXT_NODE
+          ? anchorNode.parentElement
+          : anchorNode;
+        if (parentElement instanceof HTMLElement) {
+          const computed = window.getComputedStyle(parentElement);
+          fontSize = parseFloat(computed.fontSize);
+        }
+      }
+
+      if (!isNaN(fontSize)) {
+        y += fontSize;
+      }
+
+      position = { x, y };
+    });
+
+    return position
+  }
+
   #processSelectionChangeCommands() {
     this.editor.registerCommand(Te, this.#selectPreviousNode.bind(this), Ii);
     this.editor.registerCommand(ve, this.#selectNextNode.bind(this), Ii);
@@ -6011,10 +6089,7 @@ class Contents {
 
       if (!cr(selection)) return
 
-      const parser = new DOMParser();
-      const dom = parser.parseFromString(html, 'text/html');
-      const nodes = h$1(this.editor, dom);
-
+      const nodes = h$1(this.editor, parseHtml(html));
       selection.insertNodes(nodes);
     });
   }
@@ -6090,7 +6165,6 @@ class Contents {
     });
   }
 
-
   hasSelectedText() {
     let result = false;
 
@@ -6113,6 +6187,99 @@ class Contents {
       linkNode.append(Xn(selectedText));
 
       selection.insertNodes([ linkNode ]);
+    });
+  }
+
+  textBackUntil(string) {
+    let result = "";
+
+    this.editor.getEditorState().read(() => {
+      const selection = Nr();
+      if (!selection || !selection.isCollapsed()) return
+
+      const anchor = selection.anchor;
+      const anchorNode = anchor.getNode();
+
+      if (!Qn(anchorNode)) return
+
+      const fullText = anchorNode.getTextContent();
+      const offset = anchor.offset;
+
+      const textBeforeCursor = fullText.slice(0, offset);
+
+      const lastIndex = textBeforeCursor.lastIndexOf(string);
+      if (lastIndex !== -1) {
+        result = textBeforeCursor.slice(lastIndex + string.length);
+      }
+    });
+
+    return result
+  }
+
+  containsTextBackUntil(string) {
+    let result = false;
+
+    this.editor.getEditorState().read(() => {
+      const selection = Nr();
+      if (!selection || !selection.isCollapsed()) return
+
+      const anchor = selection.anchor;
+      const anchorNode = anchor.getNode();
+
+      if (!Qn(anchorNode)) return
+
+      const fullText = anchorNode.getTextContent();
+      const offset = anchor.offset;
+
+      const textBeforeCursor = fullText.slice(0, offset);
+
+      result = textBeforeCursor.includes(string);
+    });
+
+    return result
+  }
+
+  replaceTextBackUntil(stringToReplace, replacementNodes) {
+    replacementNodes = Array.isArray(replacementNodes) ? replacementNodes : [replacementNodes];
+
+    this.editor.update(() => {
+      const selection = Nr();
+      if (!selection || !selection.isCollapsed()) return
+
+      const anchor = selection.anchor;
+      const anchorNode = anchor.getNode();
+
+      if (!Qn(anchorNode)) return
+
+      const fullText = anchorNode.getTextContent();
+      const offset = anchor.offset;
+
+      const textBeforeCursor = fullText.slice(0, offset);
+      const lastIndex = textBeforeCursor.lastIndexOf(stringToReplace);
+
+      if (lastIndex === -1) return
+
+      const textBeforeString = fullText.slice(0, lastIndex);
+      const textAfterCursor = fullText.slice(offset);
+
+      const textNodeBefore = Xn(textBeforeString);
+      const textNodeAfter = Xn(textAfterCursor);
+
+      // Replace the anchor node with the first node
+      anchorNode.replace(textNodeBefore);
+
+      // Insert replacement nodes in sequence
+      let previousNode = textNodeBefore;
+      for (const node of replacementNodes) {
+        previousNode.insertAfter(node);
+        previousNode = node;
+      }
+
+      // Insert the text after cursor
+      previousNode.insertAfter(textNodeAfter);
+
+      // Place the cursor at the start of textNodeAfter
+      textNodeAfter.select(0, 0);
     });
   }
 
@@ -8346,6 +8513,10 @@ function isUrl(string) {
   }
 }
 
+function isPath(string) {
+  return /^\/.*$/.test(string);
+}
+
 class Clipboard {
   constructor(editorElement) {
     this.editor = editorElement.editor;
@@ -8396,6 +8567,106 @@ class Clipboard {
   }
 }
 
+class CustomActionTextAttachmentNode extends gi {
+  static getType() {
+    return "custom_action_text_attachment"
+  }
+
+  static clone(node) {
+    return new CustomActionTextAttachmentNode({ ...node }, node.__key)
+  }
+
+  static importJSON(serializedNode) {
+    return new CustomActionTextAttachmentNode({ serializedNode })
+  }
+
+  static importDOM() {
+    return {
+      "action-text-attachment": (attachment) => {
+        const content = attachment.getAttribute("content");
+        if (!attachment.getAttribute("content")) {
+          return null
+        }
+
+        return {
+          conversion: () => {
+            // Preserve initial space if present since Lexical removes it
+            const nodes = [];
+            const previousSibling = attachment.previousSibling;
+            if (previousSibling && previousSibling.nodeType === Node.TEXT_NODE && /\s$/.test(previousSibling.textContent)) {
+              nodes.push(Xn(" "));
+            }
+
+            nodes.push(new CustomActionTextAttachmentNode({
+              sgid: attachment.getAttribute("sgid"),
+              innerHtml: JSON.parse(content),
+              contentType: attachment.getAttribute("content-type")
+            }));
+
+            nodes.push(Xn(" "));
+
+            return { node: nodes }
+          },
+          priority: 2
+        }
+      }
+    }
+  }
+
+  constructor({ sgid, contentType, innerHtml }, key) {
+    super(key);
+
+    this.sgid = sgid;
+    this.contentType = contentType || "application/vnd.actiontext.unknown";
+    this.innerHtml = innerHtml;
+  }
+
+  createDOM() {
+    const figure = createElement("figure", { className: `attachment attachment--custom`, "data-content-type": this.contentType });
+
+    figure.addEventListener("click", (event) => {
+      dispatchCustomEvent(figure, "lexical:node-selected", { key: this.getKey() });
+    });
+
+    figure.insertAdjacentHTML("beforeend", this.innerHtml);
+
+    return figure
+  }
+
+  updateDOM() {
+    return true
+  }
+
+  isInline() {
+    return true
+  }
+
+  exportDOM() {
+    const attachment = createElement("action-text-attachment", {
+      sgid: this.sgid,
+      alt: this.altText,
+      content: JSON.stringify(this.innerHtml),
+      "content-type": this.contentType
+    });
+
+    return { element: attachment }
+  }
+
+  exportJSON() {
+    return {
+      type: "custom_action_text_attachment",
+      version: 1,
+      sgid: this.sgid,
+      altText: this.altText,
+      contentType: this.contentType
+    }
+  }
+
+  decorate() {
+    return null
+  }
+}
+
 class LexicalEditorElement extends HTMLElement {
   static formAssociated = true
   static debug = true
@@ -8410,6 +8681,7 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this.id ??= generateDomId("lexical-editor");
     this.editor = this.#createEditor();
     this.contents = new Contents(this);
     this.selection = new Selection(this.editor);
@@ -8458,14 +8730,11 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   set value(html) {
-    const parser = new DOMParser();
-    const dom = parser.parseFromString(`<div>${html}</div>`, "text/html");
-
     this.editor.update(() => {
       Vs(Mi);
       const root = _s();
       root.clear();
-      const nodes = h$1(this.editor, dom);
+      const nodes = h$1(this.editor, parseHtml(`<div>${html}</div>`));
       root.append(...nodes);
       root.select();
 
@@ -8507,6 +8776,7 @@ class LexicalEditorElement extends HTMLElement {
         g$2,
         m$2,
 
+        CustomActionTextAttachmentNode,
         ActionTextAttachmentNode,
         ActionTextAttachmentUploadNode
       ]
@@ -8519,6 +8789,7 @@ class LexicalEditorElement extends HTMLElement {
 
   #createEditorContentElement() {
     const editorContentElement = createElement("div", { classList: "lexical-editor__content", contenteditable: true, placeholder: this.getAttribute("placeholder") });
+    editorContentElement.id = `${this.id}-content`;
     this.appendChild(editorContentElement);
 
     if (this.getAttribute("tabindex")) {
@@ -8548,6 +8819,7 @@ class LexicalEditorElement extends HTMLElement {
 
   #loadInitialValue() {
     const initialHtml = this.getAttribute("value") || "<p></p>";
+    console.debug("INITIAL", initialHtml);
     this.value = initialHtml;
   }
 
@@ -8737,6 +9009,420 @@ class LinkDialog extends HTMLElement {
 // We should extend the native dialog and avoid the intermediary <dialog> but not
 // supported by Safari yet: customElements.define("lexical-link-dialog", LinkDialog, { extends: "dialog" })
 customElements.define("lexical-link-dialog", LinkDialog);
+
+class BaseSource {
+  // Template method to override
+  async buildListItems(filter = "") {
+    return Promise.resolve([])
+  }
+
+  // Template method to override
+  promptItemFor(listItem) {
+    return null
+  }
+
+  // Protected
+
+  buildListItemElementFor(promptItemElement) {
+    const template = promptItemElement.querySelector("template[type='menu']");
+    const fragment = template.content.cloneNode(true);
+    const listItemElement = createElement("li", { role: "option", id: generateDomId("prompt-item") });
+    listItemElement.classList.add("lexical-prompt-menu__item");
+    listItemElement.appendChild(fragment);
+    return listItemElement
+  }
+
+  async loadPromptItemsFromUrl(url) {
+    try {
+      const response = await fetch(url);
+      const html = await response.text();
+      const promptItems = parseHtml(html).querySelectorAll("lexical-prompt-item");
+      return Promise.resolve(Array.from(promptItems))
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+}
+
+class LocalFilterSource extends BaseSource {
+  async buildListItems(filter = "") {
+    const promptItems = await this.fetchPromptItems();
+    return this.#buildListItemsFromPromptItems(promptItems, filter)
+  }
+
+  // Template method to override
+  async fetchPromptItems(filter) {
+    return Promise.resolve([])
+  }
+
+  promptItemFor(listItem) {
+    return this.promptItemByListItem.get(listItem)
+  }
+
+  #buildListItemsFromPromptItems(promptItems, filter) {
+    const listItems = [];
+    this.promptItemByListItem = new WeakMap();
+    promptItems.forEach((promptItem) => {
+      const searchableText = promptItem.getAttribute("search");
+
+      if (!filter || searchableText.toLowerCase().includes(filter.toLowerCase())) {
+        const listItem = this.buildListItemElementFor(promptItem);
+        this.promptItemByListItem.set(listItem, promptItem);
+        listItems.push(listItem);
+      }
+    });
+
+    return listItems
+  }
+}
+
+class InlinePromptSource extends LocalFilterSource {
+  constructor(inlinePromptItems) {
+    super();
+    this.inlinePromptItemElements = Array.from(inlinePromptItems);
+  }
+
+  async fetchPromptItems() {
+    return Promise.resolve(this.inlinePromptItemElements)
+  }
+}
+
+class DeferredPromptSource extends LocalFilterSource {
+  constructor(url) {
+    super();
+    this.url = url;
+
+    this.fetchPromptItems();
+  }
+
+  async fetchPromptItems() {
+    this.promptItems ??= await this.loadPromptItemsFromUrl(this.url);
+
+    return Promise.resolve(this.promptItems)
+  }
+}
+
+function debounceAsync(fn, wait) {
+  let timeout;
+
+  return (...args) => {
+    clearTimeout(timeout);
+
+    return new Promise((resolve, reject) => {
+      timeout = setTimeout(async () => {
+        try {
+          const result = await fn(...args);
+          resolve(result);
+        } catch (err) {
+          reject(err);
+        }
+      }, wait);
+    })
+  }
+}
+
+const DEBOUNCE_INTERVAL = 200;
+
+class RemoteFilterSource extends BaseSource {
+  constructor(url) {
+    super();
+
+    this.baseURL = url;
+    this.loadAndFilterListItems = debounceAsync(this.fetchFilteredListItems.bind(this), DEBOUNCE_INTERVAL);
+  }
+
+  async buildListItems(filter = "") {
+    return await this.loadAndFilterListItems(filter)
+  }
+
+  promptItemFor(listItem) {
+    return this.promptItemByListItem.get(listItem)
+  }
+
+  async fetchFilteredListItems(filter) {
+    const promptItems = await this.loadPromptItemsFromUrl(this.#urlFor(filter));
+    return this.#buildListItemsFromPromptItems(promptItems)
+  }
+
+  #urlFor(filter) {
+    const url = new URL(this.baseURL, window.location.origin);
+    url.searchParams.append("filter", filter);
+    return url.toString()
+  }
+
+  #buildListItemsFromPromptItems(promptItems) {
+    const listItems = [];
+    this.promptItemByListItem = new WeakMap();
+
+    for (const promptItem of promptItems) {
+      const listItem = this.buildListItemElementFor(promptItem);
+      this.promptItemByListItem.set(listItem, promptItem);
+      listItems.push(listItem);
+    }
+
+    return listItems
+  }
+}
+
+const NOTHING_FOUND_DEFAULT_MESSAGE = "Nothing found";
+
+class LexicalPromptElement extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    this.source = this.#createSource();
+
+    this.#addTriggerListener();
+  }
+
+  disconnectedCallback() {
+    this.source = null;
+    this.popoverElement = null;
+  }
+
+  get name() {
+    return this.getAttribute("name")
+  }
+
+  get trigger() {
+    return this.getAttribute("trigger")
+  }
+
+  #createSource() {
+    const src = this.getAttribute("src");
+    if (isUrl(src) || isPath(src)) {
+      if (this.hasAttribute("remote-filtering")) {
+        return new RemoteFilterSource(src)
+      } else {
+        return new DeferredPromptSource(src)
+      }
+    } else {
+      return new InlinePromptSource(document.getElementById(src).querySelectorAll("lexical-prompt-item"))
+    }
+  }
+
+  #addTriggerListener() {
+    this.#editorElement.addEventListener("keydown", (event) => {
+      if (event.key === this.trigger) {
+        this.initialPrompt = true;
+        this.#showPopover();
+      }
+    });
+  }
+
+  get #editor() {
+    return this.#editorElement.editor
+  }
+
+  get #editorElement() {
+    return this.closest("lexical-editor")
+  }
+
+  get #selection() {
+    return this.#editorElement.selection
+  }
+
+  async #showPopover() {
+    this.popoverElement ??= await this.#buildPopover();
+    this.popoverElement.classList.toggle("lexical-prompt-menu--visible", true);
+    await this.#filterOptions();
+    this.#selectFirstOption();
+    this.#positionPopover();
+
+    this.#editorElement.addEventListener("keydown", this.#handleKeydownOnPopover);
+    this.#editorElement.addEventListener("actiontext:change", this.#filterOptions);
+    // We can't use a regular keydown for Enter as Lexical handles it first
+    this.unregisterEnterListener = this.#editor.registerCommand(Ee, this.#handleSelectedOption.bind(this), Ki);
+  }
+
+  #selectFirstOption() {
+    const firstOption = this.#listItemElements[0];
+
+    if (firstOption) {
+      this.#selectOption(firstOption);
+    }
+  }
+
+  get #listItemElements() {
+    return Array.from(this.popoverElement.querySelectorAll(".lexical-prompt-menu__item"))
+  }
+
+  #selectOption(listItem) {
+    this.#clearSelection();
+    listItem.toggleAttribute("aria-selected", true);
+    this.#editorContentElement.setAttribute("aria-controls", this.popoverElement.id);
+    this.#editorContentElement.setAttribute("aria-activedescendant", listItem.id);
+    this.#editorContentElement.setAttribute("aria-haspopup", "listbox");
+  }
+
+  #clearSelection() {
+    this.#listItemElements.forEach((item) => { item.toggleAttribute("aria-selected", false); });
+    this.#editorContentElement.removeAttribute("aria-controls");
+    this.#editorContentElement.removeAttribute("aria-activedescendant");
+    this.#editorContentElement.removeAttribute("aria-haspopup");
+  }
+
+  #positionPopover() {
+    const { x, y } = this.#selection.cursorPosition;
+    const editorRect = this.#editorElement.getBoundingClientRect();
+    const contentRect = this.#editorContentElement.getBoundingClientRect();
+    const verticalOffset = contentRect.top - editorRect.top;
+
+    this.popoverElement.style.left = `${x}px`;
+    this.popoverElement.style.top = `${y + verticalOffset}px`;
+  }
+
+  #hidePopover() {
+    this.#clearSelection();
+    this.popoverElement.classList.toggle("lexical-prompt-menu--visible", false);
+    this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions);
+    this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover);
+    this.unregisterEnterListener();
+  }
+
+  #filterOptions = async () => {
+    if (this.initialPrompt) {
+      this.initialPrompt = false;
+      return
+    }
+
+    if (this.#editorContents.containsTextBackUntil(this.trigger)) {
+      await this.#showFilteredOptions();
+    } else {
+      this.#hidePopover();
+    }
+  }
+
+  async #showFilteredOptions() {
+    const filter = this.#editorContents.textBackUntil(this.trigger);
+    const filteredListItems = await this.source.buildListItems(filter);
+    this.popoverElement.innerHTML = "";
+
+    if (filteredListItems.length > 0) {
+      this.#showResults(filteredListItems);
+    } else {
+      this.#showEmptyResults();
+    }
+    this.#selectFirstOption();
+  }
+
+  #showResults(filteredListItems) {
+    this.popoverElement.classList.remove("lexical-prompt-menu--empty");
+    this.popoverElement.append(...filteredListItems);
+  }
+
+  #showEmptyResults() {
+    this.popoverElement.classList.add("lexical-prompt-menu--empty");
+    this.popoverElement.append(createElement("li", {  innerHTML: this.#emptyResultsMessage}));
+  }
+
+  get #emptyResultsMessage() {
+    return this.getAttribute("empty-results") || NOTHING_FOUND_DEFAULT_MESSAGE
+  }
+
+  #handleKeydownOnPopover = (event) => {
+    if (event.key === "Escape") {
+      this.#hidePopover();
+      this.#editorElement.focus();
+      event.stopPropagation();
+    } else if (event.key === "ArrowDown") {
+      this.#moveSelectionDown();
+      event.preventDefault();
+    } else if (event.key === "ArrowUp") {
+      this.#moveSelectionUp();
+      event.preventDefault();
+    }
+  }
+
+  #moveSelectionDown() {
+    const nextIndex = this.#selectedIndex + 1;
+    if (nextIndex < this.#listItemElements.length) this.#selectOption(this.#listItemElements[nextIndex]);
+  }
+
+  #moveSelectionUp() {
+    const previousIndex = this.#selectedIndex - 1;
+    if (previousIndex >= 0) this.#selectOption(this.#listItemElements[previousIndex]);
+  }
+
+  get #selectedIndex() {
+    return this.#listItemElements.findIndex((item) => item.hasAttribute("aria-selected"))
+  }
+
+  get #selectedListItem() {
+    return this.#listItemElements[this.#selectedIndex]
+  }
+
+  #handleSelectedOption(event) {
+    event.preventDefault();
+    this.#optionWasSelected();
+    return true
+  }
+
+  #optionWasSelected() {
+    this.#replaceTriggerWithSelectedItem();
+    this.#hidePopover();
+    this.#editorElement.focus();
+  }
+
+  #replaceTriggerWithSelectedItem() {
+    const promptItem = this.source.promptItemFor(this.#selectedListItem);
+
+    if (!promptItem) { return }
+
+    const template = promptItem.querySelector("template[type='editor']");
+    const stringToReplace = `${this.trigger}${this.#editorContents.textBackUntil(this.trigger)}`;
+
+    if (this.hasAttribute("insert-editable-text")) {
+      this.#insertTemplateAsEditableText(template, stringToReplace);
+    } else {
+      this.#insertTemplateAsAttachment(promptItem, template, stringToReplace);
+    }
+  }
+
+  #insertTemplateAsEditableText(template, stringToReplace) {
+    this.#editor.update(() => {
+      const nodes = h$1(this.#editor, parseHtml(`${template.innerHTML}`));
+      this.#editorContents.replaceTextBackUntil(stringToReplace, nodes);
+    });
+  }
+
+  #insertTemplateAsAttachment(promptItem, template, stringToReplace) {
+    this.#editor.update(() => {
+      const attachmentNode = new CustomActionTextAttachmentNode({ sgid: promptItem.getAttribute("sgid"), contentType: `application/vnd.actiontext.${this.name}`, innerHtml: template.innerHTML });
+      this.#editorContents.replaceTextBackUntil(stringToReplace, attachmentNode);
+    });
+  }
+
+  get #editorContents() {
+    return this.#editorElement.contents
+  }
+
+  get #editorContentElement() {
+    return this.#editorElement.editorContentElement
+  }
+
+  async #buildPopover() {
+    const popoverContainer = createElement("ul", { role: "listbox", id: generateDomId("prompt-popover") }); // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
+    popoverContainer.classList.add("lexical-prompt-menu");
+    popoverContainer.style.position = "absolute";
+    popoverContainer.append(...(await this.source.buildListItems()));
+    popoverContainer.addEventListener("click", this.#handlePopoverClick);
+    this.#editorElement.appendChild(popoverContainer);
+    return popoverContainer
+  }
+
+  #handlePopoverClick = (event) => {
+    const listItem = event.target.closest(".lexical-prompt-menu__item");
+    if (listItem) {
+      this.#selectOption(listItem);
+      this.#optionWasSelected();
+    }
+  }
+}
+
+customElements.define("lexical-prompt", LexicalPromptElement);
 
 /**
  * Original by Samuel Flores

@@ -6,3 +6,7 @@ export function isUrl(string) {
     return false
   }
 }
+
+export function isPath(string) {
+  return /^\/.*$/.test(string);
+}

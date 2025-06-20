@@ -1,6 +1,7 @@
 import "./elements/toolbar"
 import "./elements/editor"
 import "./elements/link_dialog"
+import "./elements/prompt"
 
 import 'prismjs/components/prism-ruby'
 

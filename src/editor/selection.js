@@ -34,6 +34,73 @@ export default class Selection {
     return this._current
   }
 
+  get cursorPosition() {
+    let position = { x: 0, y: 0}
+
+    this.editor.getEditorState().read(() => {
+      const lexicalSelection = $getSelection()
+      if (!lexicalSelection || !lexicalSelection.isCollapsed()) return
+
+      const nativeSelection = window.getSelection()
+      if (!nativeSelection || nativeSelection.rangeCount === 0) return
+
+      const range = nativeSelection.getRangeAt(0)
+      let rect = range.getBoundingClientRect()
+
+      // Create a span marker if the rect is unreliable
+      let marker
+      if ((rect.width === 0 && rect.height === 0) || (rect.top === 0 && rect.left === 0)) {
+        marker = document.createElement("span")
+        marker.textContent = "\u200b"
+        marker.style.display = "inline-block"
+        marker.style.width = "1px"
+        marker.style.height = "1em"
+        marker.style.lineHeight = "normal"
+
+        range.insertNode(marker)
+        rect = marker.getBoundingClientRect()
+
+        // Reset selection after inserting the marker
+        nativeSelection.removeAllRanges()
+        const newRange = document.createRange()
+        newRange.setStartAfter(marker)
+        newRange.collapse(true)
+        nativeSelection.addRange(newRange)
+      }
+
+      if (!rect) return
+
+      const rootRect = this.editor.getRootElement().getBoundingClientRect()
+      let x = rect.left - rootRect.left
+      let y = rect.top - rootRect.top
+
+      // Try to get the font size from the marker or its parent
+      let fontSize = 0
+      if (marker) {
+        const computed = window.getComputedStyle(marker)
+        fontSize = parseFloat(computed.fontSize)
+        marker.remove()
+      } else {
+        const anchorNode = nativeSelection.anchorNode
+        const parentElement = anchorNode?.nodeType === Node.TEXT_NODE
+          ? anchorNode.parentElement
+          : anchorNode
+        if (parentElement instanceof HTMLElement) {
+          const computed = window.getComputedStyle(parentElement)
+          fontSize = parseFloat(computed.fontSize)
+        }
+      }
+
+      if (!isNaN(fontSize)) {
+        y += fontSize
+      }
+
+      position = { x, y }
+    })
+
+    return position
+  }
+
   #processSelectionChangeCommands() {
     this.editor.registerCommand(KEY_ARROW_LEFT_COMMAND, this.#selectPreviousNode.bind(this), COMMAND_PRIORITY_LOW)
     this.editor.registerCommand(KEY_ARROW_RIGHT_COMMAND, this.#selectNextNode.bind(this), COMMAND_PRIORITY_LOW)

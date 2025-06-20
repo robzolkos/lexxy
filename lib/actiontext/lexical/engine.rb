@@ -1,4 +1,8 @@
 require_relative "rich_text_area_tag"
+require_relative "form_helper"
+require_relative "form_builder"
+require_relative "action_text_tag"
+
 require "active_storage/blob_with_preview_url"
 
 module Actiontext
@@ -8,7 +12,11 @@ module Actiontext
 
       initializer "actiontext-lexical.initialize" do |app|
         app.config.to_prepare do
+          # TODO: We need to move these extensions to Action Text
           ActionText::TagHelper.prepend(ActionText::Lexical::TagHelper)
+          ActionView::Helpers::FormHelper.prepend(ActionText::Lexical::FormHelper)
+          ActionView::Helpers::FormBuilder.prepend(ActionText::Lexical::FormBuilder)
+          ActionView::Helpers::Tags::ActionText.prepend(ActionText::Lexical::ActionTextTag)
         end
       end
 

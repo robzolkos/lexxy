@@ -13,8 +13,8 @@ class EditorHandler
     page.execute_script("arguments[0].value = '#{value}'", editor_element)
   end
 
-  def send(keys)
-    content_element.send_keys keys
+  def send(*keys)
+    content_element.send_keys *keys
   end
 
   def select(text)
@@ -39,6 +39,12 @@ class EditorHandler
     sleep 0.1
   end
 
+  def focus
+    page.execute_script <<~JS, editor_element
+      arguments[0].focus()
+    JS
+  end
+
   def paste(text)
     page.execute_script <<~JS, content_element
       arguments[0].focus()
@@ -50,6 +56,10 @@ class EditorHandler
       pasteEvent.clipboardData.setData("text/plain", "#{text}")
       arguments[0].dispatchEvent(pasteEvent)
     JS
+  end
+
+  def within_contents(&block)
+    page.within content_element, &block
   end
 
   private

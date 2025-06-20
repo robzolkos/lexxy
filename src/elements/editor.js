@@ -12,10 +12,11 @@ import { ActionTextAttachmentNode } from "../nodes/action_text_attachment_node"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { CommandDispatcher } from "../editor/command_dispatcher"
 import Selection from "../editor/selection"
-import { containsVisuallyRelevantChildren, createElement, dispatch, sanitize } from "../helpers/html_helper"
+import { containsVisuallyRelevantChildren, createElement, dispatch, generateDomId, parseHtml, sanitize } from "../helpers/html_helper"
 import LexicalToolbar from "./toolbar"
 import Contents from "../editor/contents";
 import Clipboard from "../editor/clipboard";
+import { CustomActionTextAttachmentNode } from "../nodes/custom_action_text_attachment_node";
 
 export default class LexicalEditorElement extends HTMLElement {
   static formAssociated = true
@@ -31,6 +32,7 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this.id ??= generateDomId("lexical-editor")
     this.editor = this.#createEditor()
     this.contents = new Contents(this)
     this.selection = new Selection(this.editor)
@@ -79,14 +81,11 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   set value(html) {
-    const parser = new DOMParser()
-    const dom = parser.parseFromString(`<div>${html}</div>`, "text/html")
-
     this.editor.update(() => {
       $addUpdateTag(SKIP_DOM_SELECTION_TAG)
       const root = $getRoot()
       root.clear()
-      const nodes = $generateNodesFromDOM(this.editor, dom)
+      const nodes = $generateNodesFromDOM(this.editor, parseHtml(`<div>${html}</div>`))
       root.append(...nodes)
       root.select()
 
@@ -128,6 +127,7 @@ export default class LexicalEditorElement extends HTMLElement {
         LinkNode,
         AutoLinkNode,
 
+        CustomActionTextAttachmentNode,
         ActionTextAttachmentNode,
         ActionTextAttachmentUploadNode
       ]
@@ -140,6 +140,7 @@ export default class LexicalEditorElement extends HTMLElement {
 
   #createEditorContentElement() {
     const editorContentElement = createElement("div", { classList: "lexical-editor__content", contenteditable: true, placeholder: this.getAttribute("placeholder") })
+    editorContentElement.id = `${this.id}-content`
     this.appendChild(editorContentElement)
 
     if (this.getAttribute("tabindex")) {
@@ -169,6 +170,7 @@ export default class LexicalEditorElement extends HTMLElement {
 
   #loadInitialValue() {
     const initialHtml = this.getAttribute("value") || "<p></p>"
+    console.debug("INITIAL", initialHtml);
     this.value = initialHtml
   }
 

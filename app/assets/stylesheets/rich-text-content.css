@@ -112,7 +112,7 @@
 
     /* Attachments */
 
-    figure {
+    figure:not(.attachment--custom) {
       display: inline-block;
       position: relative;
       block-size: auto;
@@ -131,7 +131,7 @@
       }
     }
 
-    .attachment {
+    .attachment:not(.attachment--custom) {
       border: 1px solid #cdbbfa;
       border-radius: 16px;
       padding: 24px;
@@ -147,6 +147,13 @@
       embed,video {
         max-width: 100%;
       }
+    }
+
+    figure.attachment--custom {
+      display: inline;
+      padding: 0;
+      margin: 0;
+      white-space: normal;
     }
 
     .attachment__caption {

@@ -6,6 +6,7 @@ import {
 import { $generateNodesFromDOM } from "@lexical/html"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { $createLinkNode } from "@lexical/link"
+import { parseHtml } from "../helpers/html_helper";
 
 export default class Contents {
   constructor(editorElement) {
@@ -19,10 +20,7 @@ export default class Contents {
 
       if (!$isRangeSelection(selection)) return
 
-      const parser = new DOMParser()
-      const dom = parser.parseFromString(html, 'text/html')
-      const nodes = $generateNodesFromDOM(this.editor, dom)
-
+      const nodes = $generateNodesFromDOM(this.editor, parseHtml(html))
       selection.insertNodes(nodes)
     })
   }
@@ -98,7 +96,6 @@ export default class Contents {
     })
   }
 
-
   hasSelectedText() {
     let result = false
 
@@ -121,6 +118,99 @@ export default class Contents {
       linkNode.append($createTextNode(selectedText))
 
       selection.insertNodes([ linkNode ])
+    })
+  }
+
+  textBackUntil(string) {
+    let result = ""
+
+    this.editor.getEditorState().read(() => {
+      const selection = $getSelection()
+      if (!selection || !selection.isCollapsed()) return
+
+      const anchor = selection.anchor
+      const anchorNode = anchor.getNode()
+
+      if (!$isTextNode(anchorNode)) return
+
+      const fullText = anchorNode.getTextContent()
+      const offset = anchor.offset
+
+      const textBeforeCursor = fullText.slice(0, offset)
+
+      const lastIndex = textBeforeCursor.lastIndexOf(string)
+      if (lastIndex !== -1) {
+        result = textBeforeCursor.slice(lastIndex + string.length)
+      }
+    })
+
+    return result
+  }
+
+  containsTextBackUntil(string) {
+    let result = false
+
+    this.editor.getEditorState().read(() => {
+      const selection = $getSelection()
+      if (!selection || !selection.isCollapsed()) return
+
+      const anchor = selection.anchor
+      const anchorNode = anchor.getNode()
+
+      if (!$isTextNode(anchorNode)) return
+
+      const fullText = anchorNode.getTextContent()
+      const offset = anchor.offset
+
+      const textBeforeCursor = fullText.slice(0, offset)
+
+      result = textBeforeCursor.includes(string)
+    })
+
+    return result
+  }
+
+  replaceTextBackUntil(stringToReplace, replacementNodes) {
+    replacementNodes = Array.isArray(replacementNodes) ? replacementNodes : [replacementNodes]
+
+    this.editor.update(() => {
+      const selection = $getSelection()
+      if (!selection || !selection.isCollapsed()) return
+
+      const anchor = selection.anchor
+      const anchorNode = anchor.getNode()
+
+      if (!$isTextNode(anchorNode)) return
+
+      const fullText = anchorNode.getTextContent()
+      const offset = anchor.offset
+
+      const textBeforeCursor = fullText.slice(0, offset)
+      const lastIndex = textBeforeCursor.lastIndexOf(stringToReplace)
+
+      if (lastIndex === -1) return
+
+      const textBeforeString = fullText.slice(0, lastIndex)
+      const textAfterCursor = fullText.slice(offset)
+
+      const textNodeBefore = $createTextNode(textBeforeString)
+      const textNodeAfter = $createTextNode(textAfterCursor)
+
+      // Replace the anchor node with the first node
+      anchorNode.replace(textNodeBefore)
+
+      // Insert replacement nodes in sequence
+      let previousNode = textNodeBefore
+      for (const node of replacementNodes) {
+        previousNode.insertAfter(node)
+        previousNode = node
+      }
+
+      // Insert the text after cursor
+      previousNode.insertAfter(textNodeAfter)
+
+      // Place the cursor at the start of textNodeAfter
+      textNodeAfter.select(0, 0)
     })
   }
 
