@@ -5568,10 +5568,11 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
     return new ActionTextAttachmentUploadNode({ ...node }, node.__key);
   }
 
-  constructor({ file, uploadUrl, editor, progress }, key) {
+  constructor({ file, uploadUrl, blobUrlTemplate, editor, progress }, key) {
     super({ contentType: file.type }, key);
     this.file = file;
     this.uploadUrl = uploadUrl;
+    this.blobUrlTemplate = blobUrlTemplate;
     this.src = null;
     this.editor = editor;
     this.progress = progress || 0;
@@ -5657,7 +5658,9 @@ class ActionTextAttachmentUploadNode extends ActionTextAttachmentNode {
       if (error) {
         this.#handleUploadError(figure);
       } else {
-        this.src = `/rails/active_storage/blobs/redirect/${blob.signed_id}/${blob.filename}`;
+        this.src = this.blobUrlTemplate
+          .replace(":signed_id", blob.signed_id)
+          .replace(":filename", encodeURIComponent(blob.filename));
 
         this.#loadFigurePreviewFromBlob(blob, figure).then(() => {
           this.#showUploadedAttachment(figure, blob);
@@ -6285,13 +6288,14 @@ class Contents {
 
   uploadFile(file) {
     const uploadUrl = this.editorElement.directUploadUrl;
+    const blobUrlTemplate = this.editorElement.blobUrlTemplate;
 
     this.editor.update(() => {
       const selection = Nr();
       const anchorNode = selection?.anchor.getNode();
       const currentParagraph = anchorNode?.getTopLevelElementOrThrow();
 
-      const uploadedImageNode = new ActionTextAttachmentUploadNode({ file: file, uploadUrl: uploadUrl, editor: this.editor });
+      const uploadedImageNode = new ActionTextAttachmentUploadNode({ file: file, uploadUrl: uploadUrl, blobUrlTemplate: blobUrlTemplate, editor: this.editor });
 
       if (currentParagraph && Fi(currentParagraph) && currentParagraph.getChildrenSize() === 0) {
         currentParagraph.append(uploadedImageNode);
@@ -8713,6 +8717,10 @@ class LexicalEditorElement extends HTMLElement {
 
   get directUploadUrl() {
     return this.dataset.directUploadUrl
+  }
+
+  get blobUrlTemplate() {
+    return this.dataset.blobUrlTemplate
   }
 
   focus() {

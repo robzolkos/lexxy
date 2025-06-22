@@ -216,13 +216,14 @@ export default class Contents {
 
   uploadFile(file) {
     const uploadUrl = this.editorElement.directUploadUrl
+    const blobUrlTemplate = this.editorElement.blobUrlTemplate
 
     this.editor.update(() => {
       const selection = $getSelection()
       const anchorNode = selection?.anchor.getNode()
       const currentParagraph = anchorNode?.getTopLevelElementOrThrow()
 
-      const uploadedImageNode = new ActionTextAttachmentUploadNode({ file: file, uploadUrl: uploadUrl, editor: this.editor })
+      const uploadedImageNode = new ActionTextAttachmentUploadNode({ file: file, uploadUrl: uploadUrl, blobUrlTemplate: blobUrlTemplate, editor: this.editor })
 
       if (currentParagraph && $isParagraphNode(currentParagraph) && currentParagraph.getChildrenSize() === 0) {
         currentParagraph.append(uploadedImageNode)

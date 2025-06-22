@@ -66,6 +66,10 @@ export default class LexicalEditorElement extends HTMLElement {
     return this.dataset.directUploadUrl
   }
 
+  get blobUrlTemplate() {
+    return this.dataset.blobUrlTemplate
+  }
+
   focus() {
     this.editor.focus()
   }
