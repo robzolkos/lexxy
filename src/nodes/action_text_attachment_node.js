@@ -132,10 +132,6 @@ export class ActionTextAttachmentNode extends DecoratorNode {
     return null
   }
 
-  isInline() {
-    return true
-  }
-
   createAttachmentFigure() {
     return createAttachmentFigure(this.contentType, this.isPreviewableAttachment, this.fileName)
   }

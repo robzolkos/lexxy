@@ -6,7 +6,7 @@ import {
 import { $generateNodesFromDOM } from "@lexical/html"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { $createLinkNode } from "@lexical/link"
-import { parseHtml } from "../helpers/html_helper";
+import { parseHtml } from "../helpers/html_helper"
 
 export default class Contents {
   constructor(editorElement) {
@@ -226,16 +226,12 @@ export default class Contents {
       const uploadedImageNode = new ActionTextAttachmentUploadNode({ file: file, uploadUrl: uploadUrl, blobUrlTemplate: blobUrlTemplate, editor: this.editor })
 
       if (currentParagraph && $isParagraphNode(currentParagraph) && currentParagraph.getChildrenSize() === 0) {
-        currentParagraph.append(uploadedImageNode)
+        // If we're inside an empty paragraph, replace it
+        currentParagraph.replace(uploadedImageNode)
+      } else if (currentParagraph && $isElementNode(currentParagraph)) {
+        currentParagraph.insertAfter(uploadedImageNode)
       } else {
-        const newParagraph = $createParagraphNode()
-        newParagraph.append(uploadedImageNode)
-
-        if (currentParagraph && $isElementNode(currentParagraph)) {
-          currentParagraph.insertAfter(newParagraph)
-        } else {
-          $insertNodes([ newParagraph ])
-        }
+        $insertNodes([uploadedImageNode])
       }
     }, { tag: HISTORY_MERGE_TAG })
   }
