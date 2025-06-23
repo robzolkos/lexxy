@@ -73,7 +73,7 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
   }
 
   isInline() {
-    return true
+    return false
   }
 
   exportDOM() {
