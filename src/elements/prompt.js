@@ -157,6 +157,7 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #showEmptyResults() {
+    this.popoverElement.classList.add("lexical-prompt-menu--empty")
     const el = createElement("li", {  innerHTML: this.#emptyResultsMessage})
     el.classList.add("lexical-prompt-menu__item--empty")
     this.popoverElement.append(el)
