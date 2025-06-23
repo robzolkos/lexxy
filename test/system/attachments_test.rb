@@ -38,6 +38,6 @@ class AttachmentsTest < ApplicationSystemTestCase
     find_editor.send :delete
     assert_no_selector "figure.attachment[content-type='image/png']"
 
-    assert_equal_html "<p><br></p>", find_editor.value
+    assert_equal_html "", find_editor.value
   end
 end

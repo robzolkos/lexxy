@@ -5453,10 +5453,6 @@ class ActionTextAttachmentNode extends gi {
     return null
   }
 
-  isInline() {
-    return true
-  }
-
   createAttachmentFigure() {
     return createAttachmentFigure(this.contentType, this.isPreviewableAttachment, this.fileName)
   }
@@ -6298,16 +6294,12 @@ class Contents {
       const uploadedImageNode = new ActionTextAttachmentUploadNode({ file: file, uploadUrl: uploadUrl, blobUrlTemplate: blobUrlTemplate, editor: this.editor });
 
       if (currentParagraph && Fi(currentParagraph) && currentParagraph.getChildrenSize() === 0) {
-        currentParagraph.append(uploadedImageNode);
+        // If we're inside an empty paragraph, replace it
+        currentParagraph.replace(uploadedImageNode);
+      } else if (currentParagraph && di(currentParagraph)) {
+        currentParagraph.insertAfter(uploadedImageNode);
       } else {
-        const newParagraph = Pi();
-        newParagraph.append(uploadedImageNode);
-
-        if (currentParagraph && di(currentParagraph)) {
-          currentParagraph.insertAfter(newParagraph);
-        } else {
-          Fr([ newParagraph ]);
-        }
+        Fr([uploadedImageNode]);
       }
     }, { tag: Ti });
   }
