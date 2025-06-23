@@ -8634,7 +8634,7 @@ class CustomActionTextAttachmentNode extends gi {
   }
 
   isInline() {
-    return true
+    return false
   }
 
   exportDOM() {
@@ -8734,8 +8734,7 @@ class LexicalEditorElement extends HTMLElement {
       Vs(Mi);
       const root = _s();
       root.clear();
-      const nodes = h$1(this.editor, parseHtml(`<div>${html}</div>`));
-      root.append(...nodes);
+      root.append(...this.#parseHtmlIntoLexicalNodes(html));
       root.select();
 
       this.#toggleEmptyStatus();
@@ -8745,6 +8744,21 @@ class LexicalEditorElement extends HTMLElement {
       // fails because no root node detected. This is a workaround to deal with the issue.
       requestAnimationFrame(() => this.editor?.update(() => { }));
     });
+  }
+
+  #parseHtmlIntoLexicalNodes(html) {
+    const nodes = h$1(this.editor, parseHtml(`<div>${html}</div>`));
+    // Custom decorator block elements such action-text-attachments get wrapped into <p> automatically by Lexical.
+    // We flatten those.
+    return nodes.map(node => {
+      if (node.getType() === "paragraph" && node.getChildrenSize() === 1) {
+        const child = node.getFirstChild();
+        if (child instanceof gi && !child.isInline()) {
+          return child
+        }
+      }
+      return node
+    })
   }
 
   #initialize() {
