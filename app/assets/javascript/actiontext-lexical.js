@@ -8673,7 +8673,7 @@ class LexicalEditorElement extends HTMLElement {
   constructor() {
     super();
     this.internals = this.attachInternals();
-    this.internals.ariaRole = "textbox";
+    this.internals.role = "textbox";
   }
 
   connectedCallback() {
