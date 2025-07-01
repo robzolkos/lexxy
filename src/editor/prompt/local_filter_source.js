@@ -1,5 +1,5 @@
-import { createElement } from "../../helpers/html_helper"
 import BaseSource from "./base_source"
+import { filterMatches } from "../../helpers/string_helper";
 
 export default class LocalFilterSource extends BaseSource {
   async buildListItems(filter = "") {
@@ -22,7 +22,7 @@ export default class LocalFilterSource extends BaseSource {
     promptItems.forEach((promptItem) => {
       const searchableText = promptItem.getAttribute("search")
 
-      if (!filter || searchableText.toLowerCase().includes(filter.toLowerCase())) {
+      if (!filter || filterMatches(searchableText, filter)) {
         const listItem = this.buildListItemElementFor(promptItem)
         this.promptItemByListItem.set(listItem, promptItem)
         listItems.push(listItem)

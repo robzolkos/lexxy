@@ -8513,6 +8513,16 @@ function isPath(string) {
   return /^\/.*$/.test(string);
 }
 
+function normalizeFilteredText(string) {
+  return string
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+}
+
+function filterMatches(text, potentialMatch) {
+  return normalizeFilteredText(text).includes(normalizeFilteredText(potentialMatch))
+}
+
 class Clipboard {
   constructor(editorElement) {
     this.editor = editorElement.editor;
@@ -9077,7 +9087,7 @@ class LocalFilterSource extends BaseSource {
     promptItems.forEach((promptItem) => {
       const searchableText = promptItem.getAttribute("search");
 
-      if (!filter || searchableText.toLowerCase().includes(filter.toLowerCase())) {
+      if (!filter || filterMatches(searchableText, filter)) {
         const listItem = this.buildListItemElementFor(promptItem);
         this.promptItemByListItem.set(listItem, promptItem);
         listItems.push(listItem);
