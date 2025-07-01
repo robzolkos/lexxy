@@ -95,6 +95,8 @@ export default class LexicalPromptElement extends HTMLElement {
   #selectOption(listItem) {
     this.#clearSelection();
     listItem.toggleAttribute("aria-selected", true)
+    listItem.focus()
+    this.#editorElement.focus()
     this.#editorContentElement.setAttribute("aria-controls", this.popoverElement.id)
     this.#editorContentElement.setAttribute("aria-activedescendant", listItem.id)
     this.#editorContentElement.setAttribute("aria-haspopup", "listbox")
@@ -165,7 +167,7 @@ export default class LexicalPromptElement extends HTMLElement {
 
   #showEmptyResults() {
     this.popoverElement.classList.add("lexical-prompt-menu--empty")
-    const el = createElement("li", {  innerHTML: this.#emptyResultsMessage})
+    const el = createElement("li", {  innerHTML: this.#emptyResultsMessage })
     el.classList.add("lexical-prompt-menu__item--empty")
     this.popoverElement.append(el)
   }

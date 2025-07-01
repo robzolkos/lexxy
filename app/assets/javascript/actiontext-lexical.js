@@ -9084,7 +9084,7 @@ class BaseSource {
   buildListItemElementFor(promptItemElement) {
     const template = promptItemElement.querySelector("template[type='menu']");
     const fragment = template.content.cloneNode(true);
-    const listItemElement = createElement("li", { role: "option", id: generateDomId("prompt-item") });
+    const listItemElement = createElement("li", { role: "option", id: generateDomId("prompt-item"), tabindex: "0" });
     listItemElement.classList.add("lexical-prompt-menu__item");
     listItemElement.appendChild(fragment);
     return listItemElement
@@ -9310,6 +9310,8 @@ class LexicalPromptElement extends HTMLElement {
   #selectOption(listItem) {
     this.#clearSelection();
     listItem.toggleAttribute("aria-selected", true);
+    listItem.focus();
+    this.#editorElement.focus();
     this.#editorContentElement.setAttribute("aria-controls", this.popoverElement.id);
     this.#editorContentElement.setAttribute("aria-activedescendant", listItem.id);
     this.#editorContentElement.setAttribute("aria-haspopup", "listbox");
@@ -9335,7 +9337,6 @@ class LexicalPromptElement extends HTMLElement {
     this.popoverElement.style.top = `${y + verticalOffset}px`;
 
     if (isClippedAtBottom) {
-      console.debug("fontSize", fontSize);
       this.popoverElement.style.top = `${y - popoverRect.height - verticalOffset - fontSize * 2}px`;
     }
   }
@@ -9381,7 +9382,7 @@ class LexicalPromptElement extends HTMLElement {
 
   #showEmptyResults() {
     this.popoverElement.classList.add("lexical-prompt-menu--empty");
-    const el = createElement("li", {  innerHTML: this.#emptyResultsMessage});
+    const el = createElement("li", {  innerHTML: this.#emptyResultsMessage });
     el.classList.add("lexical-prompt-menu__item--empty");
     this.popoverElement.append(el);
   }
