@@ -175,9 +175,11 @@ export default class LexicalPromptElement extends HTMLElement {
     } else if (event.key === "ArrowDown") {
       this.#moveSelectionDown()
       event.preventDefault()
+      event.stopPropagation()
     } else if (event.key === "ArrowUp") {
       this.#moveSelectionUp()
       event.preventDefault()
+      event.stopPropagation()
     }
   }
 
