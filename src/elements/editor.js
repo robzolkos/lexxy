@@ -126,6 +126,7 @@ export default class LexicalEditorElement extends HTMLElement {
     this.#attachDebugHooks()
     this.#attachToolbar()
     this.#loadInitialValue()
+    this.#resetBeforeTurboCaches()
   }
 
   #createEditor() {
@@ -192,6 +193,14 @@ export default class LexicalEditorElement extends HTMLElement {
     const initialHtml = this.getAttribute("value") || "<p></p>"
     console.debug("INITIAL", initialHtml);
     this.value = initialHtml
+  }
+
+  #resetBeforeTurboCaches() {
+    document.addEventListener("turbo:before-cache", this.#handleTurboBeforeCache)
+  }
+
+  #handleTurboBeforeCache = (event) => {
+    this.#reset()
   }
 
   #synchronizeWithChanges() {
@@ -310,6 +319,8 @@ export default class LexicalEditorElement extends HTMLElement {
     }
 
     this.selection = null
+
+    document.removeEventListener("turbo:before-cache", this.#handleTurboBeforeCache)
   }
 
   #reconnect() {
