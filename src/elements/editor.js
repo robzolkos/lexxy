@@ -72,6 +72,10 @@ export default class LexicalEditorElement extends HTMLElement {
     return this.dataset.blobUrlTemplate
   }
 
+  get isSingleLineMode() {
+    return this.hasAttribute("single-line")
+  }
+
   focus() {
     this.editor.focus()
   }
@@ -122,7 +126,7 @@ export default class LexicalEditorElement extends HTMLElement {
     this.#synchronizeWithChanges()
     this.#registerComponents()
     this.#listenForInvalidatedNodes()
-    this.#preventCtrlEnter()
+    this.#handleEnter()
     this.#attachDebugHooks()
     this.#attachToolbar()
     this.#loadInitialValue()
@@ -246,12 +250,19 @@ export default class LexicalEditorElement extends HTMLElement {
     })
   }
 
-  #preventCtrlEnter() {
+  #handleEnter() {
     // We can't prevent these externally using regular keydown because Lexical handles it first.
     this.editor.registerCommand(
       KEY_ENTER_COMMAND,
       (event) => {
+        // Prevent CTRL+ENTER
         if (event.ctrlKey || event.metaKey) {
+          event.preventDefault()
+          return true
+        }
+
+        // In single line mode, prevent ENTER
+        if (this.isSingleLineMode) {
           event.preventDefault()
           return true
         }
