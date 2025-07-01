@@ -120,7 +120,6 @@ export default class LexicalPromptElement extends HTMLElement {
     this.popoverElement.style.top = `${y + verticalOffset}px`
 
     if (isClippedAtBottom) {
-      console.debug("fontSize", fontSize);
       this.popoverElement.style.top = `${y - popoverRect.height - verticalOffset - fontSize * 2}px`
     }
   }
