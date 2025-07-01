@@ -8713,6 +8713,8 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   get toolbarElement() {
+    if (!this.#hasToolbar) return null
+
     this.toolbar = this.toolbar || this.#findOrCreateDefaultToolbar();
     return this.toolbar
   }
@@ -8837,7 +8839,7 @@ class LexicalEditorElement extends HTMLElement {
     }
   }
 
-  get #internalFormValue()  {
+  get #internalFormValue() {
     return this._internalFormValue
   }
 
@@ -8917,12 +8919,18 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #attachToolbar() {
-    this.toolbarElement.setEditor(this);
+    if (this.#hasToolbar) {
+      this.toolbarElement.setEditor(this);
+    }
   }
 
   #findOrCreateDefaultToolbar() {
     const toolbarId = this.getAttribute("toolbar");
     return toolbarId ? document.getElementById(toolbarId) : this.#createDefaultToolbar()
+  }
+
+  get #hasToolbar() {
+    return this.getAttribute("toolbar") !== "false"
   }
 
   #createDefaultToolbar() {
