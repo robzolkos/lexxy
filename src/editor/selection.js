@@ -95,7 +95,7 @@ export default class Selection {
         y += fontSize
       }
 
-      position = { x, y }
+      position = { x, y, fontSize }
     })
 
     return position

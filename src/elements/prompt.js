@@ -108,13 +108,21 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #positionPopover() {
-    const { x, y } = this.#selection.cursorPosition
+    const { x, y, fontSize } = this.#selection.cursorPosition
     const editorRect = this.#editorElement.getBoundingClientRect()
     const contentRect = this.#editorContentElement.getBoundingClientRect()
     const verticalOffset = contentRect.top - editorRect.top
 
+    const popoverRect = this.popoverElement.getBoundingClientRect();
+    const isClippedAtBottom = popoverRect.bottom > window.innerHeight
+
     this.popoverElement.style.left = `${x}px`
     this.popoverElement.style.top = `${y + verticalOffset}px`
+
+    if (isClippedAtBottom) {
+      console.debug("fontSize", fontSize);
+      this.popoverElement.style.top = `${y - popoverRect.height - verticalOffset - fontSize * 2}px`
+    }
   }
 
   #hidePopover() {
