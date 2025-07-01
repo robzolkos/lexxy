@@ -8769,6 +8769,7 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #parseHtmlIntoLexicalNodes(html) {
+    if (!html) html = "<p></p>";
     const nodes = h$1(this.editor, parseHtml(`<div>${html}</div>`));
     // Custom decorator block elements such action-text-attachments get wrapped into <p> automatically by Lexical.
     // We flatten those.
