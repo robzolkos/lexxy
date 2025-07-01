@@ -1,6 +1,6 @@
 import {
-  $createNodeSelection, $createRangeSelection, $getNodeByKey, $getSelection, $isNodeSelection,
-  $setSelection, $isElementNode, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, CLICK_COMMAND,
+  $createNodeSelection, $getNodeByKey, $getSelection, $isNodeSelection,
+  $setSelection, $getRoot, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, CLICK_COMMAND,
   KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND
 } from "lexical"
 
@@ -99,6 +99,12 @@ export default class Selection {
     })
 
     return position
+  }
+
+  placeCursorAtTheEnd() {
+    this.editor.update(() => {
+      $getRoot().selectEnd()
+    })
   }
 
   #processSelectionChangeCommands() {

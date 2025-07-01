@@ -5993,6 +5993,12 @@ class Selection {
     return position
   }
 
+  placeCursorAtTheEnd() {
+    this.editor.update(() => {
+      _s().selectEnd();
+    });
+  }
+
   #processSelectionChangeCommands() {
     this.editor.registerCommand(Te, this.#selectPreviousNode.bind(this), Ii);
     this.editor.registerCommand(ve, this.#selectNextNode.bind(this), Ii);
