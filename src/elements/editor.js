@@ -265,7 +265,6 @@ export default class LexicalEditorElement extends HTMLElement {
         // In single line mode, prevent ENTER
         if (this.isSingleLineMode) {
           event.preventDefault()
-          return true
         }
 
         return false
