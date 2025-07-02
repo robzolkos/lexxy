@@ -294,20 +294,22 @@ export default class Selection {
     const node = this.nodeAfterCursor
     if (node instanceof DecoratorNode) {
       this.#selectInLexical(node)
-      return true
     } else {
       this.#contents.deleteSelectedNodes()
     }
+
+    return true
   }
 
   #deletePreviousOrNext() {
     const node = this.nodeBeforeCursor
     if (node instanceof DecoratorNode) {
       this.#selectInLexical(node)
-      return true
     } else {
       this.#contents.deleteSelectedNodes()
     }
+
+    return true
   }
 
   get #contents() {

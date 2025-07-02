@@ -246,9 +246,10 @@ export default class Contents {
 
           node.remove()
 
-          if (parent && parent.getChildrenSize() === 0 && (parent.getNextSibling() !== null || parent.getPreviousSibling() !== null)) {
-            parent.remove()
+          if (parent.getType() === "root" && parent.getChildrenSize() === 0) {
+            parent.append($createParagraphNode())
           }
+
           nodesWereRemoved = true
         })
 
