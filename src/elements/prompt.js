@@ -1,5 +1,5 @@
 import { createElement, generateDomId, parseHtml } from "../helpers/html_helper";
-import { COMMAND_PRIORITY_HIGH, KEY_ENTER_COMMAND } from "lexical";
+import { COMMAND_PRIORITY_HIGH, KEY_ENTER_COMMAND, $createTextNode } from "lexical";
 import { CustomActionTextAttachmentNode } from "../nodes/custom_action_text_attachment_node";
 import { isPath, isUrl } from "../helpers/string_helper";
 import InlinePromptSource from "../editor/prompt/inline_source";
@@ -248,7 +248,8 @@ export default class LexicalPromptElement extends HTMLElement {
   #insertTemplateAsAttachment(promptItem, template, stringToReplace) {
     this.#editor.update(() => {
       const attachmentNode = new CustomActionTextAttachmentNode({ sgid: promptItem.getAttribute("sgid"), contentType: `application/vnd.actiontext.${this.name}`, innerHtml: template.innerHTML })
-      this.#editorContents.replaceTextBackUntil(stringToReplace, attachmentNode)
+      const space = $createTextNode("\u200B")
+      this.#editorContents.replaceTextBackUntil(stringToReplace, [ attachmentNode, space ])
     })
   }
 
