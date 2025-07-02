@@ -8,6 +8,8 @@ import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_
 import { $createLinkNode } from "@lexical/link"
 import { parseHtml } from "../helpers/html_helper"
 
+const ZERO_WIDTH_SPACE = "\u200B"
+
 export default class Contents {
   constructor(editorElement) {
     this.editorElement = editorElement
@@ -192,9 +194,8 @@ export default class Contents {
 
       const textBeforeString = fullText.slice(0, lastIndex)
       const textAfterCursor = fullText.slice(offset)
-
-      const textNodeBefore = $createTextNode(textBeforeString)
-      const textNodeAfter = $createTextNode(textAfterCursor)
+      const textNodeBefore = $createTextNode(textBeforeString || ZERO_WIDTH_SPACE)
+      const textNodeAfter = $createTextNode(textAfterCursor || ZERO_WIDTH_SPACE)
 
       // Replace the anchor node with the first node
       anchorNode.replace(textNodeBefore)

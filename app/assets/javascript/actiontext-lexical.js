@@ -6082,6 +6082,8 @@ class Selection {
   }
 }
 
+const ZERO_WIDTH_SPACE = "\u200B";
+
 class Contents {
   constructor(editorElement) {
     this.editorElement = editorElement;
@@ -6266,9 +6268,8 @@ class Contents {
 
       const textBeforeString = fullText.slice(0, lastIndex);
       const textAfterCursor = fullText.slice(offset);
-
-      const textNodeBefore = Xn(textBeforeString);
-      const textNodeAfter = Xn(textAfterCursor);
+      const textNodeBefore = Xn(textBeforeString || ZERO_WIDTH_SPACE);
+      const textNodeAfter = Xn(textAfterCursor || ZERO_WIDTH_SPACE);
 
       // Replace the anchor node with the first node
       anchorNode.replace(textNodeBefore);
