@@ -1,4 +1,4 @@
-import { createEditor, $getRoot, $createTextNode, $getNodeByKey, $addUpdateTag, SKIP_DOM_SELECTION_TAG, KEY_ENTER_COMMAND, COMMAND_PRIORITY_HIGH, DecoratorNode } from "lexical"
+import { createEditor, $getRoot, $createTextNode, $getNodeByKey, $addUpdateTag, SKIP_DOM_SELECTION_TAG, KEY_ENTER_COMMAND, COMMAND_PRIORITY_NORMAL, DecoratorNode } from "lexical"
 import { ListNode, ListItemNode, registerList } from "@lexical/list"
 import { LinkNode, AutoLinkNode } from "@lexical/link"
 import { registerRichText, QuoteNode, HeadingNode } from "@lexical/rich-text"
@@ -265,11 +265,12 @@ export default class LexicalEditorElement extends HTMLElement {
         // In single line mode, prevent ENTER
         if (this.isSingleLineMode) {
           event.preventDefault()
+          return true
         }
 
         return false
       },
-      COMMAND_PRIORITY_HIGH
+      COMMAND_PRIORITY_NORMAL
     )
   }
 
