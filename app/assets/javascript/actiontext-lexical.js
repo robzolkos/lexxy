@@ -7371,15 +7371,20 @@ class LexicalPromptElement extends HTMLElement {
     const contentRect = this.#editorContentElement.getBoundingClientRect();
     const verticalOffset = contentRect.top - editorRect.top;
 
+    if (this.popoverElement.hasAttribute("data-positioned")) { return }
+
     const popoverRect = this.popoverElement.getBoundingClientRect();
     const isClippedAtBottom = popoverRect.bottom > window.innerHeight;
 
     this.popoverElement.style.left = `${x}px`;
-    this.popoverElement.style.top = `${y + verticalOffset}px`;
 
     if (isClippedAtBottom) {
-      this.popoverElement.style.top = `${y - popoverRect.height - verticalOffset - fontSize * 2}px`;
+      this.popoverElement.style.bottom = `${y - verticalOffset + fontSize}px`;
+    } else {
+      this.popoverElement.style.top = `${y + verticalOffset}px`;
     }
+
+    this.popoverElement.toggleAttribute("data-positioned", true);
   }
 
   #hidePopover() {
