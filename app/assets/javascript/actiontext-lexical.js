@@ -5965,13 +5965,7 @@ class Selection {
       // Create a span marker if the rect is unreliable
       let marker;
       if ((rect.width === 0 && rect.height === 0) || (rect.top === 0 && rect.left === 0)) {
-        marker = document.createElement("span");
-        marker.textContent = "\u200b";
-        marker.style.display = "inline-block";
-        marker.style.width = "1px";
-        marker.style.height = "1em";
-        marker.style.lineHeight = "normal";
-
+        marker = this.#createMarker();
         range.insertNode(marker);
         rect = marker.getBoundingClientRect();
 
@@ -6057,12 +6051,87 @@ class Selection {
     }
   }
 
+  #createMarker() {
+    const marker = document.createElement("span");
+    marker.textContent = "\u200b";
+    marker.style.display = "inline-block";
+    marker.style.width = "1px";
+    marker.style.height = "1em";
+    marker.style.lineHeight = "normal";
+    return marker
+  }
+
   async #selectPreviousNode() {
-    await this.#withCurrentNode((currentNode) => currentNode.selectPrevious());
+    if (this.current) {
+      await this.#withCurrentNode((currentNode) => currentNode.selectPrevious());
+    } else {
+      this.#selectInLexical(this.nodeBeforeCursor);
+    }
   }
 
   async #selectNextNode() {
-    await this.#withCurrentNode((currentNode) => currentNode.selectNext());
+    if (this.current) {
+      await this.#withCurrentNode((currentNode) => currentNode.selectNext());
+    } else {
+      this.#selectInLexical(this.nodeAfterCursor);
+    }
+  }
+
+  get nodeAfterCursor() {
+    const selection = Nr();
+    if (!cr(selection) || !selection.isCollapsed()) { return null }
+
+    const { anchor } = selection;
+    const anchorNode = anchor.getNode();
+    const offset = anchor.offset;
+
+    if (Qn(anchorNode)) {
+      if (offset === anchorNode.getTextContentSize()) {
+        const parent = anchorNode.getParent();
+        return parent ? parent.getNextSibling() : null
+      }
+      return null
+    }
+    
+    if (di(anchorNode) && offset < anchorNode.getChildrenSize()) {
+      return anchorNode.getChildAtIndex(offset)
+    }
+
+    let node = anchorNode;
+    while (node && node.getNextSibling() == null) {
+      node = node.getParent();
+    }
+
+    return node ? node.getNextSibling() : null
+  }
+
+  get nodeBeforeCursor() {
+    const selection = Nr();
+    if (!cr(selection) || !selection.isCollapsed()) { return null }
+
+    const { anchor } = selection;
+    const anchorNode = anchor.getNode();
+    const offset = anchor.offset;
+
+    if (Qn(anchorNode)) {
+      if (offset === 0) {
+        const parent = anchorNode.getParent();
+        return parent.getPreviousSibling()
+      }
+      return null
+    }
+
+    if (di(anchorNode) && offset > 0) {
+      return anchorNode.getChildAtIndex(offset - 1)
+    }
+
+    let node = anchorNode;
+    while (node && node.getPreviousSibling() == null) {
+      node = node.getParent();
+    }
+
+    const previousSibling = node ? node.getPreviousSibling() : null;
+    return previousSibling
   }
 
   async #withCurrentNode(fn) {
@@ -6102,6 +6171,16 @@ class Selection {
         }
         this.editor.focus();
       });
+    });
+  }
+
+  #selectInLexical(node) {
+    if (!node) return
+
+    this.editor.update(() => {
+      const selection = kr();
+      selection.add(node.getKey());
+      ms(selection);
     });
   }
 }

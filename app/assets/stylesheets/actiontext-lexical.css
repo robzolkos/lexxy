@@ -104,3 +104,7 @@ lexical-toolbar {
     border-color: transparent;
   }
 }
+
+figure {
+  user-select: all;
+}

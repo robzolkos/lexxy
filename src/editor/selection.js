@@ -1,9 +1,9 @@
 import {
-  $createNodeSelection, $getNodeByKey, $getSelection, $isNodeSelection,
-  $setSelection, $getRoot, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, CLICK_COMMAND,
+  $createNodeSelection, $isElementNode, $isRangeSelection, $getNodeByKey, $getSelection, $isNodeSelection,
+  $setSelection, $getRoot, $isTextNode, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, CLICK_COMMAND,
   KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND
 } from "lexical"
-import { nextFrame } from "../helpers/timing_helpers";
+import { nextFrame } from "../helpers/timing_helpers"
 
 export default class Selection {
   constructor(editor) {
@@ -148,11 +148,76 @@ export default class Selection {
   }
 
   async #selectPreviousNode() {
-    await this.#withCurrentNode((currentNode) => currentNode.selectPrevious())
+    if (this.current) {
+      await this.#withCurrentNode((currentNode) => currentNode.selectPrevious())
+    } else {
+      this.#selectInLexical(this.nodeBeforeCursor)
+    }
   }
 
   async #selectNextNode() {
-    await this.#withCurrentNode((currentNode) => currentNode.selectNext())
+    if (this.current) {
+      await this.#withCurrentNode((currentNode) => currentNode.selectNext())
+    } else {
+      this.#selectInLexical(this.nodeAfterCursor)
+    }
+  }
+
+  get nodeAfterCursor() {
+    const selection = $getSelection()
+    if (!$isRangeSelection(selection) || !selection.isCollapsed()) { return null }
+
+    const { anchor } = selection
+    const anchorNode = anchor.getNode()
+    const offset = anchor.offset
+
+    if ($isTextNode(anchorNode)) {
+      if (offset === anchorNode.getTextContentSize()) {
+        const parent = anchorNode.getParent()
+        return parent ? parent.getNextSibling() : null
+      }
+      return null
+    }
+
+    if ($isElementNode(anchorNode) && offset < anchorNode.getChildrenSize()) {
+      return anchorNode.getChildAtIndex(offset)
+    }
+
+    let node = anchorNode
+    while (node && node.getNextSibling() == null) {
+      node = node.getParent()
+    }
+
+    return node ? node.getNextSibling() : null
+  }
+
+  get nodeBeforeCursor() {
+    const selection = $getSelection()
+    if (!$isRangeSelection(selection) || !selection.isCollapsed()) { return null }
+
+    const { anchor } = selection
+    const anchorNode = anchor.getNode()
+    const offset = anchor.offset
+
+    if ($isTextNode(anchorNode)) {
+      if (offset === 0) {
+        const parent = anchorNode.getParent()
+        return parent.getPreviousSibling()
+      }
+      return null
+    }
+
+    if ($isElementNode(anchorNode) && offset > 0) {
+      return anchorNode.getChildAtIndex(offset - 1)
+    }
+
+    let node = anchorNode
+    while (node && node.getPreviousSibling() == null) {
+      node = node.getParent()
+    }
+
+    const previousSibling = node ? node.getPreviousSibling() : null
+    return previousSibling
   }
 
   async #withCurrentNode(fn) {
@@ -192,6 +257,16 @@ export default class Selection {
         }
         this.editor.focus()
       })
+    })
+  }
+
+  #selectInLexical(node) {
+    if (!node) return
+
+    this.editor.update(() => {
+      const selection = $createNodeSelection()
+      selection.add(node.getKey())
+      $setSelection(selection)
     })
   }
 }
