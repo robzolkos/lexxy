@@ -5743,10 +5743,6 @@ class CommandDispatcher {
     return this.clipboard.paste(event)
   }
 
-  dispatchDeleteNodes() {
-    this.contents.deleteSelectedNodes();
-  }
-
   dispatchBold() {
     this.editor.dispatchCommand(me, "bold");
   }
@@ -5828,8 +5824,6 @@ class CommandDispatcher {
     }
 
     this.#registerCommandHandler(ge$1, Ii, this.dispatchPaste.bind(this));
-    this.#registerCommandHandler(De$1, Ii, this.dispatchDeleteNodes.bind(this));
-    this.#registerCommandHandler(Ae$1, Ii, this.dispatchDeleteNodes.bind(this));
   }
 
   #registerCommandHandler(command, priority, handler) {
@@ -5921,8 +5915,9 @@ function nextFrame() {
 }
 
 class Selection {
-  constructor(editor) {
-    this.editor = editor;
+  constructor(editorElement) {
+    this.editorElement = editorElement;
+    this.editor = this.editorElement.editor;
     this.previouslySelectedKeys = new Set();
 
     this.#listenForNodeSelections();
@@ -6022,6 +6017,9 @@ class Selection {
     this.editor.registerCommand(Ne$1, this.#selectPreviousNode.bind(this), Ii);
     this.editor.registerCommand(ve$1, this.#selectNextNode.bind(this), Ii);
     this.editor.registerCommand(we$1, this.#selectNextNode.bind(this), Ii);
+
+    this.editor.registerCommand(De$1, this.#deleteSelectedOrNext.bind(this), Ii);
+    this.editor.registerCommand(Ae$1, this.#deletePreviousOrNext.bind(this), Ii);
 
     this.editor.registerCommand(le$1, () => {
       this.current = Nr();
@@ -6194,6 +6192,30 @@ class Selection {
       selection.add(node.getKey());
       ms(selection);
     });
+  }
+
+  #deleteSelectedOrNext() {
+    const node = this.nodeAfterCursor;
+    if (node instanceof gi) {
+      this.#selectInLexical(node);
+      return true
+    } else {
+      this.#contents.deleteSelectedNodes();
+    }
+  }
+
+  #deletePreviousOrNext() {
+    const node = this.nodeBeforeCursor;
+    if (node instanceof gi) {
+      this.#selectInLexical(node);
+      return true
+    } else {
+      this.#contents.deleteSelectedNodes();
+    }
+  }
+
+  get #contents() {
+    return this.editorElement.contents
   }
 }
 
@@ -6727,7 +6749,7 @@ class LexicalEditorElement extends HTMLElement {
     this.id ??= generateDomId("lexical-editor");
     this.editor = this.#createEditor();
     this.contents = new Contents(this);
-    this.selection = new Selection(this.editor);
+    this.selection = new Selection(this);
     this.clipboard = new Clipboard(this);
 
     CommandDispatcher.configureFor(this);

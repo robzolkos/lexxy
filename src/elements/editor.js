@@ -35,7 +35,7 @@ export default class LexicalEditorElement extends HTMLElement {
     this.id ??= generateDomId("lexical-editor")
     this.editor = this.#createEditor()
     this.contents = new Contents(this)
-    this.selection = new Selection(this.editor)
+    this.selection = new Selection(this)
     this.clipboard = new Clipboard(this)
 
     CommandDispatcher.configureFor(this)

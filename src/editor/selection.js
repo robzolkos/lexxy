@@ -1,13 +1,15 @@
 import {
   $createNodeSelection, $isElementNode, $isRangeSelection, $getNodeByKey, $getSelection, $isNodeSelection,
-  $setSelection, $getRoot, $isTextNode, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, CLICK_COMMAND,
-  KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_UP_COMMAND, DecoratorNode
+  $setSelection, $getRoot, $isTextNode, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, KEY_ARROW_LEFT_COMMAND,
+  KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_UP_COMMAND, KEY_DELETE_COMMAND,
+  KEY_BACKSPACE_COMMAND, DecoratorNode
 } from "lexical"
 import { nextFrame } from "../helpers/timing_helpers"
 
 export default class Selection {
-  constructor(editor) {
-    this.editor = editor
+  constructor(editorElement) {
+    this.editorElement = editorElement
+    this.editor = this.editorElement.editor
     this.previouslySelectedKeys = new Set()
 
     this.#listenForNodeSelections()
@@ -107,6 +109,9 @@ export default class Selection {
     this.editor.registerCommand(KEY_ARROW_UP_COMMAND, this.#selectPreviousNode.bind(this), COMMAND_PRIORITY_LOW)
     this.editor.registerCommand(KEY_ARROW_RIGHT_COMMAND, this.#selectNextNode.bind(this), COMMAND_PRIORITY_LOW)
     this.editor.registerCommand(KEY_ARROW_DOWN_COMMAND, this.#selectNextNode.bind(this), COMMAND_PRIORITY_LOW)
+
+    this.editor.registerCommand(KEY_DELETE_COMMAND, this.#deleteSelectedOrNext.bind(this), COMMAND_PRIORITY_LOW)
+    this.editor.registerCommand(KEY_BACKSPACE_COMMAND, this.#deletePreviousOrNext.bind(this), COMMAND_PRIORITY_LOW)
 
     this.editor.registerCommand(SELECTION_CHANGE_COMMAND, () => {
       this.current = $getSelection()
@@ -279,5 +284,29 @@ export default class Selection {
       selection.add(node.getKey())
       $setSelection(selection)
     })
+  }
+
+  #deleteSelectedOrNext() {
+    const node = this.nodeAfterCursor
+    if (node instanceof DecoratorNode) {
+      this.#selectInLexical(node)
+      return true
+    } else {
+      this.#contents.deleteSelectedNodes()
+    }
+  }
+
+  #deletePreviousOrNext() {
+    const node = this.nodeBeforeCursor
+    if (node instanceof DecoratorNode) {
+      this.#selectInLexical(node)
+      return true
+    } else {
+      this.#contents.deleteSelectedNodes()
+    }
+  }
+
+  get #contents() {
+    return this.editorElement.contents
   }
 }

@@ -2,8 +2,6 @@ import {
   $getSelection,
   $isRangeSelection,
   PASTE_COMMAND,
-  KEY_DELETE_COMMAND,
-  KEY_BACKSPACE_COMMAND,
   COMMAND_PRIORITY_LOW,
   FORMAT_TEXT_COMMAND
 } from "lexical"
@@ -44,10 +42,6 @@ export class CommandDispatcher {
 
   dispatchPaste(event) {
     return this.clipboard.paste(event)
-  }
-
-  dispatchDeleteNodes() {
-    this.contents.deleteSelectedNodes()
   }
 
   dispatchBold() {
@@ -131,8 +125,6 @@ export class CommandDispatcher {
     }
 
     this.#registerCommandHandler(PASTE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchPaste.bind(this))
-    this.#registerCommandHandler(KEY_DELETE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchDeleteNodes.bind(this))
-    this.#registerCommandHandler(KEY_BACKSPACE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchDeleteNodes.bind(this))
   }
 
   #registerCommandHandler(command, priority, handler) {

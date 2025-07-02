@@ -97,6 +97,10 @@ lexical-toolbar {
   height: 25px;
   border-left: 1px solid darkred;
   animation: blink 1s step-end infinite;
+
+  p & {
+    display: inline-block;
+  }
 }
 
 @keyframes blink {
