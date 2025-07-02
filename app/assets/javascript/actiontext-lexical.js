@@ -5926,7 +5926,6 @@ class Selection {
   }
 
   clear() {
-    ms(null);
     this.current = null;
   }
 
@@ -6472,6 +6471,7 @@ class Contents {
         });
 
         if (nodesWereRemoved) {
+          this.#selection.clear();
           this.editor.focus();
 
           return true

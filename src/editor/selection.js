@@ -17,7 +17,6 @@ export default class Selection {
   }
 
   clear() {
-    $setSelection(null)
     this.current = null
   }
 
