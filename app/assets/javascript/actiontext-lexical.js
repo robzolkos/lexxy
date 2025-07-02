@@ -5896,6 +5896,29 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
+function debounceAsync(fn, wait) {
+  let timeout;
+
+  return (...args) => {
+    clearTimeout(timeout);
+
+    return new Promise((resolve, reject) => {
+      timeout = setTimeout(async () => {
+        try {
+          const result = await fn(...args);
+          resolve(result);
+        } catch (err) {
+          reject(err);
+        }
+      }, wait);
+    })
+  }
+}
+
+function nextFrame() {
+  return new Promise(requestAnimationFrame)
+}
+
 class Selection {
   constructor(editor) {
     this.editor = editor;
@@ -5927,7 +5950,7 @@ class Selection {
   }
 
   get cursorPosition() {
-    let position = { x: 0, y: 0};
+    let position = { x: 0, y: 0 };
 
     this.editor.getEditorState().read(() => {
       const lexicalSelection = Nr();
@@ -6034,22 +6057,23 @@ class Selection {
     }
   }
 
-  #selectPreviousNode() {
-    if (this.current) {
-      this.clear();
-      const currentNode = this.current.getNodes()[0];
-      currentNode.selectPrevious();
-    }
-    return false
+  async #selectPreviousNode() {
+    await this.#withCurrentNode((currentNode) => currentNode.selectPrevious());
   }
 
-  #selectNextNode() {
+  async #selectNextNode() {
+    await this.#withCurrentNode((currentNode) => currentNode.selectNext());
+  }
+
+  async #withCurrentNode(fn) {
+    await nextFrame();
     if (this.current) {
-      this.clear();
-      const currentNode = this.current.getNodes()[0];
-      currentNode.selectNext();
+      this.editor.update(() => {
+        this.clear();
+        fn(this.current.getNodes()[0]);
+        this.editor.focus();
+      });
     }
-    return false
   }
 
   get #currentlySelectedKeys() {
@@ -7075,25 +7099,6 @@ class DeferredPromptSource extends LocalFilterSource {
     this.promptItems ??= await this.loadPromptItemsFromUrl(this.url);
 
     return Promise.resolve(this.promptItems)
-  }
-}
-
-function debounceAsync(fn, wait) {
-  let timeout;
-
-  return (...args) => {
-    clearTimeout(timeout);
-
-    return new Promise((resolve, reject) => {
-      timeout = setTimeout(async () => {
-        try {
-          const result = await fn(...args);
-          resolve(result);
-        } catch (err) {
-          reject(err);
-        }
-      }, wait);
-    })
   }
 }
 

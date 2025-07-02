@@ -3,6 +3,7 @@ import {
   $setSelection, $getRoot, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, CLICK_COMMAND,
   KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND
 } from "lexical"
+import { nextFrame } from "../helpers/timing_helpers";
 
 export default class Selection {
   constructor(editor) {
@@ -35,7 +36,7 @@ export default class Selection {
   }
 
   get cursorPosition() {
-    let position = { x: 0, y: 0}
+    let position = { x: 0, y: 0 }
 
     this.editor.getEditorState().read(() => {
       const lexicalSelection = $getSelection()
@@ -142,22 +143,23 @@ export default class Selection {
     }
   }
 
-  #selectPreviousNode() {
-    if (this.current) {
-      this.clear()
-      const currentNode = this.current.getNodes()[0]
-      currentNode.selectPrevious()
-    }
-    return false
+  async #selectPreviousNode() {
+    await this.#withCurrentNode((currentNode) => currentNode.selectPrevious())
   }
 
-  #selectNextNode() {
+  async #selectNextNode() {
+    await this.#withCurrentNode((currentNode) => currentNode.selectNext())
+  }
+
+  async #withCurrentNode(fn) {
+    await nextFrame()
     if (this.current) {
-      this.clear()
-      const currentNode = this.current.getNodes()[0]
-      currentNode.selectNext()
+      this.editor.update(() => {
+        this.clear()
+        fn(this.current.getNodes()[0])
+        this.editor.focus()
+      })
     }
-    return false
   }
 
   get #currentlySelectedKeys() {

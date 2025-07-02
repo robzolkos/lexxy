@@ -119,6 +119,7 @@
       max-inline-size: 100%;
       margin-inline: 0;
       width: 100%;
+      max-width: 70%;
 
       img {
         display: block;

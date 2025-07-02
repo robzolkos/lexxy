@@ -93,3 +93,14 @@ lexical-toolbar {
   }
 }
 
+[data-lexical-cursor] {
+  height: 25px;
+  border-left: 1px solid black;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}

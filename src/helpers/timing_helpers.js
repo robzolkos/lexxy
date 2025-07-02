@@ -20,3 +20,6 @@ export function debounceAsync(fn, wait) {
   }
 }
 
+export function nextFrame() {
+  return new Promise(requestAnimationFrame)
+}
