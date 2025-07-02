@@ -6283,6 +6283,8 @@ class Contents {
       // Insert the text after cursor
       previousNode.insertAfter(textNodeAfter);
 
+      this.#appendLineBreakIfNeeded(textNodeAfter.getParentOrThrow());
+
       // Place the cursor at the start of textNodeAfter
       textNodeAfter.select(0, 0);
     });
@@ -6337,6 +6339,19 @@ class Contents {
 
   get #selection() {
     return this.editorElement.selection
+  }
+
+  // Add line break if last node is not a textual one to get a visible cursor
+  #appendLineBreakIfNeeded(paragraph) {
+    if (Fi(paragraph)) {
+      const children = paragraph.getChildren();
+      const last = children[children.length - 1];
+      const beforeLast = children[children.length - 2];
+
+      if ((Qn(last) && last.getTextContent() === "") && (beforeLast && !Qn(beforeLast))) {
+        paragraph.append(Pn());
+      }
+    }
   }
 }
 
@@ -6536,7 +6551,7 @@ class CustomActionTextAttachmentNode extends gi {
   }
 
   createDOM() {
-    const figure = createElement("figure", { className: `attachment attachment--custom`, "data-content-type": this.contentType });
+    const figure = createElement("figure", { className: `attachment attachment--custom`, "data-content-type": this.contentType, "data-lexical-decorator": true });
 
     figure.addEventListener("click", (event) => {
       dispatchCustomEvent(figure, "lexical:node-selected", { key: this.getKey() });
@@ -7365,8 +7380,7 @@ class LexicalPromptElement extends HTMLElement {
   #insertTemplateAsAttachment(promptItem, template, stringToReplace) {
     this.#editor.update(() => {
       const attachmentNode = new CustomActionTextAttachmentNode({ sgid: promptItem.getAttribute("sgid"), contentType: `application/vnd.actiontext.${this.name}`, innerHtml: template.innerHTML });
-      const space = Xn("\u200B");
-      this.#editorContents.replaceTextBackUntil(stringToReplace, [ attachmentNode, space ]);
+      this.#editorContents.replaceTextBackUntil(stringToReplace, attachmentNode);
     });
   }
 

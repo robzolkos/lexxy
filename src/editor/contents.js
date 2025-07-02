@@ -1,6 +1,6 @@
 import {
   $createParagraphNode, $getSelection, $setSelection, $insertNodes, $isElementNode, $isParagraphNode, $isTextNode,
-  $isRangeSelection, $createLineBreakNode, $createTextNode, HISTORY_MERGE_TAG, $isNodeSelection
+  $isRangeSelection, $createLineBreakNode, $createTextNode, HISTORY_MERGE_TAG, $isNodeSelection, $isDecoratorNode
 } from "lexical"
 
 import { $generateNodesFromDOM } from "@lexical/html"
@@ -209,6 +209,8 @@ export default class Contents {
       // Insert the text after cursor
       previousNode.insertAfter(textNodeAfter)
 
+      this.#appendLineBreakIfNeeded(textNodeAfter.getParentOrThrow())
+
       // Place the cursor at the start of textNodeAfter
       textNodeAfter.select(0, 0)
     })
@@ -263,5 +265,18 @@ export default class Contents {
 
   get #selection() {
     return this.editorElement.selection
+  }
+
+  // Add line break if last node is not a textual one to get a visible cursor
+  #appendLineBreakIfNeeded(paragraph) {
+    if ($isParagraphNode(paragraph)) {
+      const children = paragraph.getChildren()
+      const last = children[children.length - 1]
+      const beforeLast = children[children.length - 2]
+
+      if (($isTextNode(last) && last.getTextContent() === "") && (beforeLast && !$isTextNode(beforeLast))) {
+        paragraph.append($createLineBreakNode())
+      }
+    }
   }
 }
