@@ -7325,10 +7325,10 @@ class LexicalPromptElement extends HTMLElement {
 
   async #showPopover() {
     this.popoverElement ??= await this.#buildPopover();
-    this.popoverElement.classList.toggle("lexical-prompt-menu--visible", true);
     await this.#filterOptions();
-    this.#selectFirstOption();
     this.#positionPopover();
+    this.popoverElement.classList.toggle("lexical-prompt-menu--visible", true);
+    this.#selectFirstOption();
 
     this.#editorElement.addEventListener("keydown", this.#handleKeydownOnPopover);
     this.#editorElement.addEventListener("actiontext:change", this.#filterOptions);
