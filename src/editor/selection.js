@@ -274,6 +274,10 @@ export default class Selection {
         this.editor.focus()
       })
     })
+
+    this.editor.getRootElement().addEventListener("lexical:next-node-selection-request", (event) => {
+      this.#selectNextNode()
+    })
   }
 
   #selectInLexical(node) {

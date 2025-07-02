@@ -212,6 +212,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   #handleCaptionInputKeydown(event) {
     if (event.key === "Enter") {
       this.#updateCaptionValueFromInput(event.target)
+      dispatchCustomEvent(event.target, "lexical:next-node-selection-request")
       event.preventDefault()
     }
     event.stopPropagation()
