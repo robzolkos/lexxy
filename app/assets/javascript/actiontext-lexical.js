@@ -7303,12 +7303,31 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   #addTriggerListener() {
-    this.#editorElement.addEventListener("keydown", (event) => {
-      if (event.key === this.trigger) {
-        this.initialPrompt = true;
-        this.#showPopover();
+    const unregister = this.#editor.registerUpdateListener(() => {
+        this.#editor.read(() => {
+          const selection = Nr();
+          if (!selection) return
+          let node;
+          if (cr(selection)) {
+            node = selection.anchor.getNode();
+          } else if (ur(selection)) {
+            [ node ] = selection.getNodes();
+          }
+
+          if (!node) return
+
+          if (Qn(node)) {
+            const text = node.getTextContent();
+            const lastChar = [ ...text ].pop();
+
+            if (lastChar === this.trigger) {
+              unregister();
+              this.#showPopover();
+            }
+          }
+        });
       }
-    });
+    );
   }
 
   get #editor() {
@@ -7393,6 +7412,7 @@ class LexicalPromptElement extends HTMLElement {
     this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions);
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover);
     this.unregisterEnterListener();
+    this.#addTriggerListener();
   }
 
   #filterOptions = async () => {
@@ -7428,7 +7448,7 @@ class LexicalPromptElement extends HTMLElement {
 
   #showEmptyResults() {
     this.popoverElement.classList.add("lexical-prompt-menu--empty");
-    const el = createElement("li", {  innerHTML: this.#emptyResultsMessage });
+    const el = createElement("li", { innerHTML: this.#emptyResultsMessage });
     el.classList.add("lexical-prompt-menu__item--empty");
     this.popoverElement.append(el);
   }
