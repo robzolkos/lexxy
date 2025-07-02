@@ -95,7 +95,7 @@ lexical-toolbar {
 
 [data-lexical-cursor] {
   height: 25px;
-  border-left: 1px solid orange;
+  border-left: 1px solid darkred;
   animation: blink 1s step-end infinite;
 }
 
