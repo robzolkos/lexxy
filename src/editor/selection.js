@@ -159,7 +159,7 @@ export default class Selection {
 
   async #selectNextNode() {
     if (this.current) {
-      await this.#withCurrentNode((currentNode) => currentNode.selectNext())
+      await this.#withCurrentNode((currentNode) => currentNode.selectNext(0, 0))
     } else {
       this.#selectInLexical(this.nodeAfterCursor)
     }
