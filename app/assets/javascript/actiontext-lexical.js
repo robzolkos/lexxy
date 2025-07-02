@@ -5311,6 +5311,7 @@ function sanitize(html) {
     ALLOWED_ATTR: ALLOWED_HTML_ATTRIBUTES,
     SAFE_FOR_XML: false // So that it does not stripe attributes that contains serialized HTML (like content)
   });
+
   return sanitizedHtml
 }
 
@@ -6089,8 +6090,12 @@ class Selection {
 
     if (Qn(anchorNode)) {
       if (offset === anchorNode.getTextContentSize()) {
-        const parent = anchorNode.getParent();
-        return parent ? parent.getNextSibling() : null
+        if (anchorNode.getNextSibling() instanceof gi) {
+          return anchorNode.getNextSibling()
+        } else {
+          const parent = anchorNode.getParent();
+          return parent ? parent.getNextSibling() : null
+        }
       }
       return null
     }
@@ -6117,9 +6122,14 @@ class Selection {
 
     if (Qn(anchorNode)) {
       if (offset === 0) {
-        const parent = anchorNode.getParent();
-        return parent.getPreviousSibling()
+        if (anchorNode.getPreviousSibling() instanceof gi) {
+          return anchorNode.getPreviousSibling()
+        } else {
+          const parent = anchorNode.getParent();
+          return parent.getPreviousSibling()
+        }
       }
+
       return null
     }
 
@@ -6186,8 +6196,6 @@ class Selection {
     });
   }
 }
-
-const ZERO_WIDTH_SPACE = "\u200B";
 
 class Contents {
   constructor(editorElement) {
@@ -6373,8 +6381,8 @@ class Contents {
 
       const textBeforeString = fullText.slice(0, lastIndex);
       const textAfterCursor = fullText.slice(offset);
-      const textNodeBefore = Xn(textBeforeString || ZERO_WIDTH_SPACE);
-      const textNodeAfter = Xn(textAfterCursor || ZERO_WIDTH_SPACE);
+      const textNodeBefore = Xn(textBeforeString || " ");
+      const textNodeAfter = Xn(textAfterCursor || " ");
 
       // Replace the anchor node with the first node
       anchorNode.replace(textNodeBefore);

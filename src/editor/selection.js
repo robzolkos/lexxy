@@ -175,8 +175,12 @@ export default class Selection {
 
     if ($isTextNode(anchorNode)) {
       if (offset === anchorNode.getTextContentSize()) {
-        const parent = anchorNode.getParent()
-        return parent ? parent.getNextSibling() : null
+        if (anchorNode.getNextSibling() instanceof DecoratorNode) {
+          return anchorNode.getNextSibling()
+        } else {
+          const parent = anchorNode.getParent()
+          return parent ? parent.getNextSibling() : null
+        }
       }
       return null
     }
@@ -203,9 +207,14 @@ export default class Selection {
 
     if ($isTextNode(anchorNode)) {
       if (offset === 0) {
-        const parent = anchorNode.getParent()
-        return parent.getPreviousSibling()
+        if (anchorNode.getPreviousSibling() instanceof DecoratorNode) {
+          return anchorNode.getPreviousSibling()
+        } else {
+          const parent = anchorNode.getParent()
+          return parent.getPreviousSibling()
+        }
       }
+
       return null
     }
 

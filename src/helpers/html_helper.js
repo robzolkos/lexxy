@@ -60,6 +60,7 @@ export function sanitize(html) {
     ALLOWED_ATTR: ALLOWED_HTML_ATTRIBUTES,
     SAFE_FOR_XML: false // So that it does not stripe attributes that contains serialized HTML (like content)
   })
+
   return sanitizedHtml
 }
 
