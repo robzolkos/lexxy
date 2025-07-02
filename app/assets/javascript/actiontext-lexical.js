@@ -6486,7 +6486,7 @@ class Contents {
 
   // Add line break if last node is not a textual one to get a visible cursor
   #appendLineBreakIfNeeded(paragraph) {
-    if (Fi(paragraph)) {
+    if (Fi(paragraph) && !this.editorElement.isSingleLineMode) {
       const children = paragraph.getChildren();
       const last = children[children.length - 1];
       const beforeLast = children[children.length - 2];
