@@ -93,22 +93,18 @@ lexical-toolbar {
   }
 }
 
-[data-lexical-cursor] {
-  height: 25px;
-  border-left: 1px solid darkred;
-  animation: blink 1s step-end infinite;
-
-  p & {
-    display: inline-block;
-  }
-}
-
 @keyframes blink {
   50% {
     border-color: transparent;
   }
 }
 
-figure {
-  user-select: all;
+[data-lexical-cursor] {
+  height: 1lh;
+  border-left: 1px solid darkred;
+  animation: blink 1s step-end infinite;
+
+  p & {
+    display: inline-block;
+  }
 }
