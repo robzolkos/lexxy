@@ -51,13 +51,7 @@ export default class Selection {
       // Create a span marker if the rect is unreliable
       let marker
       if ((rect.width === 0 && rect.height === 0) || (rect.top === 0 && rect.left === 0)) {
-        marker = document.createElement("span")
-        marker.textContent = "\u200b"
-        marker.style.display = "inline-block"
-        marker.style.width = "1px"
-        marker.style.height = "1em"
-        marker.style.lineHeight = "normal"
-
+        marker = this.#createMarker()
         range.insertNode(marker)
         rect = marker.getBoundingClientRect()
 
@@ -141,6 +135,16 @@ export default class Selection {
         if (nodeElement) nodeElement.classList.add("node--selected")
       }
     }
+  }
+
+  #createMarker() {
+    const marker = document.createElement("span")
+    marker.textContent = "\u200b"
+    marker.style.display = "inline-block"
+    marker.style.width = "1px"
+    marker.style.height = "1em"
+    marker.style.lineHeight = "normal"
+    return marker
   }
 
   async #selectPreviousNode() {
