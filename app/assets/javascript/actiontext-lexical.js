@@ -6018,7 +6018,9 @@ class Selection {
 
   #processSelectionChangeCommands() {
     this.editor.registerCommand(Te$1, this.#selectPreviousNode.bind(this), Ii);
+    this.editor.registerCommand(Ne$1, this.#selectPreviousNode.bind(this), Ii);
     this.editor.registerCommand(ve$1, this.#selectNextNode.bind(this), Ii);
+    this.editor.registerCommand(we$1, this.#selectNextNode.bind(this), Ii);
 
     this.editor.registerCommand(le$1, () => {
       this.current = Nr();
@@ -6092,7 +6094,7 @@ class Selection {
       }
       return null
     }
-    
+
     if (di(anchorNode) && offset < anchorNode.getChildrenSize()) {
       return anchorNode.getChildAtIndex(offset)
     }
@@ -6175,7 +6177,7 @@ class Selection {
   }
 
   #selectInLexical(node) {
-    if (!node) return
+    if (!node || !(node instanceof gi)) return
 
     this.editor.update(() => {
       const selection = kr();

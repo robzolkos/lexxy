@@ -1,7 +1,7 @@
 import {
   $createNodeSelection, $isElementNode, $isRangeSelection, $getNodeByKey, $getSelection, $isNodeSelection,
   $setSelection, $getRoot, $isTextNode, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, CLICK_COMMAND,
-  KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND
+  KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_UP_COMMAND, DecoratorNode
 } from "lexical"
 import { nextFrame } from "../helpers/timing_helpers"
 
@@ -104,7 +104,9 @@ export default class Selection {
 
   #processSelectionChangeCommands() {
     this.editor.registerCommand(KEY_ARROW_LEFT_COMMAND, this.#selectPreviousNode.bind(this), COMMAND_PRIORITY_LOW)
+    this.editor.registerCommand(KEY_ARROW_UP_COMMAND, this.#selectPreviousNode.bind(this), COMMAND_PRIORITY_LOW)
     this.editor.registerCommand(KEY_ARROW_RIGHT_COMMAND, this.#selectNextNode.bind(this), COMMAND_PRIORITY_LOW)
+    this.editor.registerCommand(KEY_ARROW_DOWN_COMMAND, this.#selectNextNode.bind(this), COMMAND_PRIORITY_LOW)
 
     this.editor.registerCommand(SELECTION_CHANGE_COMMAND, () => {
       this.current = $getSelection()
@@ -261,7 +263,7 @@ export default class Selection {
   }
 
   #selectInLexical(node) {
-    if (!node) return
+    if (!node || !(node instanceof DecoratorNode)) return
 
     this.editor.update(() => {
       const selection = $createNodeSelection()
