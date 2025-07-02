@@ -62,6 +62,7 @@ export function sanitize(html) {
   })
 
   return sanitizedHtml
+    .replaceAll("\u200B", "") // Remove zero-width spaces we add for cursor management purposes.
 }
 
 export function dispatch(element, eventName, detail = null, cancelable = false) {

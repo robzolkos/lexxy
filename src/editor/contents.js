@@ -192,8 +192,8 @@ export default class Contents {
 
       const textBeforeString = fullText.slice(0, lastIndex)
       const textAfterCursor = fullText.slice(offset)
-      const textNodeBefore = $createTextNode(textBeforeString || " ")
-      const textNodeAfter = $createTextNode(textAfterCursor || " ")
+      const textNodeBefore = $createTextNode(textBeforeString || "\u200B")
+      const textNodeAfter = $createTextNode(textAfterCursor || " ") // Safari misplaces the cursor unless there is some visible space
 
       // Replace the anchor node with the first node
       anchorNode.replace(textNodeBefore)

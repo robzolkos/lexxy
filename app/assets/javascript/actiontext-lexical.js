@@ -5313,6 +5313,7 @@ function sanitize(html) {
   });
 
   return sanitizedHtml
+    .replaceAll("\u200B", "") // Remove zero-width spaces we add for cursor management purposes.
 }
 
 function dispatch(element, eventName, detail = null, cancelable = false) {
@@ -6409,8 +6410,8 @@ class Contents {
 
       const textBeforeString = fullText.slice(0, lastIndex);
       const textAfterCursor = fullText.slice(offset);
-      const textNodeBefore = Xn(textBeforeString || " ");
-      const textNodeAfter = Xn(textAfterCursor || " ");
+      const textNodeBefore = Xn(textBeforeString || "\u200B");
+      const textNodeAfter = Xn(textAfterCursor || " "); // Safari misplaces the cursor unless there is some visible space
 
       // Replace the anchor node with the first node
       anchorNode.replace(textNodeBefore);
