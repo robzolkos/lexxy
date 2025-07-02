@@ -6691,7 +6691,7 @@ class CustomActionTextAttachmentNode extends gi {
   }
 
   createDOM() {
-    const figure = createElement("figure", { className: `attachment attachment--custom`, "data-content-type": this.contentType, "data-lexical-decorator": true });
+    const figure = createElement("action-text-attachment", { "data-content-type": this.contentType, "data-lexical-decorator": true });
 
     figure.addEventListener("click", (event) => {
       dispatchCustomEvent(figure, "lexical:node-selected", { key: this.getKey() });
