@@ -6464,7 +6464,6 @@ class Contents {
         });
 
         if (nodesWereRemoved) {
-          this.#selection.clear();
           this.editor.focus();
 
           return true
