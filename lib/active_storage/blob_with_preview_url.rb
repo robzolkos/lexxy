@@ -8,7 +8,7 @@ module ActiveStorage
       if previewable?
         json["previewable"] = true
         json["url"] = Rails.application.routes.url_helpers.rails_representation_path(
-          preview(resize_to_limit: PREVIEW_SIZE), only_path: true
+          preview(resize_to_limit: PREVIEW_SIZE), ActiveStorage::Current.url_options.merge(only_path: true)
         )
       end
 
