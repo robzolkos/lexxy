@@ -227,7 +227,7 @@ export default class Contents {
     this.editor.update(() => {
       const selection = $getSelection()
       const anchorNode = selection?.anchor.getNode()
-      const currentParagraph = anchorNode?.getTopLevelElementOrThrow()
+      const currentParagraph = anchorNode?.getTopLevelElement()
 
       const uploadedImageNode = new ActionTextAttachmentUploadNode({ file: file, uploadUrl: uploadUrl, blobUrlTemplate: blobUrlTemplate, editor: this.editor })
 
