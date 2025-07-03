@@ -5277,6 +5277,7 @@ function createElement(name, properties) {
 }
 
 function parseHtml(html) {
+  html = html.replace(/^ +| +$/g, (match) => "&nbsp;".repeat(match.length)); // To preserve trailing and leading spaces in the template
   const parser = new DOMParser();
   return parser.parseFromString(html, "text/html")
 }
