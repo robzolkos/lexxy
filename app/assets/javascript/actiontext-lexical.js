@@ -7427,13 +7427,15 @@ class LexicalPromptElement extends HTMLElement {
     }
   }
 
-  #hidePopover() {
+  async #hidePopover() {
     this.#clearSelection();
     this.popoverElement.classList.toggle("lexical-prompt-menu--visible", false);
     this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions);
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover);
     this.unregisterEnterListener();
     this.unregisterTabListener();
+
+    await nextFrame();
     this.#addTriggerListener();
   }
 
@@ -7481,6 +7483,7 @@ class LexicalPromptElement extends HTMLElement {
 
   #handleKeydownOnPopover = (event) => {
     if (event.key === "Escape") {
+      console.debug("SE LLEGA?");
       this.#hidePopover();
       this.#editorElement.focus();
       event.stopPropagation();

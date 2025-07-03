@@ -6,6 +6,7 @@ import InlinePromptSource from "../editor/prompt/inline_source"
 import DeferredPromptSource from "../editor/prompt/deferred_source"
 import RemoteFilterSource from "../editor/prompt/remote_filter_source"
 import { $generateNodesFromDOM } from "@lexical/html"
+import { nextFrame } from "../helpers/timing_helpers";
 
 const NOTHING_FOUND_DEFAULT_MESSAGE = "Nothing found"
 
@@ -147,13 +148,15 @@ export default class LexicalPromptElement extends HTMLElement {
     }
   }
 
-  #hidePopover() {
+  async #hidePopover() {
     this.#clearSelection()
     this.popoverElement.classList.toggle("lexical-prompt-menu--visible", false)
     this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions)
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover)
     this.unregisterEnterListener()
     this.unregisterTabListener()
+
+    await nextFrame()
     this.#addTriggerListener()
   }
 
@@ -201,6 +204,7 @@ export default class LexicalPromptElement extends HTMLElement {
 
   #handleKeydownOnPopover = (event) => {
     if (event.key === "Escape") {
+      console.debug("SE LLEGA?");
       this.#hidePopover()
       this.#editorElement.focus()
       event.stopPropagation()
