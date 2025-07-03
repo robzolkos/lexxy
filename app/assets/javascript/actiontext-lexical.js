@@ -6939,8 +6939,8 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #loadInitialValue() {
-    const initialHtml = this.getAttribute("value") || "<p></p>";
-    console.debug("INITIAL", initialHtml);
+    const initialHtml = this.valueBeforeDisconnect || this.getAttribute("value") || "<p></p>";
+    this.valueBeforeDisconnect = null;
     this.value = initialHtml;
   }
 
@@ -7059,6 +7059,8 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #reset() {
+    this.valueBeforeDisconnect = this.value;
+
     this.#unregisterHandlers();
 
     if (this.editorContentElement) {
