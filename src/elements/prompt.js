@@ -204,7 +204,6 @@ export default class LexicalPromptElement extends HTMLElement {
 
   #handleKeydownOnPopover = (event) => {
     if (event.key === "Escape") {
-      console.debug("SE LLEGA?");
       this.#hidePopover()
       this.#editorElement.focus()
       event.stopPropagation()
