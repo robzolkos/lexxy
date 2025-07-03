@@ -41,9 +41,12 @@ export default class LexicalEditorElement extends HTMLElement {
     CommandDispatcher.configureFor(this)
     this.#initialize()
     this.toggleAttribute("connected", true)
+
+    this.valueBeforeDisconnect = null
   }
 
   disconnectedCallback() {
+    this.valueBeforeDisconnect = this.value
     this.#reset() // Prevent hangs with Safari when morphing
   }
 
@@ -208,7 +211,6 @@ export default class LexicalEditorElement extends HTMLElement {
 
   #loadInitialValue() {
     const initialHtml = this.valueBeforeDisconnect || this.getAttribute("value") || "<p></p>"
-    this.valueBeforeDisconnect = null
     this.value = initialHtml
   }
 
@@ -327,8 +329,6 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   #reset() {
-    this.valueBeforeDisconnect = this.value
-
     this.#unregisterHandlers()
 
     if (this.editorContentElement) {
