@@ -43,4 +43,14 @@ class AttachmentsTest < ApplicationSystemTestCase
 
     assert_equal_html "<p><br></p>", find_editor.value
   end
+
+  test "disable attachments" do
+    visit edit_post_path(posts(:empty), attachments_disabled: true)
+
+    attach_file file_fixture("example.png") do
+      click_on "Upload file"
+    end
+
+    assert_no_attachment content_type: "image/png"
+  end
 end
