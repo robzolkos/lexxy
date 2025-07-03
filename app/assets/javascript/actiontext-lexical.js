@@ -6413,7 +6413,7 @@ class Contents {
       const textBeforeString = fullText.slice(0, lastIndex);
       const textAfterCursor = fullText.slice(offset);
       const textNodeBefore = Xn(textBeforeString);
-      const textNodeAfter = Xn(textAfterCursor);
+      const textNodeAfter = Xn(textAfterCursor || " "); // Default to Space to prevent cursor rendering issues in Safari
 
       // Replace the anchor node with the first node
       anchorNode.replace(textNodeBefore);
