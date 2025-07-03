@@ -7376,6 +7376,7 @@ class LexicalPromptElement extends HTMLElement {
     this.#editorElement.addEventListener("actiontext:change", this.#filterOptions);
     // We can't use a regular keydown for Enter as Lexical handles it first
     this.unregisterEnterListener = this.#editor.registerCommand(Ee$1, this.#handleSelectedOption.bind(this), Ki);
+    this.unregisterEnterListener = this.#editor.registerCommand(Pe$1, this.#handleSelectedOption.bind(this), Ki);
   }
 
   #selectFirstOption() {

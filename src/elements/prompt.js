@@ -1,5 +1,5 @@
 import { createElement, generateDomId, parseHtml } from "../helpers/html_helper"
-import { COMMAND_PRIORITY_HIGH, KEY_ENTER_COMMAND, $isTextNode, $isRangeSelection, $getSelection, $isNodeSelection, $getNodeByKey } from "lexical"
+import { COMMAND_PRIORITY_HIGH, KEY_ENTER_COMMAND, KEY_TAB_COMMAND, $isTextNode, $isRangeSelection, $getSelection, $isNodeSelection, $getNodeByKey } from "lexical"
 import { CustomActionTextAttachmentNode } from "../nodes/custom_action_text_attachment_node"
 import { isPath, isUrl } from "../helpers/string_helper"
 import InlinePromptSource from "../editor/prompt/inline_source"
@@ -96,6 +96,7 @@ export default class LexicalPromptElement extends HTMLElement {
     this.#editorElement.addEventListener("actiontext:change", this.#filterOptions)
     // We can't use a regular keydown for Enter as Lexical handles it first
     this.unregisterEnterListener = this.#editor.registerCommand(KEY_ENTER_COMMAND, this.#handleSelectedOption.bind(this), COMMAND_PRIORITY_HIGH)
+    this.unregisterEnterListener = this.#editor.registerCommand(KEY_TAB_COMMAND, this.#handleSelectedOption.bind(this), COMMAND_PRIORITY_HIGH)
   }
 
   #selectFirstOption() {
