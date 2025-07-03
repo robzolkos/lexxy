@@ -7328,30 +7328,29 @@ class LexicalPromptElement extends HTMLElement {
 
   #addTriggerListener() {
     const unregister = this.#editor.registerUpdateListener(() => {
-        this.#editor.read(() => {
-          const selection = Nr();
-          if (!selection) return
-          let node;
-          if (cr(selection)) {
-            node = selection.anchor.getNode();
-          } else if (ur(selection)) {
-            [ node ] = selection.getNodes();
+      this.#editor.read(() => {
+        const selection = Nr();
+        if (!selection) return
+        let node;
+        if (cr(selection)) {
+          node = selection.anchor.getNode();
+        } else if (ur(selection)) {
+          [ node ] = selection.getNodes();
+        }
+
+        if (!node) return
+
+        if (Qn(node)) {
+          const text = node.getTextContent().trim();
+          const lastChar = [ ...text ].pop();
+
+          if (lastChar === this.trigger) {
+            unregister();
+            this.#showPopover();
           }
-
-          if (!node) return
-
-          if (Qn(node)) {
-            const text = node.getTextContent();
-            const lastChar = [ ...text ].pop();
-
-            if (lastChar === this.trigger) {
-              unregister();
-              this.#showPopover();
-            }
-          }
-        });
-      }
-    );
+        }
+      });
+    });
   }
 
   get #editor() {

@@ -48,30 +48,29 @@ export default class LexicalPromptElement extends HTMLElement {
 
   #addTriggerListener() {
     const unregister = this.#editor.registerUpdateListener(() => {
-        this.#editor.read(() => {
-          const selection = $getSelection()
-          if (!selection) return
-          let node
-          if ($isRangeSelection(selection)) {
-            node = selection.anchor.getNode()
-          } else if ($isNodeSelection(selection)) {
-            [ node ] = selection.getNodes()
+      this.#editor.read(() => {
+        const selection = $getSelection()
+        if (!selection) return
+        let node
+        if ($isRangeSelection(selection)) {
+          node = selection.anchor.getNode()
+        } else if ($isNodeSelection(selection)) {
+          [ node ] = selection.getNodes()
+        }
+
+        if (!node) return
+
+        if ($isTextNode(node)) {
+          const text = node.getTextContent().trim()
+          const lastChar = [ ...text ].pop()
+
+          if (lastChar === this.trigger) {
+            unregister()
+            this.#showPopover()
           }
-
-          if (!node) return
-
-          if ($isTextNode(node)) {
-            const text = node.getTextContent()
-            const lastChar = [ ...text ].pop()
-
-            if (lastChar === this.trigger) {
-              unregister()
-              this.#showPopover()
-            }
-          }
-        })
-      }
-    )
+        }
+      })
+    })
   }
 
   get #editor() {
