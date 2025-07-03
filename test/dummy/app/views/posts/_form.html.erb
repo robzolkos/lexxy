@@ -6,7 +6,7 @@
 
   <div>
     <%= form.label :body, style: "display: block" %>
-    <%= form.rich_text_area :body, placeholder: "Write something..." do %>
+    <%= form.rich_text_area :body, placeholder: "Write something...", toolbar: params[:toolbar_disabled] ? "false" : nil do %>
       <lexical-prompt-source id="inline-source">
         <%= Person.find_each do |person| %>
           <%= render "people/prompt_item", person: person %>
