@@ -31,6 +31,7 @@ export class CommandDispatcher {
   }
 
   constructor(editorElement) {
+    this.editorElement = editorElement
     this.editor = editorElement.editor
     this.selection = editorElement.selection
     this.contents = editorElement.contents
@@ -143,11 +144,13 @@ export class CommandDispatcher {
   }
 
   #registerDragAndDropHandlers() {
-    this.dragCounter = 0
-    this.editor.getRootElement().addEventListener("dragover", this.#handleDragOver.bind(this))
-    this.editor.getRootElement().addEventListener("drop", this.#handleDrop.bind(this))
-    this.editor.getRootElement().addEventListener("dragenter", this.#handleDragEnter.bind(this))
-    this.editor.getRootElement().addEventListener("dragleave", this.#handleDragLeave.bind(this))
+    if (this.editorElement.supportsAttachments) {
+      this.dragCounter = 0
+      this.editor.getRootElement().addEventListener("dragover", this.#handleDragOver.bind(this))
+      this.editor.getRootElement().addEventListener("drop", this.#handleDrop.bind(this))
+      this.editor.getRootElement().addEventListener("dragenter", this.#handleDragEnter.bind(this))
+      this.editor.getRootElement().addEventListener("dragleave", this.#handleDragLeave.bind(this))
+    }
   }
 
   #handleDragEnter(event) {

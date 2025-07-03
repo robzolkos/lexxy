@@ -5731,6 +5731,7 @@ class CommandDispatcher {
   }
 
   constructor(editorElement) {
+    this.editorElement = editorElement;
     this.editor = editorElement.editor;
     this.selection = editorElement.selection;
     this.contents = editorElement.contents;
@@ -5843,11 +5844,13 @@ class CommandDispatcher {
   }
 
   #registerDragAndDropHandlers() {
-    this.dragCounter = 0;
-    this.editor.getRootElement().addEventListener("dragover", this.#handleDragOver.bind(this));
-    this.editor.getRootElement().addEventListener("drop", this.#handleDrop.bind(this));
-    this.editor.getRootElement().addEventListener("dragenter", this.#handleDragEnter.bind(this));
-    this.editor.getRootElement().addEventListener("dragleave", this.#handleDragLeave.bind(this));
+    if (this.editorElement.supportsAttachments) {
+      this.dragCounter = 0;
+      this.editor.getRootElement().addEventListener("dragover", this.#handleDragOver.bind(this));
+      this.editor.getRootElement().addEventListener("drop", this.#handleDrop.bind(this));
+      this.editor.getRootElement().addEventListener("dragenter", this.#handleDragEnter.bind(this));
+      this.editor.getRootElement().addEventListener("dragleave", this.#handleDragLeave.bind(this));
+    }
   }
 
   #handleDragEnter(event) {
@@ -6433,6 +6436,11 @@ class Contents {
   }
 
   uploadFile(file) {
+    if (!this.editorElement.supportsAttachments) {
+      console.warn("This editor does not supports attachments (it's configured with [attachments=false])");
+      return
+    }
+
     const uploadUrl = this.editorElement.directUploadUrl;
     const blobUrlTemplate = this.editorElement.blobUrlTemplate;
 
@@ -6591,6 +6599,7 @@ function filterMatches(text, potentialMatch) {
 
 class Clipboard {
   constructor(editorElement) {
+    this.editorElement = editorElement;
     this.editor = editorElement.editor;
     this.contents = editorElement.contents;
   }
@@ -6630,6 +6639,8 @@ class Clipboard {
   }
 
   #handlePastedFiles(clipboardData) {
+    if (!this.editorElement.supportsAttachments) return
+
     for (const item of clipboardData.items) {
       const file = item.getAsFile();
       if (!file) continue
@@ -6797,6 +6808,10 @@ class LexicalEditorElement extends HTMLElement {
     return this.hasAttribute("single-line")
   }
 
+  get supportsAttachments() {
+    return this.getAttribute("attachments") !== "false"
+  }
+
   focus() {
     this.editor.focus();
   }
@@ -6864,25 +6879,33 @@ class LexicalEditorElement extends HTMLElement {
         throw error
       },
       theme: theme,
-      nodes: [
-        Dt,
-        Nt$2,
-        tt$1,
-        j$2,
-        K$1,
-        rt,
-        g$2,
-        m$3,
-
-        CustomActionTextAttachmentNode,
-        ActionTextAttachmentNode,
-        ActionTextAttachmentUploadNode
-      ]
+      nodes: this.#lexicalNodes
     });
 
     editor.setRootElement(this.editorContentElement);
 
     return editor
+  }
+
+  get #lexicalNodes() {
+    const nodes = [
+      Dt,
+      Nt$2,
+      tt$1,
+      j$2,
+      K$1,
+      rt,
+      g$2,
+      m$3,
+
+      CustomActionTextAttachmentNode,
+    ];
+
+    if (this.supportsAttachments) {
+      nodes.push(ActionTextAttachmentNode, ActionTextAttachmentUploadNode);
+    }
+
+    return nodes
   }
 
   #createEditorContentElement() {

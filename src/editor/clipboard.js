@@ -3,6 +3,7 @@ import { isUrl } from "../helpers/string_helper";
 
 export default class Clipboard {
   constructor(editorElement) {
+    this.editorElement = editorElement
     this.editor = editorElement.editor
     this.contents = editorElement.contents
   }
@@ -42,6 +43,8 @@ export default class Clipboard {
   }
 
   #handlePastedFiles(clipboardData) {
+    if (!this.editorElement.supportsAttachments) return
+
     for (const item of clipboardData.items) {
       const file = item.getAsFile()
       if (!file) continue

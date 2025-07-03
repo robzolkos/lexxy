@@ -216,6 +216,11 @@ export default class Contents {
   }
 
   uploadFile(file) {
+    if (!this.editorElement.supportsAttachments) {
+      console.warn("This editor does not supports attachments (it's configured with [attachments=false])")
+      return
+    }
+
     const uploadUrl = this.editorElement.directUploadUrl
     const blobUrlTemplate = this.editorElement.blobUrlTemplate
 

@@ -76,6 +76,10 @@ export default class LexicalEditorElement extends HTMLElement {
     return this.hasAttribute("single-line")
   }
 
+  get supportsAttachments() {
+    return this.getAttribute("attachments") !== "false"
+  }
+
   focus() {
     this.editor.focus()
   }
@@ -143,25 +147,33 @@ export default class LexicalEditorElement extends HTMLElement {
         throw error
       },
       theme: theme,
-      nodes: [
-        QuoteNode,
-        HeadingNode,
-        ListNode,
-        ListItemNode,
-        CodeNode,
-        CodeHighlightNode,
-        LinkNode,
-        AutoLinkNode,
-
-        CustomActionTextAttachmentNode,
-        ActionTextAttachmentNode,
-        ActionTextAttachmentUploadNode
-      ]
+      nodes: this.#lexicalNodes
     })
 
     editor.setRootElement(this.editorContentElement)
 
     return editor
+  }
+
+  get #lexicalNodes() {
+    const nodes = [
+      QuoteNode,
+      HeadingNode,
+      ListNode,
+      ListItemNode,
+      CodeNode,
+      CodeHighlightNode,
+      LinkNode,
+      AutoLinkNode,
+
+      CustomActionTextAttachmentNode,
+    ]
+
+    if (this.supportsAttachments) {
+      nodes.push(ActionTextAttachmentNode, ActionTextAttachmentUploadNode)
+    }
+
+    return nodes
   }
 
   #createEditorContentElement() {
