@@ -96,7 +96,7 @@ export default class LexicalPromptElement extends HTMLElement {
     this.#editorElement.addEventListener("actiontext:change", this.#filterOptions)
     // We can't use a regular keydown for Enter as Lexical handles it first
     this.unregisterEnterListener = this.#editor.registerCommand(KEY_ENTER_COMMAND, this.#handleSelectedOption.bind(this), COMMAND_PRIORITY_HIGH)
-    this.unregisterEnterListener = this.#editor.registerCommand(KEY_TAB_COMMAND, this.#handleSelectedOption.bind(this), COMMAND_PRIORITY_HIGH)
+    this.unregisterTabListener = this.#editor.registerCommand(KEY_TAB_COMMAND, this.#handleSelectedOption.bind(this), COMMAND_PRIORITY_HIGH)
   }
 
   #selectFirstOption() {
@@ -156,6 +156,7 @@ export default class LexicalPromptElement extends HTMLElement {
     this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions)
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover)
     this.unregisterEnterListener()
+    this.unregisterTabListener()
     this.#addTriggerListener()
   }
 
