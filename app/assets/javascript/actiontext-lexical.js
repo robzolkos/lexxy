@@ -7414,29 +7414,28 @@ class LexicalPromptElement extends HTMLElement {
     const contentRect = this.#editorContentElement.getBoundingClientRect();
     const verticalOffset = contentRect.top - editorRect.top;
 
-    if (this.popoverElement.hasAttribute("data-positioned")) { return }
+    this.popoverElement.style.left = `${x}px`;
+    this.popoverElement.style.top = `${y + verticalOffset}px`;
+    this.popoverElement.style.bottom = "auto";
 
     const popoverRect = this.popoverElement.getBoundingClientRect();
     const isClippedAtBottom = popoverRect.bottom > window.innerHeight;
 
-    this.popoverElement.style.left = `${x}px`;
-
     if (isClippedAtBottom) {
       this.popoverElement.style.bottom = `${y - verticalOffset + fontSize}px`;
-    } else {
-      this.popoverElement.style.top = `${y + verticalOffset}px`;
+      this.popoverElement.style.top = "auto";
     }
-
-    this.popoverElement.toggleAttribute("data-positioned", true);
   }
 
-  #hidePopover() {
+  async #hidePopover() {
     this.#clearSelection();
     this.popoverElement.classList.toggle("lexical-prompt-menu--visible", false);
     this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions);
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover);
     this.unregisterEnterListener();
     this.unregisterTabListener();
+
+    await nextFrame();
     this.#addTriggerListener();
   }
 
@@ -7484,6 +7483,7 @@ class LexicalPromptElement extends HTMLElement {
 
   #handleKeydownOnPopover = (event) => {
     if (event.key === "Escape") {
+      console.debug("SE LLEGA?");
       this.#hidePopover();
       this.#editorElement.focus();
       event.stopPropagation();
