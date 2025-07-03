@@ -193,7 +193,7 @@ export default class Contents {
       const textBeforeString = fullText.slice(0, lastIndex)
       const textAfterCursor = fullText.slice(offset)
       const textNodeBefore = $createTextNode(textBeforeString)
-      const textNodeAfter = $createTextNode(textAfterCursor)
+      const textNodeAfter = $createTextNode(textAfterCursor || " ") // Default to Space to prevent cursor rendering issues in Safari
 
       // Replace the anchor node with the first node
       anchorNode.replace(textNodeBefore)
