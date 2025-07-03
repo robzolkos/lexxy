@@ -26,7 +26,7 @@ class AttachmentsTest < ApplicationSystemTestCase
       click_on "Upload file"
     end
 
-    assert_no_image_figure_attachment content_type: "text/plain", caption: "note.txt"
+    assert_not_image_figure_attachment content_type: "text/plain", caption: "note.txt"
   end
 
   test "delete attachments with the keyboard" do
@@ -34,10 +34,23 @@ class AttachmentsTest < ApplicationSystemTestCase
       click_on "Upload file"
     end
 
-    find("figure.attachment").click.click
-    find_editor.send :delete
-    assert_no_selector "figure.attachment[content-type='image/png']"
+    assert_image_figure_attachment content_type: "image/png", caption: "example.png"
 
-    assert_equal_html "", find_editor.value
+    find("figure.attachment img").click
+    find_editor.send_key "Delete"
+
+    assert_no_attachment content_type: "image/png"
+
+    assert_equal_html "<p><br></p>", find_editor.value
+  end
+
+  test "disable attachments" do
+    visit edit_post_path(posts(:empty), attachments_disabled: true)
+
+    attach_file file_fixture("example.png") do
+      click_on "Upload file"
+    end
+
+    assert_no_attachment content_type: "image/png"
   end
 end

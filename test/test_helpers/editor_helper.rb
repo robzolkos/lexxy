@@ -19,7 +19,7 @@ module EditorHelper
     end
   end
 
-  def assert_no_image_figure_attachment(content_type: "image/png", caption:)
+  def assert_not_image_figure_attachment(content_type: "image/png", caption:)
     assert_figure_attachment(content_type: content_type) do
       assert_no_selector "img"
       within "figcaption" do
@@ -28,8 +28,12 @@ module EditorHelper
     end
   end
 
+  def assert_no_attachment(content_type:)
+    assert_no_selector "figure.attachment[data-content-type='#{content_type}']"
+  end
+
   def assert_mention_attachment(user)
-    assert_figure_attachment content_type: "application/vnd.actiontext.mention" do
+    within "action-text-attachment[content-type='application/vnd.actiontext.mention']" do
       assert user.name
     end
   end

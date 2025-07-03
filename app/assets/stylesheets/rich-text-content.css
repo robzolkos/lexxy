@@ -112,13 +112,14 @@
 
     /* Attachments */
 
-    figure:not(.attachment--custom) {
+    figure {
       display: inline-block;
       position: relative;
       block-size: auto;
       max-inline-size: 100%;
       margin-inline: 0;
       width: 100%;
+      max-width: 70%;
 
       img {
         display: block;
@@ -131,7 +132,7 @@
       }
     }
 
-    .attachment:not(.attachment--custom) {
+    .attachment {
       border: 1px solid #cdbbfa;
       border-radius: 16px;
       padding: 24px;
@@ -149,7 +150,7 @@
       }
     }
 
-    figure.attachment--custom {
+    action-text-attachment {
       display: inline;
       padding: 0;
       margin: 0;

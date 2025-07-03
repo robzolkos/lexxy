@@ -93,3 +93,18 @@ lexical-toolbar {
   }
 }
 
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
+
+[data-lexical-cursor] {
+  height: 1lh;
+  border-left: 1px solid darkred;
+  animation: blink 1s step-end infinite;
+
+  p & {
+    display: inline-block;
+  }
+}

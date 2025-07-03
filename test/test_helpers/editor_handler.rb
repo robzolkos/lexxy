@@ -17,6 +17,18 @@ class EditorHandler
     content_element.send_keys *keys
   end
 
+  def send_key(key)
+    page.execute_script <<~JS, content_element
+      const event = new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: "#{key}",
+        keyCode: 46
+      });
+      arguments[0].dispatchEvent(event);
+    JS
+  end
+
   def select(text)
     page.execute_script <<~JS, editor_element
       const editable = arguments[0]

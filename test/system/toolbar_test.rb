@@ -67,4 +67,12 @@ class ToolbarTest < ApplicationSystemTestCase
 
     assert_equal_html "<p>Hello <a href=\"https://37signals.com\">everyone</a></p>", find_editor.value
   end
+
+  test "disable toolbar" do
+    assert_selector "lexical-toolbar"
+
+    visit edit_post_path(posts(:hello_world), toolbar_disabled: true)
+
+    assert_no_selector "lexical-toolbar"
+  end
 end

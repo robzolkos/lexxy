@@ -18,6 +18,8 @@ module ActionText
         editor_tag
       end
 
+      alias_method :rich_text_area_tag, :rich_textarea_tag
+
       private
         # Tempoary: we need to *adaptarize* action text
         def render_custom_attachments_in(value)

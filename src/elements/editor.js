@@ -1,4 +1,4 @@
-import { createEditor, $getRoot, $createTextNode, $getNodeByKey, $addUpdateTag, SKIP_DOM_SELECTION_TAG, KEY_ENTER_COMMAND, COMMAND_PRIORITY_HIGH, DecoratorNode } from "lexical"
+import { createEditor, $getRoot, $createTextNode, $getNodeByKey, $addUpdateTag, SKIP_DOM_SELECTION_TAG, KEY_ENTER_COMMAND, COMMAND_PRIORITY_NORMAL, DecoratorNode } from "lexical"
 import { ListNode, ListItemNode, registerList } from "@lexical/list"
 import { LinkNode, AutoLinkNode } from "@lexical/link"
 import { registerRichText, QuoteNode, HeadingNode } from "@lexical/rich-text"
@@ -35,7 +35,7 @@ export default class LexicalEditorElement extends HTMLElement {
     this.id ??= generateDomId("lexical-editor")
     this.editor = this.#createEditor()
     this.contents = new Contents(this)
-    this.selection = new Selection(this.editor)
+    this.selection = new Selection(this)
     this.clipboard = new Clipboard(this)
 
     CommandDispatcher.configureFor(this)
@@ -58,6 +58,8 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   get toolbarElement() {
+    if (!this.#hasToolbar) return null
+
     this.toolbar = this.toolbar || this.#findOrCreateDefaultToolbar()
     return this.toolbar
   }
@@ -68,6 +70,14 @@ export default class LexicalEditorElement extends HTMLElement {
 
   get blobUrlTemplate() {
     return this.dataset.blobUrlTemplate
+  }
+
+  get isSingleLineMode() {
+    return this.hasAttribute("single-line")
+  }
+
+  get supportsAttachments() {
+    return this.getAttribute("attachments") !== "false"
   }
 
   focus() {
@@ -102,6 +112,7 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   #parseHtmlIntoLexicalNodes(html) {
+    if (!html) html = "<p></p>"
     const nodes = $generateNodesFromDOM(this.editor, parseHtml(`<div>${html}</div>`))
     // Custom decorator block elements such action-text-attachments get wrapped into <p> automatically by Lexical.
     // We flatten those.
@@ -120,10 +131,11 @@ export default class LexicalEditorElement extends HTMLElement {
     this.#synchronizeWithChanges()
     this.#registerComponents()
     this.#listenForInvalidatedNodes()
-    this.#preventCtrlEnter()
+    this.#handleEnter()
     this.#attachDebugHooks()
     this.#attachToolbar()
     this.#loadInitialValue()
+    this.#resetBeforeTurboCaches()
   }
 
   #createEditor() {
@@ -135,25 +147,33 @@ export default class LexicalEditorElement extends HTMLElement {
         throw error
       },
       theme: theme,
-      nodes: [
-        QuoteNode,
-        HeadingNode,
-        ListNode,
-        ListItemNode,
-        CodeNode,
-        CodeHighlightNode,
-        LinkNode,
-        AutoLinkNode,
-
-        CustomActionTextAttachmentNode,
-        ActionTextAttachmentNode,
-        ActionTextAttachmentUploadNode
-      ]
+      nodes: this.#lexicalNodes
     })
 
     editor.setRootElement(this.editorContentElement)
 
     return editor
+  }
+
+  get #lexicalNodes() {
+    const nodes = [
+      QuoteNode,
+      HeadingNode,
+      ListNode,
+      ListItemNode,
+      CodeNode,
+      CodeHighlightNode,
+      LinkNode,
+      AutoLinkNode,
+
+      CustomActionTextAttachmentNode,
+    ]
+
+    if (this.supportsAttachments) {
+      nodes.push(ActionTextAttachmentNode, ActionTextAttachmentUploadNode)
+    }
+
+    return nodes
   }
 
   #createEditorContentElement() {
@@ -182,7 +202,7 @@ export default class LexicalEditorElement extends HTMLElement {
     }
   }
 
-  get #internalFormValue()  {
+  get #internalFormValue() {
     return this._internalFormValue
   }
 
@@ -190,6 +210,14 @@ export default class LexicalEditorElement extends HTMLElement {
     const initialHtml = this.getAttribute("value") || "<p></p>"
     console.debug("INITIAL", initialHtml);
     this.value = initialHtml
+  }
+
+  #resetBeforeTurboCaches() {
+    document.addEventListener("turbo:before-cache", this.#handleTurboBeforeCache)
+  }
+
+  #handleTurboBeforeCache = (event) => {
+    this.#reset()
   }
 
   #synchronizeWithChanges() {
@@ -235,19 +263,26 @@ export default class LexicalEditorElement extends HTMLElement {
     })
   }
 
-  #preventCtrlEnter() {
+  #handleEnter() {
     // We can't prevent these externally using regular keydown because Lexical handles it first.
     this.editor.registerCommand(
       KEY_ENTER_COMMAND,
       (event) => {
+        // Prevent CTRL+ENTER
         if (event.ctrlKey || event.metaKey) {
+          event.preventDefault()
+          return true
+        }
+
+        // In single line mode, prevent ENTER
+        if (this.isSingleLineMode) {
           event.preventDefault()
           return true
         }
 
         return false
       },
-      COMMAND_PRIORITY_HIGH
+      COMMAND_PRIORITY_NORMAL
     )
   }
 
@@ -262,12 +297,18 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   #attachToolbar() {
-    this.toolbarElement.setEditor(this)
+    if (this.#hasToolbar) {
+      this.toolbarElement.setEditor(this)
+    }
   }
 
   #findOrCreateDefaultToolbar() {
     const toolbarId = this.getAttribute("toolbar")
     return toolbarId ? document.getElementById(toolbarId) : this.#createDefaultToolbar()
+  }
+
+  get #hasToolbar() {
+    return this.getAttribute("toolbar") !== "false"
   }
 
   #createDefaultToolbar() {
@@ -302,6 +343,8 @@ export default class LexicalEditorElement extends HTMLElement {
     }
 
     this.selection = null
+
+    document.removeEventListener("turbo:before-cache", this.#handleTurboBeforeCache)
   }
 
   #reconnect() {

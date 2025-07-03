@@ -1,6 +1,6 @@
 import {
   $createParagraphNode, $getSelection, $setSelection, $insertNodes, $isElementNode, $isParagraphNode, $isTextNode,
-  $isRangeSelection, $createLineBreakNode, $createTextNode, HISTORY_MERGE_TAG, $isNodeSelection
+  $isRangeSelection, $createLineBreakNode, $createTextNode, HISTORY_MERGE_TAG, $isNodeSelection, $isDecoratorNode
 } from "lexical"
 
 import { $generateNodesFromDOM } from "@lexical/html"
@@ -192,7 +192,6 @@ export default class Contents {
 
       const textBeforeString = fullText.slice(0, lastIndex)
       const textAfterCursor = fullText.slice(offset)
-
       const textNodeBefore = $createTextNode(textBeforeString)
       const textNodeAfter = $createTextNode(textAfterCursor)
 
@@ -209,12 +208,19 @@ export default class Contents {
       // Insert the text after cursor
       previousNode.insertAfter(textNodeAfter)
 
+      this.#appendLineBreakIfNeeded(textNodeAfter.getParentOrThrow())
+
       // Place the cursor at the start of textNodeAfter
       textNodeAfter.select(0, 0)
     })
   }
 
   uploadFile(file) {
+    if (!this.editorElement.supportsAttachments) {
+      console.warn("This editor does not supports attachments (it's configured with [attachments=false])")
+      return
+    }
+
     const uploadUrl = this.editorElement.directUploadUrl
     const blobUrlTemplate = this.editorElement.blobUrlTemplate
 
@@ -245,9 +251,10 @@ export default class Contents {
 
           node.remove()
 
-          if (parent && parent.getChildrenSize() === 0 && (parent.getNextSibling() !== null || parent.getPreviousSibling() !== null)) {
-            parent.remove()
+          if (parent.getType() === "root" && parent.getChildrenSize() === 0) {
+            parent.append($createParagraphNode())
           }
+
           nodesWereRemoved = true
         })
 
@@ -263,5 +270,18 @@ export default class Contents {
 
   get #selection() {
     return this.editorElement.selection
+  }
+
+  // Add line break if last node is not a textual one to get a visible cursor
+  #appendLineBreakIfNeeded(paragraph) {
+    if ($isParagraphNode(paragraph) && !this.editorElement.isSingleLineMode) {
+      const children = paragraph.getChildren()
+      const last = children[children.length - 1]
+      const beforeLast = children[children.length - 2]
+
+      if (($isTextNode(last) && last.getTextContent() === "") && (beforeLast && !$isTextNode(beforeLast))) {
+        paragraph.append($createLineBreakNode())
+      }
+    }
   }
 }

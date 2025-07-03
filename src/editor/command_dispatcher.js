@@ -2,8 +2,6 @@ import {
   $getSelection,
   $isRangeSelection,
   PASTE_COMMAND,
-  KEY_DELETE_COMMAND,
-  KEY_BACKSPACE_COMMAND,
   COMMAND_PRIORITY_LOW,
   FORMAT_TEXT_COMMAND
 } from "lexical"
@@ -33,6 +31,7 @@ export class CommandDispatcher {
   }
 
   constructor(editorElement) {
+    this.editorElement = editorElement
     this.editor = editorElement.editor
     this.selection = editorElement.selection
     this.contents = editorElement.contents
@@ -44,10 +43,6 @@ export class CommandDispatcher {
 
   dispatchPaste(event) {
     return this.clipboard.paste(event)
-  }
-
-  dispatchDeleteNodes() {
-    this.contents.deleteSelectedNodes()
   }
 
   dispatchBold() {
@@ -131,8 +126,6 @@ export class CommandDispatcher {
     }
 
     this.#registerCommandHandler(PASTE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchPaste.bind(this))
-    this.#registerCommandHandler(KEY_DELETE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchDeleteNodes.bind(this))
-    this.#registerCommandHandler(KEY_BACKSPACE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchDeleteNodes.bind(this))
   }
 
   #registerCommandHandler(command, priority, handler) {
@@ -151,11 +144,13 @@ export class CommandDispatcher {
   }
 
   #registerDragAndDropHandlers() {
-    this.dragCounter = 0
-    this.editor.getRootElement().addEventListener("dragover", this.#handleDragOver.bind(this))
-    this.editor.getRootElement().addEventListener("drop", this.#handleDrop.bind(this))
-    this.editor.getRootElement().addEventListener("dragenter", this.#handleDragEnter.bind(this))
-    this.editor.getRootElement().addEventListener("dragleave", this.#handleDragLeave.bind(this))
+    if (this.editorElement.supportsAttachments) {
+      this.dragCounter = 0
+      this.editor.getRootElement().addEventListener("dragover", this.#handleDragOver.bind(this))
+      this.editor.getRootElement().addEventListener("drop", this.#handleDrop.bind(this))
+      this.editor.getRootElement().addEventListener("dragenter", this.#handleDragEnter.bind(this))
+      this.editor.getRootElement().addEventListener("dragleave", this.#handleDragLeave.bind(this))
+    }
   }
 
   #handleDragEnter(event) {

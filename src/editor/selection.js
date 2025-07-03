@@ -1,12 +1,15 @@
 import {
-  $createNodeSelection, $createRangeSelection, $getNodeByKey, $getSelection, $isNodeSelection,
-  $setSelection, $isElementNode, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, CLICK_COMMAND,
-  KEY_ARROW_LEFT_COMMAND, KEY_ARROW_RIGHT_COMMAND
+  $createNodeSelection, $isElementNode, $isRangeSelection, $getNodeByKey, $getSelection, $isNodeSelection,
+  $setSelection, $getRoot, $isTextNode, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, KEY_ARROW_LEFT_COMMAND,
+  KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_UP_COMMAND, KEY_DELETE_COMMAND,
+  KEY_BACKSPACE_COMMAND, DecoratorNode
 } from "lexical"
+import { nextFrame } from "../helpers/timing_helpers"
 
 export default class Selection {
-  constructor(editor) {
-    this.editor = editor
+  constructor(editorElement) {
+    this.editorElement = editorElement
+    this.editor = this.editorElement.editor
     this.previouslySelectedKeys = new Set()
 
     this.#listenForNodeSelections()
@@ -14,7 +17,6 @@ export default class Selection {
   }
 
   clear() {
-    $setSelection(null)
     this.current = null
   }
 
@@ -35,7 +37,7 @@ export default class Selection {
   }
 
   get cursorPosition() {
-    let position = { x: 0, y: 0}
+    let position = { x: 0, y: 0 }
 
     this.editor.getEditorState().read(() => {
       const lexicalSelection = $getSelection()
@@ -50,13 +52,7 @@ export default class Selection {
       // Create a span marker if the rect is unreliable
       let marker
       if ((rect.width === 0 && rect.height === 0) || (rect.top === 0 && rect.left === 0)) {
-        marker = document.createElement("span")
-        marker.textContent = "\u200b"
-        marker.style.display = "inline-block"
-        marker.style.width = "1px"
-        marker.style.height = "1em"
-        marker.style.lineHeight = "normal"
-
+        marker = this.#createMarker()
         range.insertNode(marker)
         rect = marker.getBoundingClientRect()
 
@@ -95,15 +91,26 @@ export default class Selection {
         y += fontSize
       }
 
-      position = { x, y }
+      position = { x, y, fontSize }
     })
 
     return position
   }
 
+  placeCursorAtTheEnd() {
+    this.editor.update(() => {
+      $getRoot().selectEnd()
+    })
+  }
+
   #processSelectionChangeCommands() {
     this.editor.registerCommand(KEY_ARROW_LEFT_COMMAND, this.#selectPreviousNode.bind(this), COMMAND_PRIORITY_LOW)
+    this.editor.registerCommand(KEY_ARROW_UP_COMMAND, this.#selectPreviousNode.bind(this), COMMAND_PRIORITY_LOW)
     this.editor.registerCommand(KEY_ARROW_RIGHT_COMMAND, this.#selectNextNode.bind(this), COMMAND_PRIORITY_LOW)
+    this.editor.registerCommand(KEY_ARROW_DOWN_COMMAND, this.#selectNextNode.bind(this), COMMAND_PRIORITY_LOW)
+
+    this.editor.registerCommand(KEY_DELETE_COMMAND, this.#deleteSelectedOrNext.bind(this), COMMAND_PRIORITY_LOW)
+    this.editor.registerCommand(KEY_BACKSPACE_COMMAND, this.#deletePreviousOrNext.bind(this), COMMAND_PRIORITY_LOW)
 
     this.editor.registerCommand(SELECTION_CHANGE_COMMAND, () => {
       this.current = $getSelection()
@@ -136,22 +143,107 @@ export default class Selection {
     }
   }
 
-  #selectPreviousNode() {
-    if (this.current) {
-      this.clear()
-      const currentNode = this.current.getNodes()[0]
-      currentNode.selectPrevious()
-    }
-    return false
+  #createMarker() {
+    const marker = document.createElement("span")
+    marker.textContent = "\u200b"
+    marker.style.display = "inline-block"
+    marker.style.width = "1px"
+    marker.style.height = "1em"
+    marker.style.lineHeight = "normal"
+    return marker
   }
 
-  #selectNextNode() {
+  async #selectPreviousNode() {
     if (this.current) {
-      this.clear()
-      const currentNode = this.current.getNodes()[0]
-      currentNode.selectNext()
+      await this.#withCurrentNode((currentNode) => currentNode.selectPrevious())
+    } else {
+      this.#selectInLexical(this.nodeBeforeCursor)
     }
-    return false
+  }
+
+  async #selectNextNode() {
+    if (this.current) {
+      await this.#withCurrentNode((currentNode) => currentNode.selectNext(0, 0))
+    } else {
+      this.#selectInLexical(this.nodeAfterCursor)
+    }
+  }
+
+  get nodeAfterCursor() {
+    const selection = $getSelection()
+    if (!$isRangeSelection(selection) || !selection.isCollapsed()) { return null }
+
+    const { anchor } = selection
+    const anchorNode = anchor.getNode()
+    const offset = anchor.offset
+
+    if ($isTextNode(anchorNode)) {
+      if (offset === anchorNode.getTextContentSize()) {
+        if (anchorNode.getNextSibling() instanceof DecoratorNode) {
+          return anchorNode.getNextSibling()
+        } else {
+          const parent = anchorNode.getParent()
+          return parent ? parent.getNextSibling() : null
+        }
+      }
+      return null
+    }
+
+    if ($isElementNode(anchorNode) && offset < anchorNode.getChildrenSize()) {
+      return anchorNode.getChildAtIndex(offset)
+    }
+
+    let node = anchorNode
+    while (node && node.getNextSibling() == null) {
+      node = node.getParent()
+    }
+
+    return node ? node.getNextSibling() : null
+  }
+
+  get nodeBeforeCursor() {
+    const selection = $getSelection()
+    if (!$isRangeSelection(selection) || !selection.isCollapsed()) { return null }
+
+    const { anchor } = selection
+    const anchorNode = anchor.getNode()
+    const offset = anchor.offset
+
+    if ($isTextNode(anchorNode)) {
+      if (offset === 0) {
+        if (anchorNode.getPreviousSibling() instanceof DecoratorNode) {
+          return anchorNode.getPreviousSibling()
+        } else {
+          const parent = anchorNode.getParent()
+          return parent.getPreviousSibling()
+        }
+      }
+
+      return null
+    }
+
+    if ($isElementNode(anchorNode) && offset > 0) {
+      return anchorNode.getChildAtIndex(offset - 1)
+    }
+
+    let node = anchorNode
+    while (node && node.getPreviousSibling() == null) {
+      node = node.getParent()
+    }
+
+    const previousSibling = node ? node.getPreviousSibling() : null
+    return previousSibling
+  }
+
+  async #withCurrentNode(fn) {
+    await nextFrame()
+    if (this.current) {
+      this.editor.update(() => {
+        this.clear()
+        fn(this.current.getNodes()[0])
+        this.editor.focus()
+      })
+    }
   }
 
   get #currentlySelectedKeys() {
@@ -181,5 +273,45 @@ export default class Selection {
         this.editor.focus()
       })
     })
+
+    this.editor.getRootElement().addEventListener("lexical:next-node-selection-request", (event) => {
+      this.#selectNextNode()
+    })
+  }
+
+  #selectInLexical(node) {
+    if (!node || !(node instanceof DecoratorNode)) return
+
+    this.editor.update(() => {
+      const selection = $createNodeSelection()
+      selection.add(node.getKey())
+      $setSelection(selection)
+    })
+  }
+
+  #deleteSelectedOrNext() {
+    const node = this.nodeAfterCursor
+    if (node instanceof DecoratorNode) {
+      this.#selectInLexical(node)
+    } else {
+      this.#contents.deleteSelectedNodes()
+    }
+
+    return true
+  }
+
+  #deletePreviousOrNext() {
+    const node = this.nodeBeforeCursor
+    if (node instanceof DecoratorNode) {
+      this.#selectInLexical(node)
+    } else {
+      this.#contents.deleteSelectedNodes()
+    }
+
+    return true
+  }
+
+  get #contents() {
+    return this.editorElement.contents
   }
 }

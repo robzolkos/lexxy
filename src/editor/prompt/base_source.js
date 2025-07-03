@@ -16,7 +16,7 @@ export default class BaseSource {
   buildListItemElementFor(promptItemElement) {
     const template = promptItemElement.querySelector("template[type='menu']")
     const fragment = template.content.cloneNode(true)
-    const listItemElement = createElement("li", { role: "option", id: generateDomId("prompt-item") })
+    const listItemElement = createElement("li", { role: "option", id: generateDomId("prompt-item"), tabindex: "0" })
     listItemElement.classList.add("lexical-prompt-menu__item")
     listItemElement.appendChild(fragment)
     return listItemElement

@@ -1,11 +1,11 @@
-import { createElement, generateDomId, parseHtml } from "../helpers/html_helper";
-import { COMMAND_PRIORITY_HIGH, KEY_ENTER_COMMAND } from "lexical";
-import { CustomActionTextAttachmentNode } from "../nodes/custom_action_text_attachment_node";
-import { isPath, isUrl } from "../helpers/string_helper";
-import InlinePromptSource from "../editor/prompt/inline_source";
-import DeferredPromptSource from "../editor/prompt/deferred_source";
-import RemoteFilterSource from "../editor/prompt/remote_filter_source";
-import { $generateNodesFromDOM } from "@lexical/html";
+import { createElement, generateDomId, parseHtml } from "../helpers/html_helper"
+import { COMMAND_PRIORITY_HIGH, KEY_ENTER_COMMAND, $isTextNode, $isRangeSelection, $getSelection, $isNodeSelection, $getNodeByKey } from "lexical"
+import { CustomActionTextAttachmentNode } from "../nodes/custom_action_text_attachment_node"
+import { isPath, isUrl } from "../helpers/string_helper"
+import InlinePromptSource from "../editor/prompt/inline_source"
+import DeferredPromptSource from "../editor/prompt/deferred_source"
+import RemoteFilterSource from "../editor/prompt/remote_filter_source"
+import { $generateNodesFromDOM } from "@lexical/html"
 
 const NOTHING_FOUND_DEFAULT_MESSAGE = "Nothing found"
 
@@ -34,7 +34,7 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #createSource() {
-    const src = this.getAttribute("src");
+    const src = this.getAttribute("src")
     if (isUrl(src) || isPath(src)) {
       if (this.hasAttribute("remote-filtering")) {
         return new RemoteFilterSource(src)
@@ -47,12 +47,31 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #addTriggerListener() {
-    this.#editorElement.addEventListener("keydown", (event) => {
-      if (event.key === this.trigger) {
-        this.initialPrompt = true
-        this.#showPopover()
+    const unregister = this.#editor.registerUpdateListener(() => {
+        this.#editor.read(() => {
+          const selection = $getSelection()
+          if (!selection) return
+          let node
+          if ($isRangeSelection(selection)) {
+            node = selection.anchor.getNode()
+          } else if ($isNodeSelection(selection)) {
+            [ node ] = selection.getNodes()
+          }
+
+          if (!node) return
+
+          if ($isTextNode(node)) {
+            const text = node.getTextContent()
+            const lastChar = [ ...text ].pop()
+
+            if (lastChar === this.trigger) {
+              unregister()
+              this.#showPopover()
+            }
+          }
+        })
       }
-    })
+    )
   }
 
   get #editor() {
@@ -69,10 +88,10 @@ export default class LexicalPromptElement extends HTMLElement {
 
   async #showPopover() {
     this.popoverElement ??= await this.#buildPopover()
-    this.popoverElement.classList.toggle("lexical-prompt-menu--visible", true)
     await this.#filterOptions()
-    this.#selectFirstOption()
     this.#positionPopover()
+    this.popoverElement.classList.toggle("lexical-prompt-menu--visible", true)
+    this.#selectFirstOption()
 
     this.#editorElement.addEventListener("keydown", this.#handleKeydownOnPopover)
     this.#editorElement.addEventListener("actiontext:change", this.#filterOptions)
@@ -93,8 +112,10 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #selectOption(listItem) {
-    this.#clearSelection();
+    this.#clearSelection()
     listItem.toggleAttribute("aria-selected", true)
+    listItem.focus()
+    this.#editorElement.focus()
     this.#editorContentElement.setAttribute("aria-controls", this.popoverElement.id)
     this.#editorContentElement.setAttribute("aria-activedescendant", listItem.id)
     this.#editorContentElement.setAttribute("aria-haspopup", "listbox")
@@ -108,13 +129,25 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #positionPopover() {
-    const { x, y } = this.#selection.cursorPosition
+    const { x, y, fontSize } = this.#selection.cursorPosition
     const editorRect = this.#editorElement.getBoundingClientRect()
     const contentRect = this.#editorContentElement.getBoundingClientRect()
     const verticalOffset = contentRect.top - editorRect.top
 
+    if (this.popoverElement.hasAttribute("data-positioned")) { return }
+
+    const popoverRect = this.popoverElement.getBoundingClientRect()
+    const isClippedAtBottom = popoverRect.bottom > window.innerHeight
+
     this.popoverElement.style.left = `${x}px`
-    this.popoverElement.style.top = `${y + verticalOffset}px`
+
+    if (isClippedAtBottom) {
+      this.popoverElement.style.bottom = `${y - verticalOffset + fontSize}px`
+    } else {
+      this.popoverElement.style.top = `${y + verticalOffset}px`
+    }
+
+    this.popoverElement.toggleAttribute("data-positioned", true)
   }
 
   #hidePopover() {
@@ -123,6 +156,7 @@ export default class LexicalPromptElement extends HTMLElement {
     this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions)
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover)
     this.unregisterEnterListener()
+    this.#addTriggerListener()
   }
 
   #filterOptions = async () => {
@@ -144,7 +178,7 @@ export default class LexicalPromptElement extends HTMLElement {
     this.popoverElement.innerHTML = ""
 
     if (filteredListItems.length > 0) {
-      this.#showResults(filteredListItems);
+      this.#showResults(filteredListItems)
     } else {
       this.#showEmptyResults()
     }
@@ -158,7 +192,7 @@ export default class LexicalPromptElement extends HTMLElement {
 
   #showEmptyResults() {
     this.popoverElement.classList.add("lexical-prompt-menu--empty")
-    const el = createElement("li", {  innerHTML: this.#emptyResultsMessage})
+    const el = createElement("li", { innerHTML: this.#emptyResultsMessage })
     el.classList.add("lexical-prompt-menu__item--empty")
     this.popoverElement.append(el)
   }
@@ -175,9 +209,11 @@ export default class LexicalPromptElement extends HTMLElement {
     } else if (event.key === "ArrowDown") {
       this.#moveSelectionDown()
       event.preventDefault()
+      event.stopPropagation()
     } else if (event.key === "ArrowUp") {
       this.#moveSelectionUp()
       event.preventDefault()
+      event.stopPropagation()
     }
   }
 
@@ -201,6 +237,7 @@ export default class LexicalPromptElement extends HTMLElement {
 
   #handleSelectedOption(event) {
     event.preventDefault()
+    event.stopPropagation()
     this.#optionWasSelected()
     return true
   }
