@@ -37,7 +37,7 @@ class AttachmentsTest < ApplicationSystemTestCase
     assert_image_figure_attachment content_type: "image/png", caption: "example.png"
 
     find("figure.attachment img").click
-    find_editor.send :backspace
+    find_editor.send_key "Delete"
 
     assert_no_attachment content_type: "image/png"
 
