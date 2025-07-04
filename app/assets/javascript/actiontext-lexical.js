@@ -5802,7 +5802,6 @@ class CommandDispatcher {
   dispatchUploadAttachments() {
     const input = createElement("input", {
       type: "file",
-      accept: "image/*",
       multiple: true,
       onchange: ({ target }) => {
         const files = Array.from(target.files);
