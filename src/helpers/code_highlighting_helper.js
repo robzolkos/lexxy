@@ -16,6 +16,9 @@ function highlightElement(preElement) {
   const grammar = Prism.languages[language]
   if (!grammar) return
 
+  // unescape HTML entities in the code block
+  code = new DOMParser().parseFromString(code, "text/html").body.textContent || ""
+
   const highlightedHtml = Prism.highlight(code, grammar, language)
 
   const codeElement = createElement("code", { "data-language": language, innerHTML: highlightedHtml })
