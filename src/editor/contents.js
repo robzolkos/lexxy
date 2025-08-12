@@ -96,6 +96,18 @@ export default class Contents {
     })
   }
 
+  removeFormattingFromSelectedLines() {
+    this.editor.update(() => {
+      const selection = $getSelection()
+      if (!$isRangeSelection(selection)) return
+
+      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow()
+      const paragraph = $createParagraphNode()
+      paragraph.append(...topLevelElement.getChildren())
+      topLevelElement.replace(paragraph)
+    })
+  }
+
   hasSelectedText() {
     let result = false
 

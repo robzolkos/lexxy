@@ -21,16 +21,16 @@ class ToolbarTest < ApplicationSystemTestCase
     find_editor.select("everyone")
 
     click_on "Heading"
-    assert_equal_html "<h1>Hello everyone</h1>", find_editor.value
-
-    click_on "Heading"
     assert_equal_html "<h2>Hello everyone</h2>", find_editor.value
 
     click_on "Heading"
     assert_equal_html "<h3>Hello everyone</h3>", find_editor.value
 
     click_on "Heading"
-    assert_equal_html "<h1>Hello everyone</h1>", find_editor.value
+    assert_equal_html "<h4>Hello everyone</h4>", find_editor.value
+
+    click_on "Heading"
+    assert_equal_html "<p>Hello everyone</p>", find_editor.value
   end
 
   test "bullet list" do

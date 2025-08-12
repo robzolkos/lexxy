@@ -83,19 +83,25 @@ export class CommandDispatcher {
       if (!$isRangeSelection(selection)) return
 
       const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow()
-      let nextTag = "h1"
+      let nextTag = "h2"
       if ($isHeadingNode(topLevelElement)) {
         const currentTag = topLevelElement.getTag()
-        if (currentTag === "h1") {
-          nextTag = "h2"
-        } else if (currentTag === "h2") {
+        if (currentTag === "h2") {
           nextTag = "h3"
+        } else if (currentTag === "h3") {
+          nextTag = "h4"
+        } else if (currentTag === "h4") {
+          nextTag = null
         } else {
-          nextTag = "h1"
+          nextTag = "h2"
         }
       }
 
-      this.contents.insertNodeWrappingEachSelectedLine(() => $createHeadingNode(nextTag))
+      if (nextTag) {
+        this.contents.insertNodeWrappingEachSelectedLine(() => $createHeadingNode(nextTag))
+      } else {
+        this.contents.removeFormattingFromSelectedLines()
+      }
     })
   }
 

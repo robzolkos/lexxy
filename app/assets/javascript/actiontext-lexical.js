@@ -5783,19 +5783,25 @@ class CommandDispatcher {
       if (!cr(selection)) return
 
       const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow();
-      let nextTag = "h1";
+      let nextTag = "h2";
       if (At(topLevelElement)) {
         const currentTag = topLevelElement.getTag();
-        if (currentTag === "h1") {
-          nextTag = "h2";
-        } else if (currentTag === "h2") {
+        if (currentTag === "h2") {
           nextTag = "h3";
+        } else if (currentTag === "h3") {
+          nextTag = "h4";
+        } else if (currentTag === "h4") {
+          nextTag = null;
         } else {
-          nextTag = "h1";
+          nextTag = "h2";
         }
       }
 
-      this.contents.insertNodeWrappingEachSelectedLine(() => _t$2(nextTag));
+      if (nextTag) {
+        this.contents.insertNodeWrappingEachSelectedLine(() => _t$2(nextTag));
+      } else {
+        this.contents.removeFormattingFromSelectedLines();
+      }
     });
   }
 
@@ -6312,6 +6318,18 @@ class Contents {
 
       // Remove original nodes
       nodesToDelete.forEach((node) => node.remove());
+    });
+  }
+
+  removeFormattingFromSelectedLines() {
+    this.editor.update(() => {
+      const selection = Nr();
+      if (!cr(selection)) return
+
+      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow();
+      const paragraph = Pi();
+      paragraph.append(...topLevelElement.getChildren());
+      topLevelElement.replace(paragraph);
     });
   }
 
