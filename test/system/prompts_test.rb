@@ -26,8 +26,29 @@ class ActionTextLoadTest < ApplicationSystemTestCase
     end
   end
 
+  test "space selects by default" do
+    find_editor.send "1"
+    find_editor.send "peter "
+    assert_mention_attachment people(:peter)
+  end
+
+  test "configure space support in searches" do
+    find_editor.send "3"
+    find_editor.send "peter johnson"
+
+    within_popover do
+      assert_text "Peter Johnson"
+    end
+
+    assert_no_mention_attachments
+  end
+
   private
     def click_on_prompt(name)
       find(".lexical-prompt-menu__item", text: name).click
+    end
+
+    def within_popover(&block)
+      within(".lexical-prompt-menu", &block)
     end
 end

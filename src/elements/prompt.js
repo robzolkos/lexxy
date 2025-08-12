@@ -1,5 +1,5 @@
 import { createElement, generateDomId, parseHtml } from "../helpers/html_helper"
-import { COMMAND_PRIORITY_HIGH, KEY_ENTER_COMMAND, KEY_TAB_COMMAND, $isTextNode, $isRangeSelection, $getSelection, $isNodeSelection, $getNodeByKey } from "lexical"
+import { COMMAND_PRIORITY_HIGH, KEY_ENTER_COMMAND, KEY_TAB_COMMAND, KEY_SPACE_COMMAND, $isTextNode, $isRangeSelection, $getSelection, $isNodeSelection, $getNodeByKey } from "lexical"
 import { CustomActionTextAttachmentNode } from "../nodes/custom_action_text_attachment_node"
 import { isPath, isUrl } from "../helpers/string_helper"
 import InlinePromptSource from "../editor/prompt/inline_source"
@@ -32,6 +32,14 @@ export default class LexicalPromptElement extends HTMLElement {
 
   get trigger() {
     return this.getAttribute("trigger")
+  }
+
+  get supportsSpaceInSearches() {
+    return this.hasAttribute("supports-space-in-searches")
+  }
+
+  get #doesSpaceSelect() {
+    return !this.supportsSpaceInSearches
   }
 
   #createSource() {
@@ -95,9 +103,21 @@ export default class LexicalPromptElement extends HTMLElement {
 
     this.#editorElement.addEventListener("keydown", this.#handleKeydownOnPopover)
     this.#editorElement.addEventListener("actiontext:change", this.#filterOptions)
+
+    this.#registerKeyListeners()
+  }
+
+  #registerKeyListeners() {
+    this.keyListeners = []
+
     // We can't use a regular keydown for Enter as Lexical handles it first
-    this.unregisterEnterListener = this.#editor.registerCommand(KEY_ENTER_COMMAND, this.#handleSelectedOption.bind(this), COMMAND_PRIORITY_HIGH)
-    this.unregisterTabListener = this.#editor.registerCommand(KEY_TAB_COMMAND, this.#handleSelectedOption.bind(this), COMMAND_PRIORITY_HIGH)
+    this.keyListeners.push(this.#editor.registerCommand(KEY_ENTER_COMMAND, this.#handleSelectedOption.bind(this), COMMAND_PRIORITY_HIGH))
+    this.keyListeners.push(this.#editor.registerCommand(KEY_TAB_COMMAND, this.#handleSelectedOption.bind(this), COMMAND_PRIORITY_HIGH))
+
+    if (this.#doesSpaceSelect) {
+      console.debug("REGISTED!");
+      this.keyListeners.push(this.#editor.registerCommand(KEY_SPACE_COMMAND, this.#handleSelectedOption.bind(this), COMMAND_PRIORITY_HIGH))
+    }
   }
 
   #selectFirstOption() {
@@ -153,8 +173,8 @@ export default class LexicalPromptElement extends HTMLElement {
     this.popoverElement.classList.toggle("lexical-prompt-menu--visible", false)
     this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions)
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover)
-    this.unregisterEnterListener()
-    this.unregisterTabListener()
+
+    this.keyListeners.forEach((unregister) => unregister())
 
     await nextFrame()
     this.#addTriggerListener()
