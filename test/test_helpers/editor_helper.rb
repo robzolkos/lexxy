@@ -34,7 +34,11 @@ module EditorHelper
 
   def assert_mention_attachment(user)
     within "action-text-attachment[content-type='application/vnd.actiontext.mention']" do
-      assert user.name
+      assert_text user.name
     end
+  end
+
+  def assert_no_mention_attachments
+    assert_no_css "action-text-attachment[content-type='application/vnd.actiontext.mention']"
   end
 end
