@@ -13,6 +13,7 @@ const NOTHING_FOUND_DEFAULT_MESSAGE = "Nothing found"
 export default class LexicalPromptElement extends HTMLElement {
   constructor() {
     super()
+    this.keyListeners = []
   }
 
   connectedCallback() {
@@ -108,14 +109,11 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #registerKeyListeners() {
-    this.keyListeners = []
-
     // We can't use a regular keydown for Enter as Lexical handles it first
     this.keyListeners.push(this.#editor.registerCommand(KEY_ENTER_COMMAND, this.#handleSelectedOption.bind(this), COMMAND_PRIORITY_HIGH))
     this.keyListeners.push(this.#editor.registerCommand(KEY_TAB_COMMAND, this.#handleSelectedOption.bind(this), COMMAND_PRIORITY_HIGH))
 
     if (this.#doesSpaceSelect) {
-      console.debug("REGISTED!");
       this.keyListeners.push(this.#editor.registerCommand(KEY_SPACE_COMMAND, this.#handleSelectedOption.bind(this), COMMAND_PRIORITY_HIGH))
     }
   }
@@ -174,10 +172,15 @@ export default class LexicalPromptElement extends HTMLElement {
     this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions)
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover)
 
-    this.keyListeners.forEach((unregister) => unregister())
+    this.#unregisterKeyListeners()
 
     await nextFrame()
     this.#addTriggerListener()
+  }
+
+  #unregisterKeyListeners() {
+    this.keyListeners.forEach((unregister) => unregister())
+    this.keyListeners = []
   }
 
   #filterOptions = async () => {

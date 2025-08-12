@@ -7347,6 +7347,7 @@ const NOTHING_FOUND_DEFAULT_MESSAGE = "Nothing found";
 class LexicalPromptElement extends HTMLElement {
   constructor() {
     super();
+    this.keyListeners = [];
   }
 
   connectedCallback() {
@@ -7442,14 +7443,11 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   #registerKeyListeners() {
-    this.keyListeners = [];
-
     // We can't use a regular keydown for Enter as Lexical handles it first
     this.keyListeners.push(this.#editor.registerCommand(Ee$1, this.#handleSelectedOption.bind(this), Ki));
     this.keyListeners.push(this.#editor.registerCommand(Pe$1, this.#handleSelectedOption.bind(this), Ki));
 
     if (this.#doesSpaceSelect) {
-      console.debug("REGISTED!");
       this.keyListeners.push(this.#editor.registerCommand(Me$1, this.#handleSelectedOption.bind(this), Ki));
     }
   }
@@ -7508,10 +7506,15 @@ class LexicalPromptElement extends HTMLElement {
     this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions);
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover);
 
-    this.keyListeners.forEach((unregister) => unregister());
+    this.#unregisterKeyListeners();
 
     await nextFrame();
     this.#addTriggerListener();
+  }
+
+  #unregisterKeyListeners() {
+    this.keyListeners.forEach((unregister) => unregister());
+    this.keyListeners = [];
   }
 
   #filterOptions = async () => {
