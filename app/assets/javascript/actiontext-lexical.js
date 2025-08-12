@@ -6274,6 +6274,12 @@ class Contents {
       const selection = Nr();
       if (!cr(selection)) return
 
+      // If no selection, insert new block
+      if (selection.isCollapsed()) {
+        Fr([newNodeFn()]);
+        return
+      }
+
       const selectedNodes = selection.extract();
       const selectedParagraphs = selectedNodes.map((node) => Fi(node) ? node : Qn(node) && node.getParent() && Fi(node.getParent()) ? node.getParent() : null).filter(Boolean);
 

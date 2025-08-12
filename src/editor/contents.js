@@ -49,6 +49,12 @@ export default class Contents {
       const selection = $getSelection()
       if (!$isRangeSelection(selection)) return
 
+      // If no selection, insert new block
+      if (selection.isCollapsed()) {
+        $insertNodes([newNodeFn()])
+        return
+      }
+
       const selectedNodes = selection.extract()
       const selectedParagraphs = selectedNodes.map((node) => $isParagraphNode(node) ? node : $isTextNode(node) && node.getParent() && $isParagraphNode(node.getParent()) ? node.getParent() : null).filter(Boolean)
 
