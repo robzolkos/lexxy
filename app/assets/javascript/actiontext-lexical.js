@@ -5770,11 +5770,11 @@ class CommandDispatcher {
   }
 
   dispatchInsertQuoteBlock() {
-    this.contents.insertNodeWrappingAllSelectedLines(() => xt$2());
+    this.contents.toggleNodeWrappingAllSelectedLines((node) => wt$1(node), () => xt$2());
   }
 
   dispatchInsertCodeBlock() {
-    this.contents.insertNodeWrappingAllSelectedLines(() => new K$1());
+    this.contents.toggleNodeWrappingAllSelectedLines((node) => I$1(node), () => new K$1());
   }
 
   dispatchRotateHeadingFormat() {
@@ -5783,19 +5783,25 @@ class CommandDispatcher {
       if (!cr(selection)) return
 
       const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow();
-      let nextTag = "h1";
+      let nextTag = "h2";
       if (At(topLevelElement)) {
         const currentTag = topLevelElement.getTag();
-        if (currentTag === "h1") {
-          nextTag = "h2";
-        } else if (currentTag === "h2") {
+        if (currentTag === "h2") {
           nextTag = "h3";
+        } else if (currentTag === "h3") {
+          nextTag = "h4";
+        } else if (currentTag === "h4") {
+          nextTag = null;
         } else {
-          nextTag = "h1";
+          nextTag = "h2";
         }
       }
 
-      this.contents.insertNodeWrappingEachSelectedLine(() => _t$2(nextTag));
+      if (nextTag) {
+        this.contents.insertNodeWrappingEachSelectedLine(() => _t$2(nextTag));
+      } else {
+        this.contents.removeFormattingFromSelectedLines();
+      }
     });
   }
 
@@ -6263,13 +6269,49 @@ class Contents {
     });
   }
 
+  toggleNodeWrappingAllSelectedLines(isFormatAppliedFn, newNodeFn) {
+    this.editor.update(() => {
+      const selection = Nr();
+      if (!cr(selection)) return
+
+      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow();
+
+      // Check if format is already applied
+      if (isFormatAppliedFn(topLevelElement)) {
+        this.removeFormattingFromSelectedLines();
+      } else {
+        this.insertNodeWrappingAllSelectedLines(newNodeFn);
+      }
+    });
+  }
+
   insertNodeWrappingAllSelectedLines(newNodeFn) {
     this.editor.update(() => {
       const selection = Nr();
       if (!cr(selection)) return
 
-      const selectedNodes = selection.extract();
-      const selectedParagraphs = selectedNodes.map((node) => Fi(node) ? node : Qn(node) && node.getParent() && Fi(node.getParent()) ? node.getParent() : null).filter(Boolean);
+      let selectedNodes;
+      let selectedParagraphs;
+
+      // If no selection (collapsed cursor), treat the current line as selected
+      if (selection.isCollapsed()) {
+        const anchorNode = selection.anchor.getNode();
+        const topLevelElement = anchorNode.getTopLevelElementOrThrow();
+        
+        // If the line has content, wrap it
+        if (topLevelElement.getTextContent()) {
+          const wrappingNode = newNodeFn();
+          wrappingNode.append(...topLevelElement.getChildren());
+          topLevelElement.replace(wrappingNode);
+        } else {
+          // If empty line, just insert new block
+          Fr([newNodeFn()]);
+        }
+        return
+      }
+
+      selectedNodes = selection.extract();
+      selectedParagraphs = selectedNodes.map((node) => Fi(node) ? node : Qn(node) && node.getParent() && Fi(node.getParent()) ? node.getParent() : null).filter(Boolean);
 
       ms(null);
       if (selectedParagraphs.length === 0) return
@@ -6312,6 +6354,18 @@ class Contents {
 
       // Remove original nodes
       nodesToDelete.forEach((node) => node.remove());
+    });
+  }
+
+  removeFormattingFromSelectedLines() {
+    this.editor.update(() => {
+      const selection = Nr();
+      if (!cr(selection)) return
+
+      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow();
+      const paragraph = Pi();
+      paragraph.append(...topLevelElement.getChildren());
+      topLevelElement.replace(paragraph);
     });
   }
 
@@ -7293,6 +7347,7 @@ const NOTHING_FOUND_DEFAULT_MESSAGE = "Nothing found";
 class LexicalPromptElement extends HTMLElement {
   constructor() {
     super();
+    this.keyListeners = [];
   }
 
   connectedCallback() {
@@ -7388,14 +7443,11 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   #registerKeyListeners() {
-    this.keyListeners = [];
-
     // We can't use a regular keydown for Enter as Lexical handles it first
     this.keyListeners.push(this.#editor.registerCommand(Ee$1, this.#handleSelectedOption.bind(this), Ki));
     this.keyListeners.push(this.#editor.registerCommand(Pe$1, this.#handleSelectedOption.bind(this), Ki));
 
     if (this.#doesSpaceSelect) {
-      console.debug("REGISTED!");
       this.keyListeners.push(this.#editor.registerCommand(Me$1, this.#handleSelectedOption.bind(this), Ki));
     }
   }
@@ -7454,10 +7506,15 @@ class LexicalPromptElement extends HTMLElement {
     this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions);
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover);
 
-    this.keyListeners.forEach((unregister) => unregister());
+    this.#unregisterKeyListeners();
 
     await nextFrame();
     this.#addTriggerListener();
+  }
+
+  #unregisterKeyListeners() {
+    this.keyListeners.forEach((unregister) => unregister());
+    this.keyListeners = [];
   }
 
   #filterOptions = async () => {
