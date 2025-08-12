@@ -5254,7 +5254,7 @@ function bytesToHumanSize(bytes) {
 
 const VISUALLY_RELEVANT_ELEMENTS_SELECTOR = [
   "img", "video", "audio", "iframe", "embed", "object", "picture", "source", "canvas", "svg", "math",
-  "form", "input", "textarea", "select", "button"
+  "form", "input", "textarea", "select", "button", "pre", "blockquote"
 ].join(",");
 
 const ALLOWED_HTML_TAGS = [ "a", "action-text-attachment", "b", "blockquote", "br", "code", "em",
