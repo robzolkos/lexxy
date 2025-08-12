@@ -257,7 +257,7 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #handleSelectedOption(event) {
-    event.preventDefault()
+    if (event.key !== " ") event.preventDefault()
     event.stopPropagation()
     this.#optionWasSelected()
     return true
