@@ -48,11 +48,26 @@ class ToolbarTest < ApplicationSystemTestCase
   end
 
 
+  test "code" do
+    find_editor.select("everyone")
+
+    click_on "Code"
+    assert_equal_html %{ <pre data-language="javascript" data-highlight-language="javascript">Hello everyone</pre> }, find_editor.value
+
+    find_editor.select("everyone")
+    click_on "Code"
+    assert_equal_html "<p>Hello everyone</p>", find_editor.value
+  end
+
   test "quote" do
     find_editor.select("everyone")
 
     click_on "Quote"
     assert_equal_html "<blockquote>Hello everyone</blockquote>", find_editor.value
+
+    find_editor.select("everyone")
+    click_on "Quote"
+    assert_equal_html "<p>Hello everyone</p>", find_editor.value
   end
 
   test "links" do

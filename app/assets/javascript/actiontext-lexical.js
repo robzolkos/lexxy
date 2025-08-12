@@ -5770,11 +5770,11 @@ class CommandDispatcher {
   }
 
   dispatchInsertQuoteBlock() {
-    this.contents.insertNodeWrappingAllSelectedLines(() => xt$2());
+    this.contents.toggleNodeWrappingAllSelectedLines((node) => wt$1(node), () => xt$2());
   }
 
   dispatchInsertCodeBlock() {
-    this.contents.insertNodeWrappingAllSelectedLines(() => new K$1());
+    this.contents.toggleNodeWrappingAllSelectedLines((node) => I$1(node), () => new K$1());
   }
 
   dispatchRotateHeadingFormat() {
@@ -6269,19 +6269,49 @@ class Contents {
     });
   }
 
+  toggleNodeWrappingAllSelectedLines(isFormatAppliedFn, newNodeFn) {
+    this.editor.update(() => {
+      const selection = Nr();
+      if (!cr(selection)) return
+
+      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow();
+
+      // Check if format is already applied
+      if (isFormatAppliedFn(topLevelElement)) {
+        this.removeFormattingFromSelectedLines();
+      } else {
+        this.insertNodeWrappingAllSelectedLines(newNodeFn);
+      }
+    });
+  }
+
   insertNodeWrappingAllSelectedLines(newNodeFn) {
     this.editor.update(() => {
       const selection = Nr();
       if (!cr(selection)) return
 
-      // If no selection, insert new block
+      let selectedNodes;
+      let selectedParagraphs;
+
+      // If no selection (collapsed cursor), treat the current line as selected
       if (selection.isCollapsed()) {
-        Fr([newNodeFn()]);
+        const anchorNode = selection.anchor.getNode();
+        const topLevelElement = anchorNode.getTopLevelElementOrThrow();
+        
+        // If the line has content, wrap it
+        if (topLevelElement.getTextContent()) {
+          const wrappingNode = newNodeFn();
+          wrappingNode.append(...topLevelElement.getChildren());
+          topLevelElement.replace(wrappingNode);
+        } else {
+          // If empty line, just insert new block
+          Fr([newNodeFn()]);
+        }
         return
       }
 
-      const selectedNodes = selection.extract();
-      const selectedParagraphs = selectedNodes.map((node) => Fi(node) ? node : Qn(node) && node.getParent() && Fi(node.getParent()) ? node.getParent() : null).filter(Boolean);
+      selectedNodes = selection.extract();
+      selectedParagraphs = selectedNodes.map((node) => Fi(node) ? node : Qn(node) && node.getParent() && Fi(node.getParent()) ? node.getParent() : null).filter(Boolean);
 
       ms(null);
       if (selectedParagraphs.length === 0) return

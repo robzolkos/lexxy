@@ -8,7 +8,7 @@ import {
 
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list"
 import { $createHeadingNode, $createQuoteNode, $isHeadingNode, $isQuoteNode } from "@lexical/rich-text"
-import { CodeNode } from "@lexical/code"
+import { CodeNode, $isCodeNode } from "@lexical/code"
 import { $toggleLink } from "@lexical/link"
 import { createElement } from "../helpers/html_helper"
 
@@ -70,11 +70,11 @@ export class CommandDispatcher {
   }
 
   dispatchInsertQuoteBlock() {
-    this.contents.insertNodeWrappingAllSelectedLines(() => $createQuoteNode())
+    this.contents.toggleNodeWrappingAllSelectedLines((node) => $isQuoteNode(node), () => $createQuoteNode())
   }
 
   dispatchInsertCodeBlock() {
-    this.contents.insertNodeWrappingAllSelectedLines(() => new CodeNode())
+    this.contents.toggleNodeWrappingAllSelectedLines((node) => $isCodeNode(node), () => new CodeNode())
   }
 
   dispatchRotateHeadingFormat() {

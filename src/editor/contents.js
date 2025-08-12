@@ -44,19 +44,49 @@ export default class Contents {
     })
   }
 
+  toggleNodeWrappingAllSelectedLines(isFormatAppliedFn, newNodeFn) {
+    this.editor.update(() => {
+      const selection = $getSelection()
+      if (!$isRangeSelection(selection)) return
+
+      const topLevelElement = selection.anchor.getNode().getTopLevelElementOrThrow()
+
+      // Check if format is already applied
+      if (isFormatAppliedFn(topLevelElement)) {
+        this.removeFormattingFromSelectedLines()
+      } else {
+        this.insertNodeWrappingAllSelectedLines(newNodeFn)
+      }
+    })
+  }
+
   insertNodeWrappingAllSelectedLines(newNodeFn) {
     this.editor.update(() => {
       const selection = $getSelection()
       if (!$isRangeSelection(selection)) return
 
-      // If no selection, insert new block
+      let selectedNodes
+      let selectedParagraphs
+
+      // If no selection (collapsed cursor), treat the current line as selected
       if (selection.isCollapsed()) {
-        $insertNodes([newNodeFn()])
+        const anchorNode = selection.anchor.getNode()
+        const topLevelElement = anchorNode.getTopLevelElementOrThrow()
+        
+        // If the line has content, wrap it
+        if (topLevelElement.getTextContent()) {
+          const wrappingNode = newNodeFn()
+          wrappingNode.append(...topLevelElement.getChildren())
+          topLevelElement.replace(wrappingNode)
+        } else {
+          // If empty line, just insert new block
+          $insertNodes([newNodeFn()])
+        }
         return
       }
 
-      const selectedNodes = selection.extract()
-      const selectedParagraphs = selectedNodes.map((node) => $isParagraphNode(node) ? node : $isTextNode(node) && node.getParent() && $isParagraphNode(node.getParent()) ? node.getParent() : null).filter(Boolean)
+      selectedNodes = selection.extract()
+      selectedParagraphs = selectedNodes.map((node) => $isParagraphNode(node) ? node : $isTextNode(node) && node.getParent() && $isParagraphNode(node.getParent()) ? node.getParent() : null).filter(Boolean)
 
       $setSelection(null)
       if (selectedParagraphs.length === 0) return
