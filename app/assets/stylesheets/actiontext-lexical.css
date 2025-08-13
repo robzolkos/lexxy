@@ -72,6 +72,10 @@ lexical-toolbar {
       background-color: var(--color-selected);
     }
   }
+
+  button[aria-pressed="true"] {
+    background-color: gray;
+  }
 }
 
 .lexical-prompt-menu {
