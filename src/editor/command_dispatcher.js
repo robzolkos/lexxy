@@ -74,7 +74,7 @@ export class CommandDispatcher {
   }
 
   dispatchInsertCodeBlock() {
-    this.contents.toggleNodeWrappingAllSelectedLines((node) => $isCodeNode(node), () => new CodeNode())
+    this.contents.toggleNodeWrappingAllSelectedLines((node) => $isCodeNode(node), () => new CodeNode("plain"))
   }
 
   dispatchRotateHeadingFormat() {
