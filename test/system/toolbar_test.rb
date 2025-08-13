@@ -47,13 +47,23 @@ class ToolbarTest < ApplicationSystemTestCase
     assert_equal_html "<ol><li>Hello everyone</li></ol>", find_editor.value
   end
 
-  test "code" do
+  test "toggle code for selected words" do
     find_editor.select("everyone")
 
     click_on "Code"
-    assert_equal_html %( <pre data-language="plain" data-highlight-language="plain">Hello everyone</pre> ), find_editor.value
+    assert_equal_html %( <p>Hello <code>everyone</code></p> ), find_editor.value
 
     find_editor.select("everyone")
+    click_on "Code"
+    assert_equal_html "<p>Hello everyone</p>", find_editor.value
+  end
+
+  test "toggle code for block" do
+    find_editor.click
+
+    click_on "Code"
+    assert_equal_html %( <pre data-language=\"plain\" data-highlight-language=\"plain\">Hello everyone</pre> ), find_editor.value
+
     click_on "Code"
     assert_equal_html "<p>Hello everyone</p>", find_editor.value
   end
