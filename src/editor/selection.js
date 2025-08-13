@@ -103,6 +103,13 @@ export default class Selection {
     })
   }
 
+  get hasSelectedWords() {
+    const selection = $getSelection()
+    if (!$isRangeSelection(selection)) return
+
+    return !selection.isCollapsed() && selection.anchor.getNode().getTopLevelElement() === selection.focus.getNode().getTopLevelElement()
+  }
+
   #processSelectionChangeCommands() {
     this.editor.registerCommand(KEY_ARROW_LEFT_COMMAND, this.#selectPreviousNode.bind(this), COMMAND_PRIORITY_LOW)
     this.editor.registerCommand(KEY_ARROW_UP_COMMAND, this.#selectPreviousNode.bind(this), COMMAND_PRIORITY_LOW)

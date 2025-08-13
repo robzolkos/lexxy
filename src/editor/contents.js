@@ -72,7 +72,7 @@ export default class Contents {
       if (selection.isCollapsed()) {
         const anchorNode = selection.anchor.getNode()
         const topLevelElement = anchorNode.getTopLevelElementOrThrow()
-        
+
         // If the line has content, wrap it
         if (topLevelElement.getTextContent()) {
           const wrappingNode = newNodeFn()
@@ -150,6 +150,22 @@ export default class Contents {
     this.editor.read(() => {
       const selection = $getSelection()
       result = $isRangeSelection(selection) && !selection.isCollapsed()
+    })
+
+    return result
+  }
+
+  hasSelectedWords() {
+    let result = false
+
+    this.editor.update(() => {
+      const selection = $getSelection()
+      if (!$isRangeSelection(selection)) return
+
+      // Check if we have selected text within a line (not entire lines)
+      result = !selection.isCollapsed() &&
+        selection.anchor.getNode().getTopLevelElement() ===
+        selection.focus.getNode().getTopLevelElement()
     })
 
     return result

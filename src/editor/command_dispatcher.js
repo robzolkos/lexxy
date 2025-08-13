@@ -74,7 +74,13 @@ export class CommandDispatcher {
   }
 
   dispatchInsertCodeBlock() {
-    this.contents.toggleNodeWrappingAllSelectedLines((node) => $isCodeNode(node), () => new CodeNode("plain"))
+    this.editor.update(() => {
+      if (this.selection.hasSelectedWords) {
+        this.editor.dispatchCommand(FORMAT_TEXT_COMMAND, "code")
+      } else {
+        this.contents.toggleNodeWrappingAllSelectedLines((node) => $isCodeNode(node), () => new CodeNode("plain"))
+      }
+    })
   }
 
   dispatchRotateHeadingFormat() {

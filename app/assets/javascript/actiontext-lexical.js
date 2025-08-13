@@ -5774,7 +5774,13 @@ class CommandDispatcher {
   }
 
   dispatchInsertCodeBlock() {
-    this.contents.toggleNodeWrappingAllSelectedLines((node) => I$1(node), () => new K$1("plain"));
+    this.editor.update(() => {
+      if (this.selection.hasSelectedWords) {
+        this.editor.dispatchCommand(me, "code");
+      } else {
+        this.contents.toggleNodeWrappingAllSelectedLines((node) => I$1(node), () => new K$1("plain"));
+      }
+    });
   }
 
   dispatchRotateHeadingFormat() {
@@ -6018,6 +6024,13 @@ class Selection {
     this.editor.update(() => {
       ps().selectEnd();
     });
+  }
+
+  get hasSelectedWords() {
+    const selection = Nr();
+    if (!cr(selection)) return
+
+    return !selection.isCollapsed() && selection.anchor.getNode().getTopLevelElement() === selection.focus.getNode().getTopLevelElement()
   }
 
   #processSelectionChangeCommands() {
@@ -6297,7 +6310,7 @@ class Contents {
       if (selection.isCollapsed()) {
         const anchorNode = selection.anchor.getNode();
         const topLevelElement = anchorNode.getTopLevelElementOrThrow();
-        
+
         // If the line has content, wrap it
         if (topLevelElement.getTextContent()) {
           const wrappingNode = newNodeFn();
@@ -6375,6 +6388,22 @@ class Contents {
     this.editor.read(() => {
       const selection = Nr();
       result = cr(selection) && !selection.isCollapsed();
+    });
+
+    return result
+  }
+
+  hasSelectedWords() {
+    let result = false;
+
+    this.editor.update(() => {
+      const selection = Nr();
+      if (!cr(selection)) return
+
+      // Check if we have selected text within a line (not entire lines)
+      result = !selection.isCollapsed() &&
+        selection.anchor.getNode().getTopLevelElement() ===
+        selection.focus.getNode().getTopLevelElement();
     });
 
     return result
@@ -7782,10 +7811,10 @@ class CodeLanguagePicker extends HTMLElement {
     const relativeLeft = codeRightEdge - pickerWidth;
 
     const codeLeftEdge = codeRect.left - editorRect.left;
-    const finalLeft = Math.max(codeLeftEdge, relativeLeft);
+    const left = Math.max(codeLeftEdge, relativeLeft);
 
     this.languagePickerElement.style.top = `${relativeTop}px`;
-    this.languagePickerElement.style.left = `${finalLeft}px`;
+    this.languagePickerElement.style.left = `${left}px`;
   }
 
   #showLanguagePicker() {
