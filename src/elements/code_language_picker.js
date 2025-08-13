@@ -18,7 +18,7 @@ export default class CodeLanguagePicker extends HTMLElement {
       this.#updateCodeBlockLanguage(this.languagePickerElement.value)
     })
 
-    this.languagePickerElement.style.position = "fixed"
+    this.languagePickerElement.style.position = "absolute"
     this.editorElement.appendChild(this.languagePickerElement)
   }
 
@@ -96,6 +96,7 @@ export default class CodeLanguagePicker extends HTMLElement {
     const language = codeNode.getLanguage()
 
     this.#updateLanguagePickerWith(language)
+    this.#showLanguagePicker()
     this.#positionLanguagePicker(codeNode)
   }
 
@@ -108,16 +109,21 @@ export default class CodeLanguagePicker extends HTMLElement {
 
   #positionLanguagePicker(codeNode) {
     const codeElement = this.editor.getElementByKey(codeNode.getKey())
-    if (!codeElement) {
-      this.#hideLanguagePicker()
-      return
-    }
+    if (!codeElement) return
 
-    const rect = codeElement.getBoundingClientRect()
+    const codeRect = codeElement.getBoundingClientRect()
+    const editorRect = this.editorElement.getBoundingClientRect()
+    const pickerWidth = this.languagePickerElement.offsetWidth
 
-    this.#showLanguagePicker()
-    this.languagePickerElement.style.top = `${rect.top}px`
-    this.languagePickerElement.style.left = `${rect.right - this.languagePickerElement.offsetWidth}px`
+    const relativeTop = codeRect.top - editorRect.top
+    const codeRightEdge = codeRect.right - editorRect.left
+    const relativeLeft = codeRightEdge - pickerWidth
+
+    const codeLeftEdge = codeRect.left - editorRect.left
+    const finalLeft = Math.max(codeLeftEdge, relativeLeft)
+
+    this.languagePickerElement.style.top = `${relativeTop}px`
+    this.languagePickerElement.style.left = `${finalLeft}px`
   }
 
   #showLanguagePicker() {
