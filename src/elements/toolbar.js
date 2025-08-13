@@ -8,6 +8,7 @@ import { $isListNode, $isListItemNode } from "@lexical/list"
 import { $isQuoteNode, $isHeadingNode } from "@lexical/rich-text"
 import { $isCodeNode, $isCodeHighlightNode } from "@lexical/code"
 import { $isLinkNode } from "@lexical/link"
+import { getListType } from "../helpers/lexical_helper";
 
 export default class LexicalToolbarElement extends HTMLElement {
   setEditor(editorElement) {
@@ -106,7 +107,7 @@ export default class LexicalToolbarElement extends HTMLElement {
     const isItalic = selection.hasFormat("italic")
     const isInCode = $isCodeNode(topLevelElement) || selection.hasFormat("code")
     const isInList = this.#isInList(anchorNode)
-    const listType = this.#getListType(anchorNode)
+    const listType = getListType(anchorNode)
     const isInQuote = $isQuoteNode(topLevelElement)
     const isInHeading = $isHeadingNode(topLevelElement)
     const isInLink = this.#isInLink(anchorNode)
@@ -141,17 +142,6 @@ export default class LexicalToolbarElement extends HTMLElement {
       current = current.getParent()
     }
     return false
-  }
-
-  #getListType(node) {
-    let current = node
-    while (current) {
-      if ($isListNode(current)) {
-        return current.getListType()
-      }
-      current = current.getParent()
-    }
-    return null
   }
 
   #isInLink(node) {

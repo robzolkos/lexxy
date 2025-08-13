@@ -11,6 +11,7 @@ import { $createHeadingNode, $createQuoteNode, $isHeadingNode, $isQuoteNode } fr
 import { CodeNode, $isCodeNode } from "@lexical/code"
 import { $toggleLink } from "@lexical/link"
 import { createElement } from "../helpers/html_helper"
+import { getListType } from "../helpers/lexical_helper";
 
 const COMMANDS = [
   "bold",
@@ -62,11 +63,25 @@ export class CommandDispatcher {
   }
 
   dispatchInsertUnorderedList() {
-    this.editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)
+    const selection = $getSelection()
+    const anchorNode = selection.anchor.getNode()
+
+    if (this.selection.isInsideList && anchorNode && getListType(anchorNode) === "bullet") {
+      this.contents.unwrapCurrentListItem()
+    } else {
+      this.editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)
+    }
   }
 
   dispatchInsertOrderedList() {
-    this.editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)
+    const selection = $getSelection()
+    const anchorNode = selection.anchor.getNode()
+
+    if (this.selection.isInsideList && anchorNode && getListType(anchorNode) === "number") {
+      this.contents.unwrapCurrentListItem()
+    } else {
+      this.editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)
+    }
   }
 
   dispatchInsertQuoteBlock() {

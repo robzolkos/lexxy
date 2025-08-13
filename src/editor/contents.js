@@ -7,6 +7,8 @@ import { $generateNodesFromDOM } from "@lexical/html"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { $createLinkNode } from "@lexical/link"
 import { parseHtml } from "../helpers/html_helper"
+import { $isListItemNode, $isListNode } from "@lexical/list"
+import { getNearestListItemNode } from "../helpers/lexical_helper"
 
 export default class Contents {
   constructor(editorElement) {
@@ -80,7 +82,7 @@ export default class Contents {
           topLevelElement.replace(wrappingNode)
         } else {
           // If empty line, just insert new block
-          $insertNodes([newNodeFn()])
+          $insertNodes([ newNodeFn() ])
         }
         return
       }
@@ -171,6 +173,50 @@ export default class Contents {
     return result
   }
 
+  unwrapCurrentListItem() {
+    console.debug("CALLED!");
+    this.editor.update(() => {
+      const selection = $getSelection()
+      if (!$isRangeSelection(selection)) return
+
+      const anchorNode = selection.anchor.getNode()
+      const listItem = getNearestListItemNode(anchorNode)
+      if (!listItem) return
+
+      const parentList = listItem.getParent()
+      if (!parentList || !$isListNode(parentList)) return
+
+      // Create a paragraph to replace the list item
+      const paragraph = $createParagraphNode()
+
+      // Collect any sublists to reinsert after
+      const sublists = []
+      listItem.getChildren().forEach(function (child) {
+        if ($isListNode(child)) {
+          sublists.push(child)
+        } else {
+          paragraph.append(child)
+        }
+      })
+
+      // Insert the paragraph and then the sublists
+      listItem.insertAfter(paragraph)
+      sublists.forEach(function (sub) {
+        paragraph.insertAfter(sub)
+      })
+
+      // Remove the original list item
+      listItem.remove()
+
+      // Remove the parent list if now empty
+      if ($isListNode(parentList) && parentList.getChildrenSize() === 0) {
+        parentList.remove()
+      }
+
+      paragraph.selectEnd()
+    })
+  }
+
   createLinkWithSelectedText(url) {
     if (!this.hasSelectedText()) return
 
@@ -235,7 +281,7 @@ export default class Contents {
   }
 
   replaceTextBackUntil(stringToReplace, replacementNodes) {
-    replacementNodes = Array.isArray(replacementNodes) ? replacementNodes : [replacementNodes]
+    replacementNodes = Array.isArray(replacementNodes) ? replacementNodes : [ replacementNodes ]
 
     this.editor.update(() => {
       const selection = $getSelection()
@@ -301,7 +347,7 @@ export default class Contents {
       } else if (currentParagraph && $isElementNode(currentParagraph)) {
         currentParagraph.insertAfter(uploadedImageNode)
       } else {
-        $insertNodes([uploadedImageNode])
+        $insertNodes([ uploadedImageNode ])
       }
     }, { tag: HISTORY_MERGE_TAG })
   }
@@ -348,4 +394,5 @@ export default class Contents {
       }
     }
   }
+
 }

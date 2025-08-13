@@ -3725,6 +3725,26 @@ function D$1(t,...e){const n=new URL("https://lexical.dev/docs/error"),r=new URL
 
 const h$2=new Set(["http:","https:","mailto:","sms:","tel:"]);let g$1 = class g extends fi{static getType(){return "link"}static clone(t){return new g(t.__url,{rel:t.__rel,target:t.__target,title:t.__title},t.__key)}constructor(t="",e={},r){super(r);const{target:n=null,rel:i=null,title:s=null}=e;this.__url=t,this.__target=n,this.__rel=i,this.__title=s;}createDOM(e){const r=document.createElement("a");return this.updateLinkDOM(null,r,e),rt$2(r,e.theme.link),r}updateLinkDOM(t,r,n){if(uo(r)){t&&t.__url===this.__url||(r.href=this.sanitizeUrl(this.__url));for(const e of ["target","rel","title"]){const n=`__${e}`,i=this[n];t&&t[n]===i||(i?r[e]=i:r.removeAttribute(e));}}}updateDOM(t,e,r){return this.updateLinkDOM(t,e,r),false}static importDOM(){return {a:t=>({conversion:f,priority:1})}}static importJSON(t){return d().updateFromJSON(t)}updateFromJSON(t){return super.updateFromJSON(t).setURL(t.url).setRel(t.rel||null).setTarget(t.target||null).setTitle(t.title||null)}sanitizeUrl(t){t=S$2(t);try{const e=new URL(S$2(t));if(!h$2.has(e.protocol))return "about:blank"}catch(e){return t}return t}exportJSON(){return {...super.exportJSON(),rel:this.getRel(),target:this.getTarget(),title:this.getTitle(),url:this.getURL()}}getURL(){return this.getLatest().__url}setURL(t){const e=this.getWritable();return e.__url=t,e}getTarget(){return this.getLatest().__target}setTarget(t){const e=this.getWritable();return e.__target=t,e}getRel(){return this.getLatest().__rel}setRel(t){const e=this.getWritable();return e.__rel=t,e}getTitle(){return this.getLatest().__title}setTitle(t){const e=this.getWritable();return e.__title=t,e}insertNewAfter(t,e=true){const r=d(this.__url,{rel:this.__rel,target:this.__target,title:this.__title});return this.insertAfter(r,e),r}canInsertTextBefore(){return  false}canInsertTextAfter(){return  false}canBeEmpty(){return  false}isInline(){return  true}extractWithChild(t,e,r){if(!cr(e))return  false;const n=e.anchor.getNode(),i=e.focus.getNode();return this.isParentOf(n)&&this.isParentOf(i)&&e.getTextContent().length>0}isEmailURI(){return this.__url.startsWith("mailto:")}isWebSiteURI(){return this.__url.startsWith("https://")||this.__url.startsWith("http://")}};function f(t){let r=null;if(uo(t)){const e=t.textContent;(null!==e&&""!==e||t.children.length>0)&&(r=d(t.getAttribute("href")||"",{rel:t.getAttribute("rel"),target:t.getAttribute("target"),title:t.getAttribute("title")}));}return {node:r}}function d(t="",e){return no(new g$1(t,e))}function p(t){return t instanceof g$1}let m$2 = class m extends g$1{constructor(t="",e={},r){super(t,e,r),this.__isUnlinked=void 0!==e.isUnlinked&&null!==e.isUnlinked&&e.isUnlinked;}static getType(){return "autolink"}static clone(t){return new m(t.__url,{isUnlinked:t.__isUnlinked,rel:t.__rel,target:t.__target,title:t.__title},t.__key)}getIsUnlinked(){return this.__isUnlinked}setIsUnlinked(t){const e=this.getWritable();return e.__isUnlinked=t,e}createDOM(t){return this.__isUnlinked?document.createElement("span"):super.createDOM(t)}updateDOM(t,e,r){return super.updateDOM(t,e,r)||t.__isUnlinked!==this.__isUnlinked}static importJSON(t){return U$1().updateFromJSON(t)}updateFromJSON(t){return super.updateFromJSON(t).setIsUnlinked(t.isUnlinked||false)}static importDOM(){return null}exportJSON(){return {...super.exportJSON(),isUnlinked:this.__isUnlinked}}insertNewAfter(t,e=true){const r=this.getParentOrThrow().insertNewAfter(t,e);if(di(r)){const t=U$1(this.__url,{isUnlinked:this.__isUnlinked,rel:this.__rel,target:this.__target,title:this.__title});return r.append(t),t}return null}};function U$1(t="",e){return no(new m$2(t,e))}function O$1(t){return t instanceof m$2}function N$1(t,e){if("element"===t.type){const r=t.getNode();di(r)||function(t,...e){const r=new URL("https://lexical.dev/docs/error"),n=new URLSearchParams;n.append("code",t);for(const t of e)n.append("v",t);throw r.search=n.toString(),Error(`Minified Lexical error #${t}; visit ${r.toString()} for the full message or use the non-minified dev environment for full errors and additional helpful warnings.`)}(252);return r.getChildren()[t.offset+e]||null}return null}function v$2(t,e={}){const{target:n,title:i}=e,l=void 0===e.rel?"noreferrer":e.rel,h=Nr();if(null===h||!cr(h)&&!ur(h))return;if(ur(h)){const e=h.getNodes();if(0===e.length)return;return void e.forEach((e=>{if(null===t){const t=wt$2(e,(t=>!O$1(t)&&p(t)));t&&(t.insertBefore(e),0===t.getChildren().length&&t.remove());}else {const i=wt$2(e,(t=>!O$1(t)&&p(t)));if(i)i.setURL(t),void 0!==n&&i.setTarget(n),void 0!==l&&i.setRel(l);else {const r=d(t,{rel:l,target:n});e.insertBefore(r),r.append(e);}}}))}const g=h.extract();if(null===t)return void g.forEach((t=>{const e=wt$2(t,(t=>!O$1(t)&&p(t)));if(e){const t=e.getChildren();for(let r=0;r<t.length;r++)e.insertBefore(t[r]);e.remove();}}));const f=new Set,m=e=>{f.has(e.getKey())||(f.add(e.getKey()),e.setURL(t),void 0!==n&&e.setTarget(n),void 0!==l&&e.setRel(l),void 0!==i&&e.setTitle(i));};if(1===g.length){const t=x$1(g[0],p);if(null!==t)return m(t)}!function(t){const e=Nr();if(!cr(e))return t();const r=vt$4(e),n=r.isBackward(),i=N$1(r.anchor,n?-1:0),l=N$1(r.focus,n?0:-1);t();if(i||l){const t=Nr();if(cr(t)){const e=t.clone();if(i){const t=i.getParent();t&&e.anchor.set(t.getKey(),i.getIndexWithinParent()+(n?1:0),"element");}if(l){const t=l.getParent();t&&e.focus.set(t.getKey(),l.getIndexWithinParent()+(n?0:1),"element");}ms(vt$4(e));}}}((()=>{let e=null;for(const r of g){if(!r.isAttached())continue;const s=x$1(r,p);if(s){m(s);continue}if(di(r)){if(!r.isInline())continue;if(p(r)){if(!(O$1(r)||null!==e&&e.getParentOrThrow().isParentOf(r))){m(r),e=r;continue}for(const t of r.getChildren())r.insertBefore(t);r.remove();continue}}const u=r.getPreviousSibling();p(u)&&u.is(e)?u.append(r):(e=d(t,{rel:l,target:n,title:i}),r.insertAfter(e),e.append(r));}}));}function x$1(t,e){let r=t;for(;null!==r&&null!==r.getParent()&&!e(r);)r=r.getParentOrThrow();return e(r)?r:null}const L$1=/^\+?[0-9\s()-]{5,}$/;function S$2(t){return t.match(/^[a-z][a-z0-9+.-]*:/i)||t.match(/^[/#.]/)?t:t.includes("@")?`mailto:${t}`:L$1.test(t)?`tel:${t}`:`https://${t}`}
 
+function getNearestListItemNode(node) {
+  let current = node;
+  while (current !== null) {
+    if (Z$2(current)) return current
+    current = current.getParent();
+  }
+  return null
+}
+
+function   getListType(node) {
+  let current = node;
+  while (current) {
+    if (ot$2(current)) {
+      return current.getListType()
+    }
+    current = current.getParent();
+  }
+  return null
+}
+
 class LexicalToolbarElement extends HTMLElement {
   setEditor(editorElement) {
     this.editorElement = editorElement;
@@ -3822,7 +3842,7 @@ class LexicalToolbarElement extends HTMLElement {
     const isItalic = selection.hasFormat("italic");
     const isInCode = I$1(topLevelElement) || selection.hasFormat("code");
     const isInList = this.#isInList(anchorNode);
-    const listType = this.#getListType(anchorNode);
+    const listType = getListType(anchorNode);
     const isInQuote = wt$1(topLevelElement);
     const isInHeading = At(topLevelElement);
     const isInLink = this.#isInLink(anchorNode);
@@ -3857,17 +3877,6 @@ class LexicalToolbarElement extends HTMLElement {
       current = current.getParent();
     }
     return false
-  }
-
-  #getListType(node) {
-    let current = node;
-    while (current) {
-      if (ot$2(current)) {
-        return current.getListType()
-      }
-      current = current.getParent();
-    }
-    return null
   }
 
   #isInLink(node) {
@@ -5848,11 +5857,25 @@ class CommandDispatcher {
   }
 
   dispatchInsertUnorderedList() {
-    this.editor.dispatchCommand(ft$2, undefined);
+    const selection = Nr();
+    const anchorNode = selection.anchor.getNode();
+
+    if (this.selection.isInsideList && anchorNode && getListType(anchorNode) === "bullet") {
+      this.contents.unwrapCurrentListItem();
+    } else {
+      this.editor.dispatchCommand(ft$2, undefined);
+    }
   }
 
   dispatchInsertOrderedList() {
-    this.editor.dispatchCommand(pt$3, undefined);
+    const selection = Nr();
+    const anchorNode = selection.anchor.getNode();
+
+    if (this.selection.isInsideList && anchorNode && getListType(anchorNode) === "number") {
+      this.contents.unwrapCurrentListItem();
+    } else {
+      this.editor.dispatchCommand(pt$3, undefined);
+    }
   }
 
   dispatchInsertQuoteBlock() {
@@ -6117,6 +6140,14 @@ class Selection {
     if (!cr(selection)) return
 
     return !selection.isCollapsed() && selection.anchor.getNode().getTopLevelElement() === selection.focus.getNode().getTopLevelElement()
+  }
+
+  get isInsideList() {
+    const selection = Nr();
+    if (!cr(selection)) return false
+
+    const anchorNode = selection.anchor.getNode();
+    return getNearestListItemNode(anchorNode) !== null
   }
 
   #processSelectionChangeCommands() {
@@ -6404,7 +6435,7 @@ class Contents {
           topLevelElement.replace(wrappingNode);
         } else {
           // If empty line, just insert new block
-          Fr([newNodeFn()]);
+          Fr([ newNodeFn() ]);
         }
         return
       }
@@ -6495,6 +6526,50 @@ class Contents {
     return result
   }
 
+  unwrapCurrentListItem() {
+    console.debug("CALLED!");
+    this.editor.update(() => {
+      const selection = Nr();
+      if (!cr(selection)) return
+
+      const anchorNode = selection.anchor.getNode();
+      const listItem = getNearestListItemNode(anchorNode);
+      if (!listItem) return
+
+      const parentList = listItem.getParent();
+      if (!parentList || !ot$2(parentList)) return
+
+      // Create a paragraph to replace the list item
+      const paragraph = Pi();
+
+      // Collect any sublists to reinsert after
+      const sublists = [];
+      listItem.getChildren().forEach(function (child) {
+        if (ot$2(child)) {
+          sublists.push(child);
+        } else {
+          paragraph.append(child);
+        }
+      });
+
+      // Insert the paragraph and then the sublists
+      listItem.insertAfter(paragraph);
+      sublists.forEach(function (sub) {
+        paragraph.insertAfter(sub);
+      });
+
+      // Remove the original list item
+      listItem.remove();
+
+      // Remove the parent list if now empty
+      if (ot$2(parentList) && parentList.getChildrenSize() === 0) {
+        parentList.remove();
+      }
+
+      paragraph.selectEnd();
+    });
+  }
+
   createLinkWithSelectedText(url) {
     if (!this.hasSelectedText()) return
 
@@ -6559,7 +6634,7 @@ class Contents {
   }
 
   replaceTextBackUntil(stringToReplace, replacementNodes) {
-    replacementNodes = Array.isArray(replacementNodes) ? replacementNodes : [replacementNodes];
+    replacementNodes = Array.isArray(replacementNodes) ? replacementNodes : [ replacementNodes ];
 
     this.editor.update(() => {
       const selection = Nr();
@@ -6625,7 +6700,7 @@ class Contents {
       } else if (currentParagraph && di(currentParagraph)) {
         currentParagraph.insertAfter(uploadedImageNode);
       } else {
-        Fr([uploadedImageNode]);
+        Fr([ uploadedImageNode ]);
       }
     }, { tag: Ti });
   }
@@ -6672,6 +6747,7 @@ class Contents {
       }
     }
   }
+
 }
 
 /**

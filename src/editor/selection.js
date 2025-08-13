@@ -5,6 +5,7 @@ import {
   KEY_BACKSPACE_COMMAND, DecoratorNode
 } from "lexical"
 import { nextFrame } from "../helpers/timing_helpers"
+import { getNearestListItemNode } from "../helpers/lexical_helper"
 
 export default class Selection {
   constructor(editorElement) {
@@ -108,6 +109,14 @@ export default class Selection {
     if (!$isRangeSelection(selection)) return
 
     return !selection.isCollapsed() && selection.anchor.getNode().getTopLevelElement() === selection.focus.getNode().getTopLevelElement()
+  }
+
+  get isInsideList() {
+    const selection = $getSelection()
+    if (!$isRangeSelection(selection)) return false
+
+    const anchorNode = selection.anchor.getNode()
+    return getNearestListItemNode(anchorNode) !== null
   }
 
   #processSelectionChangeCommands() {
