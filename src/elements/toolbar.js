@@ -5,7 +5,7 @@ import {
   $isTextNode
 } from "lexical"
 import { $isListNode, $isListItemNode } from "@lexical/list"
-import { $isQuoteNode } from "@lexical/rich-text"
+import { $isQuoteNode, $isHeadingNode } from "@lexical/rich-text"
 import { $isCodeNode, $isCodeHighlightNode } from "@lexical/code"
 
 export default class LexicalToolbarElement extends HTMLElement {
@@ -97,6 +97,8 @@ export default class LexicalToolbarElement extends HTMLElement {
     if (!$isRangeSelection(selection)) return
 
     const anchorNode = selection.anchor.getNode()
+    if (!anchorNode.getParent()) { return }
+
     const topLevelElement = anchorNode.getTopLevelElementOrThrow()
 
     const isBold = selection.hasFormat("bold")
@@ -105,6 +107,7 @@ export default class LexicalToolbarElement extends HTMLElement {
     const isInList = this.#isInList(anchorNode)
     const listType = this.#getListType(anchorNode)
     const isInQuote = $isQuoteNode(topLevelElement)
+    const isInHeading = $isHeadingNode(topLevelElement)
 
     this.#setButtonPressed("bold", isBold)
     this.#setButtonPressed("italic", isItalic)
@@ -112,6 +115,7 @@ export default class LexicalToolbarElement extends HTMLElement {
     this.#setButtonPressed("insertUnorderedList", isInList && listType === "bullet")
     this.#setButtonPressed("insertOrderedList", isInList && listType === "number")
     this.#setButtonPressed("insertQuoteBlock", isInQuote)
+    this.#setButtonPressed("rotateHeadingFormat", isInHeading)
   }
 
   #isSelectionInInlineCode(selection) {

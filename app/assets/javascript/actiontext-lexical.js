@@ -3804,6 +3804,8 @@ class LexicalToolbarElement extends HTMLElement {
     if (!cr(selection)) return
 
     const anchorNode = selection.anchor.getNode();
+    if (!anchorNode.getParent()) { return }
+
     const topLevelElement = anchorNode.getTopLevelElementOrThrow();
 
     const isBold = selection.hasFormat("bold");
@@ -3812,6 +3814,7 @@ class LexicalToolbarElement extends HTMLElement {
     const isInList = this.#isInList(anchorNode);
     const listType = this.#getListType(anchorNode);
     const isInQuote = wt$1(topLevelElement);
+    const isInHeading = At(topLevelElement);
 
     this.#setButtonPressed("bold", isBold);
     this.#setButtonPressed("italic", isItalic);
@@ -3819,6 +3822,7 @@ class LexicalToolbarElement extends HTMLElement {
     this.#setButtonPressed("insertUnorderedList", isInList && listType === "bullet");
     this.#setButtonPressed("insertOrderedList", isInList && listType === "number");
     this.#setButtonPressed("insertQuoteBlock", isInQuote);
+    this.#setButtonPressed("rotateHeadingFormat", isInHeading);
   }
 
   #isSelectionInInlineCode(selection) {
