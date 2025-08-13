@@ -23,7 +23,7 @@ export default class CodeLanguagePicker extends HTMLElement {
   }
 
   #createLanguagePicker() {
-    const selectElement = createElement("select", { hidden: true, className: "lexical-code-language-picker" })
+    const selectElement = createElement("select", { hidden: true, className: "lexical-code-language-picker", "aria-label": "Pick a language…", name: "lexical-code-language" })
 
     for (const [ value, label ] of Object.entries(this.#languages)) {
       const option = document.createElement("option")
