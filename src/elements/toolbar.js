@@ -1,3 +1,13 @@
+import {
+  $getSelection,
+  $isRangeSelection,
+  FORMAT_TEXT_COMMAND,
+  $isTextNode
+} from "lexical"
+import { $isListNode, $isListItemNode } from "@lexical/list"
+import { $isQuoteNode } from "@lexical/rich-text"
+import { $isCodeNode, $isCodeHighlightNode } from "@lexical/code"
+
 export default class LexicalToolbarElement extends HTMLElement {
   setEditor(editorElement) {
     this.editorElement = editorElement
@@ -5,6 +15,7 @@ export default class LexicalToolbarElement extends HTMLElement {
     this.#bindButtons()
     this.#bindHotkeys()
     this.#assignButtonTabindex()
+    this.#monitorSelectionChanges()
   }
 
   #bindButtons() {
@@ -71,6 +82,76 @@ export default class LexicalToolbarElement extends HTMLElement {
     buttons.forEach((button, index) => {
       button.setAttribute("tabindex", `${baseTabIndex + index + 1}`)
     })
+  }
+
+  #monitorSelectionChanges() {
+    this.editor.registerUpdateListener(() => {
+      this.editor.getEditorState().read(() => {
+        this.#updateButtonStates()
+      })
+    })
+  }
+
+  #updateButtonStates() {
+    const selection = $getSelection()
+    if (!$isRangeSelection(selection)) return
+
+    const anchorNode = selection.anchor.getNode()
+    const topLevelElement = anchorNode.getTopLevelElementOrThrow()
+
+    const isBold = selection.hasFormat("bold")
+    const isItalic = selection.hasFormat("italic")
+    const isInCode = $isCodeNode(topLevelElement) || selection.hasFormat("code")
+    const isInList = this.#isInList(anchorNode)
+    const listType = this.#getListType(anchorNode)
+    const isInQuote = $isQuoteNode(topLevelElement)
+
+    this.#setButtonPressed("bold", isBold)
+    this.#setButtonPressed("italic", isItalic)
+    this.#setButtonPressed("insertCodeBlock", isInCode)
+    this.#setButtonPressed("insertUnorderedList", isInList && listType === "bullet")
+    this.#setButtonPressed("insertOrderedList", isInList && listType === "number")
+    this.#setButtonPressed("insertQuoteBlock", isInQuote)
+  }
+
+  #isSelectionInInlineCode(selection) {
+    const nodes = selection.getNodes()
+    return nodes.some(node => {
+      if ($isCodeHighlightNode(node)) return true
+      // Check parent for text nodes inside code highlight
+      if ($isTextNode(node)) {
+        const parent = node.getParent()
+        if (parent && $isCodeHighlightNode(parent)) return true
+      }
+      return false
+    })
+  }
+
+  #isInList(node) {
+    let current = node
+    while (current) {
+      if ($isListNode(current) || $isListItemNode(current)) return true
+      current = current.getParent()
+    }
+    return false
+  }
+
+  #getListType(node) {
+    let current = node
+    while (current) {
+      if ($isListNode(current)) {
+        return current.getListType()
+      }
+      current = current.getParent()
+    }
+    return null
+  }
+
+  #setButtonPressed(command, isPressed) {
+    const button = this.querySelector(`[data-command="${command}"]`)
+    if (button) {
+      button.setAttribute("aria-pressed", isPressed.toString())
+    }
   }
 
   static get defaultTemplate() {
