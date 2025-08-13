@@ -36,19 +36,17 @@ export default class CodeLanguagePicker extends HTMLElement {
   }
 
   get #languages() {
-    // Start with the existing language map
     const languages = { ...CODE_LANGUAGE_FRIENDLY_NAME_MAP }
 
-    // Add Ruby if it's not already there
-    if (!languages.ruby) {
-      languages.ruby = "Ruby"
-    }
+    if (!languages.ruby) languages.ruby = "Ruby"
 
-    // Sort by friendly name (the values) and return as an object
     const sortedEntries = Object.entries(languages)
-      .sort(([, a], [, b]) => a.localeCompare(b))
+      .sort(([ , a ], [ , b ]) => a.localeCompare(b))
 
-    return Object.fromEntries(sortedEntries)
+    // Place the "plain" entry first, then the rest of language sorted alphabetically
+    const plainIndex = sortedEntries.findIndex(([ key ]) => key === "plain")
+    const plainEntry = sortedEntries.splice(plainIndex, 1)[0]
+    return Object.fromEntries([ plainEntry, ...sortedEntries ])
   }
 
   #updateCodeBlockLanguage(language) {
