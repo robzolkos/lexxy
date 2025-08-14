@@ -6979,7 +6979,6 @@ class CustomActionTextAttachmentNode extends gi {
   }
 
   static importJSON(serializedNode) {
-    console.debug("EIN?", serializedNode);
     return new CustomActionTextAttachmentNode({ ...serializedNode })
   }
 
@@ -6990,8 +6989,6 @@ class CustomActionTextAttachmentNode extends gi {
         if (!attachment.getAttribute("content")) {
           return null
         }
-
-        console.debug("IMPORT!");
 
         return {
           conversion: () => {
@@ -7020,8 +7017,6 @@ class CustomActionTextAttachmentNode extends gi {
 
   constructor({ sgid, contentType, innerHtml }, key) {
     super(key);
-
-    console.debug("CustomActionTextAttachmentNode constructor params:", { sgid, contentType, innerHtml }, key);
 
     this.sgid = sgid;
     this.contentType = contentType || "application/vnd.actiontext.unknown";
