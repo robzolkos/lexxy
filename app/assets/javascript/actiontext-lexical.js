@@ -6912,6 +6912,7 @@ class Clipboard {
 
     if (this.#isOnlyPlainTextPasted(clipboardData)) {
       this.#pastePlainText(clipboardData);
+      event.preventDefault();
       return true
     }
 
