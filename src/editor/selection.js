@@ -1,6 +1,6 @@
 import {
   $createNodeSelection, $isElementNode, $isRangeSelection, $getNodeByKey, $getSelection, $isNodeSelection,
-  $setSelection, $getRoot, $isTextNode, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, KEY_ARROW_LEFT_COMMAND,
+  $setSelection, $getRoot, $isTextNode, $isLineBreakNode, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, KEY_ARROW_LEFT_COMMAND,
   KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_UP_COMMAND, KEY_DELETE_COMMAND,
   KEY_BACKSPACE_COMMAND, DecoratorNode
 } from "lexical"
@@ -104,11 +104,31 @@ export default class Selection {
     })
   }
 
-  get hasSelectedWords() {
+  get hasSelectedWordsInSingleLine() {
     const selection = $getSelection()
-    if (!$isRangeSelection(selection)) return
+    if (!$isRangeSelection(selection)) return false
 
-    return !selection.isCollapsed() && selection.anchor.getNode().getTopLevelElement() === selection.focus.getNode().getTopLevelElement()
+    if (selection.isCollapsed()) return false
+
+    const anchorNode = selection.anchor.getNode()
+    const focusNode = selection.focus.getNode()
+
+    if (anchorNode.getTopLevelElement() !== focusNode.getTopLevelElement()) {
+      return false
+    }
+
+    const anchorElement = anchorNode.getTopLevelElement()
+    if (!anchorElement) return false
+
+    // Check if any of the nodes is a line break
+    const nodes = selection.getNodes()
+    for (const node of nodes) {
+      if ($isLineBreakNode(node)) {
+        return false
+      }
+    }
+
+    return true
   }
 
   get isInsideList() {

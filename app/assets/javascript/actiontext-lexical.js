@@ -5861,7 +5861,7 @@ class CommandDispatcher {
     const anchorNode = selection.anchor.getNode();
 
     if (this.selection.isInsideList && anchorNode && getListType(anchorNode) === "bullet") {
-      this.contents.unwrapCurrentListItem();
+      this.contents.unwrapSelectedListItems();
     } else {
       this.editor.dispatchCommand(ft$2, undefined);
     }
@@ -5872,7 +5872,7 @@ class CommandDispatcher {
     const anchorNode = selection.anchor.getNode();
 
     if (this.selection.isInsideList && anchorNode && getListType(anchorNode) === "number") {
-      this.contents.unwrapCurrentListItem();
+      this.contents.unwrapSelectedListItems();
     } else {
       this.editor.dispatchCommand(pt$3, undefined);
     }
@@ -5884,7 +5884,7 @@ class CommandDispatcher {
 
   dispatchInsertCodeBlock() {
     this.editor.update(() => {
-      if (this.selection.hasSelectedWords) {
+      if (this.selection.hasSelectedWordsInSingleLine) {
         this.editor.dispatchCommand(me, "code");
       } else {
         this.contents.toggleNodeWrappingAllSelectedLines((node) => I$1(node), () => new K$1("plain"));
@@ -6135,11 +6135,31 @@ class Selection {
     });
   }
 
-  get hasSelectedWords() {
+  get hasSelectedWordsInSingleLine() {
     const selection = Nr();
-    if (!cr(selection)) return
+    if (!cr(selection)) return false
 
-    return !selection.isCollapsed() && selection.anchor.getNode().getTopLevelElement() === selection.focus.getNode().getTopLevelElement()
+    if (selection.isCollapsed()) return false
+
+    const anchorNode = selection.anchor.getNode();
+    const focusNode = selection.focus.getNode();
+
+    if (anchorNode.getTopLevelElement() !== focusNode.getTopLevelElement()) {
+      return false
+    }
+
+    const anchorElement = anchorNode.getTopLevelElement();
+    if (!anchorElement) return false
+
+    // Check if any of the nodes is a line break
+    const nodes = selection.getNodes();
+    for (const node of nodes) {
+      if (Fn(node)) {
+        return false
+      }
+    }
+
+    return true
   }
 
   get isInsideList() {
@@ -6526,47 +6546,84 @@ class Contents {
     return result
   }
 
-  unwrapCurrentListItem() {
-    console.debug("CALLED!");
+  unwrapSelectedListItems() {
     this.editor.update(() => {
       const selection = Nr();
       if (!cr(selection)) return
 
-      const anchorNode = selection.anchor.getNode();
-      const listItem = getNearestListItemNode(anchorNode);
-      if (!listItem) return
+      // Get all unique list items in the selection
+      const nodes = selection.getNodes();
+      const listItems = new Set();
+      const parentLists = new Set();
 
-      const parentList = listItem.getParent();
-      if (!parentList || !ot$2(parentList)) return
-
-      // Create a paragraph to replace the list item
-      const paragraph = Pi();
-
-      // Collect any sublists to reinsert after
-      const sublists = [];
-      listItem.getChildren().forEach(function (child) {
-        if (ot$2(child)) {
-          sublists.push(child);
-        } else {
-          paragraph.append(child);
+      // Collect all list items that contain selected nodes
+      for (const node of nodes) {
+        const listItem = getNearestListItemNode(node);
+        if (listItem) {
+          listItems.add(listItem);
+          const parentList = listItem.getParent();
+          if (parentList && ot$2(parentList)) {
+            parentLists.add(parentList);
+          }
         }
-      });
-
-      // Insert the paragraph and then the sublists
-      listItem.insertAfter(paragraph);
-      sublists.forEach(function (sub) {
-        paragraph.insertAfter(sub);
-      });
-
-      // Remove the original list item
-      listItem.remove();
-
-      // Remove the parent list if now empty
-      if (ot$2(parentList) && parentList.getChildrenSize() === 0) {
-        parentList.remove();
       }
 
-      paragraph.selectEnd();
+      if (listItems.size === 0) return
+
+      // Convert list items to paragraphs
+      const newParagraphs = [];
+      for (const listItem of listItems) {
+        const parentList = listItem.getParent();
+        if (!parentList || !ot$2(parentList)) continue
+
+        // Create a paragraph to replace the list item
+        const paragraph = Pi();
+
+        // Collect any sublists to reinsert after
+        const sublists = [];
+        listItem.getChildren().forEach(function (child) {
+          if (ot$2(child)) {
+            sublists.push(child);
+          } else {
+            paragraph.append(child);
+          }
+        });
+
+        // Insert the paragraph and then the sublists
+        listItem.insertAfter(paragraph);
+        sublists.forEach(function (sub) {
+          paragraph.insertAfter(sub);
+        });
+
+        newParagraphs.push(paragraph);
+
+        // Remove the original list item
+        listItem.remove();
+      }
+
+      // Remove any parent lists that are now empty
+      for (const parentList of parentLists) {
+        if (ot$2(parentList) && parentList.getChildrenSize() === 0) {
+          parentList.remove();
+        }
+      }
+
+      // Select the range of new paragraphs
+      if (newParagraphs.length > 0) {
+        const firstParagraph = newParagraphs[0];
+        const lastParagraph = newParagraphs[newParagraphs.length - 1];
+
+        if (newParagraphs.length === 1) {
+          firstParagraph.selectEnd();
+        } else {
+          firstParagraph.selectStart();
+          const currentSelection = Nr();
+          if (currentSelection && cr(currentSelection)) {
+            currentSelection.anchor.set(firstParagraph.getKey(), 0, 'element');
+            currentSelection.focus.set(lastParagraph.getKey(), lastParagraph.getChildrenSize(), 'element');
+          }
+        }
+      }
     });
   }
 
