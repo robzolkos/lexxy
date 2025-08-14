@@ -297,7 +297,9 @@ export default class Selection {
   }
 
   #listenForNodeSelections() {
-    this.editor.getRootElement().addEventListener("lexical:node-selected", (event) => {
+    this.editor.getRootElement().addEventListener("lexical:node-selected", async (event) => {
+      await nextFrame() // If not, clipboard won't work on the selection
+
       const { key } = event.detail
       this.editor.update(() => {
         const node = $getNodeByKey(key)

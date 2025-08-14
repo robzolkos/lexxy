@@ -5429,7 +5429,7 @@ class ActionTextAttachmentNode extends gi {
   }
 
   static importJSON(serializedNode) {
-    return new ActionTextAttachmentNode({ serializedNode })
+    return new ActionTextAttachmentNode({ ...serializedNode })
   }
 
   static importDOM() {
@@ -6328,7 +6328,9 @@ class Selection {
   }
 
   #listenForNodeSelections() {
-    this.editor.getRootElement().addEventListener("lexical:node-selected", (event) => {
+    this.editor.getRootElement().addEventListener("lexical:node-selected", async (event) => {
+      await nextFrame(); // If not, clipboard won't work on the selection
+
       const { key } = event.detail;
       this.editor.update(() => {
         const node = us(key);
@@ -6912,6 +6914,7 @@ class Clipboard {
 
     if (this.#isOnlyPlainTextPasted(clipboardData)) {
       this.#pastePlainText(clipboardData);
+      event.preventDefault();
       return true
     }
 
@@ -6942,12 +6945,27 @@ class Clipboard {
   #handlePastedFiles(clipboardData) {
     if (!this.editorElement.supportsAttachments) return
 
-    for (const item of clipboardData.items) {
-      const file = item.getAsFile();
-      if (!file) continue
+    this.#preservingScrollPosition(() => {
+      for (const item of clipboardData.items) {
+        const file = item.getAsFile();
+        if (!file) continue
 
-      this.contents.uploadFile(file);
-    }
+        this.contents.uploadFile(file);
+      }
+    });
+  }
+
+  // Deals with an issue in Safari where it scrolls to the tops after pasting attachments
+  async #preservingScrollPosition(callback) {
+    const scrollY = window.scrollY;
+    const scrollX = window.scrollX;
+
+    callback();
+
+    await nextFrame();
+
+    window.scrollTo(scrollX, scrollY);
+    this.editor.focus();
   }
 }
 
@@ -6961,7 +6979,8 @@ class CustomActionTextAttachmentNode extends gi {
   }
 
   static importJSON(serializedNode) {
-    return new CustomActionTextAttachmentNode({ serializedNode })
+    console.debug("EIN?", serializedNode);
+    return new CustomActionTextAttachmentNode({ ...serializedNode })
   }
 
   static importDOM() {
@@ -6971,6 +6990,8 @@ class CustomActionTextAttachmentNode extends gi {
         if (!attachment.getAttribute("content")) {
           return null
         }
+
+        console.debug("IMPORT!");
 
         return {
           conversion: () => {
@@ -7000,6 +7021,8 @@ class CustomActionTextAttachmentNode extends gi {
   constructor({ sgid, contentType, innerHtml }, key) {
     super(key);
 
+    console.debug("CustomActionTextAttachmentNode constructor params:", { sgid, contentType, innerHtml }, key);
+
     this.sgid = sgid;
     this.contentType = contentType || "application/vnd.actiontext.unknown";
     this.innerHtml = innerHtml;
@@ -7028,7 +7051,6 @@ class CustomActionTextAttachmentNode extends gi {
   exportDOM() {
     const attachment = createElement("action-text-attachment", {
       sgid: this.sgid,
-      alt: this.altText,
       content: JSON.stringify(this.innerHtml),
       "content-type": this.contentType
     });
@@ -7041,8 +7063,8 @@ class CustomActionTextAttachmentNode extends gi {
       type: "custom_action_text_attachment",
       version: 1,
       sgid: this.sgid,
-      altText: this.altText,
-      contentType: this.contentType
+      contentType: this.contentType,
+      innerHtml: this.innerHtml
     }
   }
 

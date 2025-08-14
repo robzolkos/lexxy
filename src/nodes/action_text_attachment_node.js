@@ -12,7 +12,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   static importJSON(serializedNode) {
-    return new ActionTextAttachmentNode({ serializedNode })
+    return new ActionTextAttachmentNode({ ...serializedNode })
   }
 
   static importDOM() {

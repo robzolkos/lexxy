@@ -12,7 +12,8 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
   }
 
   static importJSON(serializedNode) {
-    return new CustomActionTextAttachmentNode({ serializedNode })
+    console.debug("EIN?", serializedNode);
+    return new CustomActionTextAttachmentNode({ ...serializedNode })
   }
 
   static importDOM() {
@@ -22,6 +23,8 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
         if (!attachment.getAttribute("content")) {
           return null
         }
+
+        console.debug("IMPORT!");
 
         return {
           conversion: () => {
@@ -51,6 +54,8 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
   constructor({ sgid, contentType, innerHtml }, key) {
     super(key)
 
+    console.debug("CustomActionTextAttachmentNode constructor params:", { sgid, contentType, innerHtml }, key)
+
     this.sgid = sgid
     this.contentType = contentType || "application/vnd.actiontext.unknown"
     this.innerHtml = innerHtml
@@ -79,7 +84,6 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
   exportDOM() {
     const attachment = createElement("action-text-attachment", {
       sgid: this.sgid,
-      alt: this.altText,
       content: JSON.stringify(this.innerHtml),
       "content-type": this.contentType
     })
@@ -92,8 +96,8 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
       type: "custom_action_text_attachment",
       version: 1,
       sgid: this.sgid,
-      altText: this.altText,
-      contentType: this.contentType
+      contentType: this.contentType,
+      innerHtml: this.innerHtml
     }
   }
 
