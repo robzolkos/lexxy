@@ -6942,12 +6942,27 @@ class Clipboard {
   #handlePastedFiles(clipboardData) {
     if (!this.editorElement.supportsAttachments) return
 
-    for (const item of clipboardData.items) {
-      const file = item.getAsFile();
-      if (!file) continue
+    this.#preservingScrollPosition(() => {
+      for (const item of clipboardData.items) {
+        const file = item.getAsFile();
+        if (!file) continue
 
-      this.contents.uploadFile(file);
-    }
+        this.contents.uploadFile(file);
+      }
+    });
+  }
+
+  // Deals with an issue in Safari where it scrolls to the tops after pasting attachments
+  async #preservingScrollPosition(callback) {
+    const scrollY = window.scrollY;
+    const scrollX = window.scrollX;
+
+    callback();
+
+    await nextFrame();
+
+    window.scrollTo(scrollX, scrollY);
+    this.editor.focus();
   }
 }
 
