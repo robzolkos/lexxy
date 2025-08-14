@@ -5884,7 +5884,7 @@ class CommandDispatcher {
 
   dispatchInsertCodeBlock() {
     this.editor.update(() => {
-      if (this.selection.hasSelectedWords) {
+      if (this.selection.hasSelectedWordsInSingleLine) {
         this.editor.dispatchCommand(me, "code");
       } else {
         this.contents.toggleNodeWrappingAllSelectedLines((node) => I$1(node), () => new K$1("plain"));
@@ -6135,11 +6135,31 @@ class Selection {
     });
   }
 
-  get hasSelectedWords() {
+  get hasSelectedWordsInSingleLine() {
     const selection = Nr();
-    if (!cr(selection)) return
+    if (!cr(selection)) return false
 
-    return !selection.isCollapsed() && selection.anchor.getNode().getTopLevelElement() === selection.focus.getNode().getTopLevelElement()
+    if (selection.isCollapsed()) return false
+
+    const anchorNode = selection.anchor.getNode();
+    const focusNode = selection.focus.getNode();
+
+    if (anchorNode.getTopLevelElement() !== focusNode.getTopLevelElement()) {
+      return false
+    }
+
+    const anchorElement = anchorNode.getTopLevelElement();
+    if (!anchorElement) return false
+
+    // Check if any of the nodes is a line break
+    const nodes = selection.getNodes();
+    for (const node of nodes) {
+      if (Fn(node)) {
+        return false
+      }
+    }
+
+    return true
   }
 
   get isInsideList() {
