@@ -5575,7 +5575,7 @@ class ActionTextAttachmentNode extends gi {
 
   #createDOMForFile() {
     const extension = this.fileName ? this.fileName.split('.').pop().toLowerCase() : 'unknown';
-    return createElement("span", { className: "attachment__icon", textContent: `.${extension}`})
+    return createElement("span", { className: "attachment__icon", textContent: `${extension}`})
   }
 
   #createDOMForNotImage() {
