@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    actiontext-lexical (0.1.0)
+    lexxy (0.1.0)
       rails (>= 8.0.2)
 
 GEM
@@ -297,11 +297,11 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  actiontext-lexical!
   capybara
   cuprite
   image_processing
   importmap-rails
+  lexxy!
   propshaft
   puma
   rubocop-rails-omakase

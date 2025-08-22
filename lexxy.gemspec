@@ -1,13 +1,13 @@
-require_relative "lib/actiontext/lexical/version"
+require_relative "lib/lexxy/version"
 
 Gem::Specification.new do |spec|
-  spec.name        = "actiontext-lexical"
-  spec.version     = Actiontext::Lexical::VERSION
+  spec.name        = "lexxy"
+  spec.version     = Lexxy::VERSION
   spec.authors     = [ "Jorge Manrubia" ]
   spec.email       = [ "jorge@37signals.com" ]
   spec.homepage    = "TODO"
-  spec.summary     = "TODO: Summary of Actiontext::Lexical."
-  spec.description = "TODO: Description of Actiontext::Lexical."
+  spec.summary     = "TODO: Summary of Lexxy."
+  spec.description = "TODO: Description of Lexxy."
   spec.license     = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the "allowed_push_host"
