@@ -59,10 +59,10 @@ export class LinkDialog extends HTMLElement {
   }
 
   get #editor() {
-    return this.closest("lexical-toolbar").editor
+    return this.closest("lexxy-toolbar").editor
   }
 }
 
 // We should extend the native dialog and avoid the intermediary <dialog> but not
-// supported by Safari yet: customElements.define("lexical-link-dialog", LinkDialog, { extends: "dialog" })
-customElements.define("lexical-link-dialog", LinkDialog)
+// supported by Safari yet: customElements.define("lexxy-link-dialog", LinkDialog, { extends: "dialog" })
+customElements.define("lexxy-link-dialog", LinkDialog)

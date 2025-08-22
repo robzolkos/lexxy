@@ -57,7 +57,7 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
   }
 
   createDOM() {
-    const figure = createElement("action-text-attachment", { "content-type": this.contentType, "data-lexical-decorator": true })
+    const figure = createElement("action-text-attachment", { "content-type": this.contentType, "data-lexxy-decorator": true })
 
     figure.addEventListener("click", (event) => {
       dispatchCustomEvent(figure, "lexxy:node-selected", { key: this.getKey() })

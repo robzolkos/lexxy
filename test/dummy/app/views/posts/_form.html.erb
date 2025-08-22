@@ -9,22 +9,22 @@
     <%= form.rich_text_area :body, placeholder: "Write something...",
           attachments: params[:attachments_disabled] ? "false" : nil,
           toolbar: params[:toolbar_disabled] ? "false" : nil do %>
-      <lexical-prompt-source id="inline-source">
+      <lexxy-prompt-source id="inline-source">
         <%= Person.find_each do |person| %>
           <%= render "people/prompt_item", person: person %>
         <% end %>
-      </lexical-prompt-source>
+      </lexxy-prompt-source>
 
-      <lexical-prompt trigger="1" src="inline-source" empty-results="No results"  name="mention">
-      </lexical-prompt>
+      <lexxy-prompt trigger="1" src="inline-source" empty-results="No results"  name="mention">
+      </lexxy-prompt>
 
-      <lexical-prompt trigger="2" src="<%= people_path %>" name="mention">
-      </lexical-prompt>
+      <lexxy-prompt trigger="2" src="<%= people_path %>" name="mention">
+      </lexxy-prompt>
 
-      <lexical-prompt trigger="3" src="<%= people_path %>" name="mention" remote-filtering insert-editable-text supports-space-in-searches>
-      </lexical-prompt>
+      <lexxy-prompt trigger="3" src="<%= people_path %>" name="mention" remote-filtering insert-editable-text supports-space-in-searches>
+      </lexxy-prompt>
 
-      <lexical-code-language-picker/>
+      <lexxy-code-language-picker/>
     <% end %>
   </div>
 

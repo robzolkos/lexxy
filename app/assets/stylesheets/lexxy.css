@@ -1,8 +1,8 @@
-.lexical-editor__content {
+.lexxy-editor__content {
   padding: 1rem 0.5rem;
 }
 
-lexical-editor {
+lexxy-editor {
   display: block;
   position: relative;
   overflow: visible;
@@ -17,14 +17,14 @@ lexical-editor {
     border: 2px solid blue;
   }
 
-  &.lexical-editor--empty {
-    .lexical-editor__content:not(:focus):before {
+  &.lexxy-editor--empty {
+    .lexxy-editor__content:not(:focus):before {
       content: attr(placeholder)
     }
   }
 }
 
-lexical-toolbar {
+lexxy-toolbar {
   background-color: inherit;
   border-block-end: 1px solid var(--color-ink-medium);
   border-radius: 0;
@@ -78,7 +78,7 @@ lexical-toolbar {
   }
 }
 
-.lexical-prompt-menu {
+.lexxy-prompt-menu {
   background: white;
   border: 2px solid black;
 
@@ -88,7 +88,7 @@ lexical-toolbar {
 
   visibility: hidden;
 
-  &.lexical-prompt-menu--visible {
+  &.lexxy-prompt-menu--visible {
     visibility: initial;
   }
 
@@ -103,6 +103,7 @@ lexical-toolbar {
   }
 }
 
+/* Special class that lexical uses to signal where the cursor is around custom nodes */
 [data-lexical-cursor] {
   height: 1lh;
   border-left: 1px solid darkred;

@@ -45,10 +45,10 @@ class ActionTextLoadTest < ApplicationSystemTestCase
 
   private
     def click_on_prompt(name)
-      find(".lexical-prompt-menu__item", text: name).click
+      find(".lexxy-prompt-menu__item", text: name).click
     end
 
     def within_popover(&block)
-      within(".lexical-prompt-menu", &block)
+      within(".lexxy-prompt-menu", &block)
     end
 end

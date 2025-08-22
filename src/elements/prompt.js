@@ -52,7 +52,7 @@ export default class LexicalPromptElement extends HTMLElement {
         return new DeferredPromptSource(src)
       }
     } else {
-      return new InlinePromptSource(document.getElementById(src).querySelectorAll("lexical-prompt-item"))
+      return new InlinePromptSource(document.getElementById(src).querySelectorAll("lexxy-prompt-item"))
     }
   }
 
@@ -88,7 +88,7 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   get #editorElement() {
-    return this.closest("lexical-editor")
+    return this.closest("lexxy-editor")
   }
 
   get #selection() {
@@ -99,7 +99,7 @@ export default class LexicalPromptElement extends HTMLElement {
     this.popoverElement ??= await this.#buildPopover()
     await this.#filterOptions()
     this.#positionPopover()
-    this.popoverElement.classList.toggle("lexical-prompt-menu--visible", true)
+    this.popoverElement.classList.toggle("lexxy-prompt-menu--visible", true)
     this.#selectFirstOption()
 
     this.#editorElement.addEventListener("keydown", this.#handleKeydownOnPopover)
@@ -127,7 +127,7 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   get #listItemElements() {
-    return Array.from(this.popoverElement.querySelectorAll(".lexical-prompt-menu__item"))
+    return Array.from(this.popoverElement.querySelectorAll(".lexxy-prompt-menu__item"))
   }
 
   #selectOption(listItem) {
@@ -168,7 +168,7 @@ export default class LexicalPromptElement extends HTMLElement {
 
   async #hidePopover() {
     this.#clearSelection()
-    this.popoverElement.classList.toggle("lexical-prompt-menu--visible", false)
+    this.popoverElement.classList.toggle("lexxy-prompt-menu--visible", false)
     this.#editorElement.removeEventListener("lexxy:change", this.#filterOptions)
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover)
 
@@ -210,14 +210,14 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #showResults(filteredListItems) {
-    this.popoverElement.classList.remove("lexical-prompt-menu--empty")
+    this.popoverElement.classList.remove("lexxy-prompt-menu--empty")
     this.popoverElement.append(...filteredListItems)
   }
 
   #showEmptyResults() {
-    this.popoverElement.classList.add("lexical-prompt-menu--empty")
+    this.popoverElement.classList.add("lexxy-prompt-menu--empty")
     const el = createElement("li", { innerHTML: this.#emptyResultsMessage })
-    el.classList.add("lexical-prompt-menu__item--empty")
+    el.classList.add("lexxy-prompt-menu__item--empty")
     this.popoverElement.append(el)
   }
 
@@ -311,7 +311,7 @@ export default class LexicalPromptElement extends HTMLElement {
 
   async #buildPopover() {
     const popoverContainer = createElement("ul", { role: "listbox", id: generateDomId("prompt-popover") }) // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
-    popoverContainer.classList.add("lexical-prompt-menu")
+    popoverContainer.classList.add("lexxy-prompt-menu")
     popoverContainer.style.position = "absolute"
     popoverContainer.append(...(await this.source.buildListItems()))
     popoverContainer.addEventListener("click", this.#handlePopoverClick)
@@ -320,7 +320,7 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 
   #handlePopoverClick = (event) => {
-    const listItem = event.target.closest(".lexical-prompt-menu__item")
+    const listItem = event.target.closest(".lexxy-prompt-menu__item")
     if (listItem) {
       this.#selectOption(listItem)
       this.#optionWasSelected()
@@ -328,4 +328,4 @@ export default class LexicalPromptElement extends HTMLElement {
   }
 }
 
-customElements.define("lexical-prompt", LexicalPromptElement)
+customElements.define("lexxy-prompt", LexicalPromptElement)

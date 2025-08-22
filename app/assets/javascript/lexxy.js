@@ -3908,17 +3908,17 @@ class LexicalToolbarElement extends HTMLElement {
       <button type="button" name="link" title="Link" data-dialog-target="link-dialog" data-hotkey="cmd+k ctrl+k">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m22.2 1.8c-1.1-1.2-2.5-1.8-4.3-1.8s-3.1.6-4.4 1.8l-4.4 4.4c-1.2 1.2-1.8 2.7-1.8 4.3s.6 3.1 1.8 4.3h.2c.2.3.5.4 1 .4.7 0 1.1-.3 1.2-.6.3-.3.4-.7.4-1.1s-.2-.8-.5-1.2c-.5-.5-.8-1.2-.8-1.9s.3-1.4.8-1.9l4.4-4.2c.6-.5 1.5-.8 2.1-.8s1.4.2 1.9.7.8 1.2.8 1.9-.3 1.4-.8 1.9l-2.6 2.2c-.3.3-.5.7-.5 1.2s.2.8.5 1.2c.8.6 1.7.6 2.4 0l2.6-2.2c2.4-2.4 2.4-6.1 0-8.5z"/><path d="m12.3 9.3c-.3.3-.5.8-.5 1.3 0 .4.2.8.5 1.1.5.5.8 1.2.8 1.9s-.3 1.4-.9 1.9l-4.4 4.4c-.4.4-1.2.7-1.8.7s-1.4-.2-1.9-.7-.8-1.2-.8-1.9.3-1.4.8-1.9l2.5-2.4c.7-.7.7-1.7 0-2.4-.8-.6-1.7-.6-2.4 0l-2.5 2.4c-1 1.1-1.7 2.6-1.7 4.2s.6 3.1 1.8 4.3c1.3 1.2 2.7 1.8 4.2 1.8s3.2-.7 4.3-1.8l4.4-4.4c2.4-2.4 2.4-6.1 0-8.6-.8-.6-1.7-.6-2.4 0z"/></svg>
       </button>
-      <lexical-link-dialog class="lexical-link-dialog">
+      <lexxy-link-dialog class="lexxy-link-dialog">
         <dialog id="link-dialog" closedby="any">
           <form method="dialog">
             <input type="url" placeholder="Enter a URL…" class="input" required>
-            <div class="lexical-dialog-actions">
+            <div class="lexxy-dialog-actions">
               <button type="submit" class="btn" value="link">Link</button>
               <button type="button" class="btn" value="unlink">Unlink</button>
             </div>
           </form> 
         </dialog> 
-      </lexical-link-dialog>
+      </lexxy-link-dialog>
       
       <button type="button" name="quote" data-command="insertQuoteBlock" title="Quote">
         <svg viewBox="0 0 24 22" xmlns="http://www.w3.org/2000/svg"> <path d="m1.1 5.2c.6-.7 1.4-1.3 2.4-1.4 2.6-.4 4.2.4 5.3 1.9 2 2.3 1.9 5.1.6 7.6-1.3 2.4-4 4.6-7.2 5.1-.4 0-.7-.1-1-.4-.1-.3-.1-.7.3-1.1l1.1-1.1c.3-.4.6-.7.7-1.1s.3-.9 0-1.3c0-.4-.6-.7-1-1-1.2-.8-2.3-2.2-2.3-4.1.1-1.4.4-2.4 1.1-3.1z"/> <path d="m14.6 5.2c.6-.7 1.6-1.1 2.6-1.4 2.4-.4 4.2.4 5.3 1.9 2 2.3 1.9 5.1.6 7.6-1.3 2.4-4 4.6-7.2 5.1-.4 0-.7-.1-1-.4-.1-.3-.1-.7.3-1.1l1.1-1.1c.3-.4.6-.7.7-1.1s.3-.9 0-1.3c-.1-.4-.6-.7-1-1-1.3-.6-2.4-2-2.4-3.9s.4-2.6 1-3.3z"/> </svg>
@@ -3947,7 +3947,7 @@ class LexicalToolbarElement extends HTMLElement {
   }
 }
 
-customElements.define("lexical-toolbar", LexicalToolbarElement);
+customElements.define("lexxy-toolbar", LexicalToolbarElement);
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -5976,14 +5976,14 @@ class CommandDispatcher {
   #handleDragEnter(event) {
     this.dragCounter++;
     if (this.dragCounter === 1) {
-      this.editor.getRootElement().classList.add("lexical-editor--drag-over");
+      this.editor.getRootElement().classList.add("lexxy-editor--drag-over");
     }
   }
 
   #handleDragLeave(event) {
     this.dragCounter--;
     if (this.dragCounter === 0) {
-      this.editor.getRootElement().classList.remove("lexical-editor--drag-over");
+      this.editor.getRootElement().classList.remove("lexxy-editor--drag-over");
     }
   }
 
@@ -5995,7 +5995,7 @@ class CommandDispatcher {
     event.preventDefault();
 
     this.dragCounter = 0;
-    this.editor.getRootElement().classList.remove("lexical-editor--drag-over");
+    this.editor.getRootElement().classList.remove("lexxy-editor--drag-over");
 
     const dataTransfer = event.dataTransfer;
     if (!dataTransfer) return
@@ -7024,7 +7024,7 @@ class CustomActionTextAttachmentNode extends gi {
   }
 
   createDOM() {
-    const figure = createElement("action-text-attachment", { "content-type": this.contentType, "data-lexical-decorator": true });
+    const figure = createElement("action-text-attachment", { "content-type": this.contentType, "data-lexxy-decorator": true });
 
     figure.addEventListener("click", (event) => {
       dispatchCustomEvent(figure, "lexxy:node-selected", { key: this.getKey() });
@@ -7082,7 +7082,7 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   connectedCallback() {
-    this.id ??= generateDomId("lexical-editor");
+    this.id ??= generateDomId("lexxy-editor");
     this.editor = this.#createEditor();
     this.contents = new Contents(this);
     this.selection = new Selection(this);
@@ -7230,7 +7230,7 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #createEditorContentElement() {
-    const editorContentElement = createElement("div", { classList: "lexical-editor__content", contenteditable: true, placeholder: this.getAttribute("placeholder") });
+    const editorContentElement = createElement("div", { classList: "lexxy-editor__content", contenteditable: true, placeholder: this.getAttribute("placeholder") });
     editorContentElement.id = `${this.id}-content`;
     this.appendChild(editorContentElement);
 
@@ -7364,14 +7364,14 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #createDefaultToolbar() {
-    const toolbar = createElement("lexical-toolbar");
+    const toolbar = createElement("lexxy-toolbar");
     toolbar.innerHTML = LexicalToolbarElement.defaultTemplate;
     this.prepend(toolbar);
     return toolbar
   }
 
   #toggleEmptyStatus() {
-    this.classList.toggle("lexical-editor--empty", this.#isEmpty);
+    this.classList.toggle("lexxy-editor--empty", this.#isEmpty);
   }
 
   get #isEmpty() {
@@ -7405,7 +7405,7 @@ class LexicalEditorElement extends HTMLElement {
   }
 }
 
-customElements.define("lexical-editor", LexicalEditorElement);
+customElements.define("lexxy-editor", LexicalEditorElement);
 
 class LinkDialog extends HTMLElement {
   connectedCallback() {
@@ -7464,13 +7464,13 @@ class LinkDialog extends HTMLElement {
   }
 
   get #editor() {
-    return this.closest("lexical-toolbar").editor
+    return this.closest("lexxy-toolbar").editor
   }
 }
 
 // We should extend the native dialog and avoid the intermediary <dialog> but not
-// supported by Safari yet: customElements.define("lexical-link-dialog", LinkDialog, { extends: "dialog" })
-customElements.define("lexical-link-dialog", LinkDialog);
+// supported by Safari yet: customElements.define("lexxy-link-dialog", LinkDialog, { extends: "dialog" })
+customElements.define("lexxy-link-dialog", LinkDialog);
 
 class BaseSource {
   // Template method to override
@@ -7489,7 +7489,7 @@ class BaseSource {
     const template = promptItemElement.querySelector("template[type='menu']");
     const fragment = template.content.cloneNode(true);
     const listItemElement = createElement("li", { role: "option", id: generateDomId("prompt-item"), tabindex: "0" });
-    listItemElement.classList.add("lexical-prompt-menu__item");
+    listItemElement.classList.add("lexxy-prompt-menu__item");
     listItemElement.appendChild(fragment);
     return listItemElement
   }
@@ -7498,7 +7498,7 @@ class BaseSource {
     try {
       const response = await fetch(url);
       const html = await response.text();
-      const promptItems = parseHtml(html).querySelectorAll("lexical-prompt-item");
+      const promptItems = parseHtml(html).querySelectorAll("lexxy-prompt-item");
       return Promise.resolve(Array.from(promptItems))
     } catch (error) {
       return Promise.reject(error)
@@ -7651,7 +7651,7 @@ class LexicalPromptElement extends HTMLElement {
         return new DeferredPromptSource(src)
       }
     } else {
-      return new InlinePromptSource(document.getElementById(src).querySelectorAll("lexical-prompt-item"))
+      return new InlinePromptSource(document.getElementById(src).querySelectorAll("lexxy-prompt-item"))
     }
   }
 
@@ -7687,7 +7687,7 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   get #editorElement() {
-    return this.closest("lexical-editor")
+    return this.closest("lexxy-editor")
   }
 
   get #selection() {
@@ -7698,7 +7698,7 @@ class LexicalPromptElement extends HTMLElement {
     this.popoverElement ??= await this.#buildPopover();
     await this.#filterOptions();
     this.#positionPopover();
-    this.popoverElement.classList.toggle("lexical-prompt-menu--visible", true);
+    this.popoverElement.classList.toggle("lexxy-prompt-menu--visible", true);
     this.#selectFirstOption();
 
     this.#editorElement.addEventListener("keydown", this.#handleKeydownOnPopover);
@@ -7726,7 +7726,7 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   get #listItemElements() {
-    return Array.from(this.popoverElement.querySelectorAll(".lexical-prompt-menu__item"))
+    return Array.from(this.popoverElement.querySelectorAll(".lexxy-prompt-menu__item"))
   }
 
   #selectOption(listItem) {
@@ -7767,7 +7767,7 @@ class LexicalPromptElement extends HTMLElement {
 
   async #hidePopover() {
     this.#clearSelection();
-    this.popoverElement.classList.toggle("lexical-prompt-menu--visible", false);
+    this.popoverElement.classList.toggle("lexxy-prompt-menu--visible", false);
     this.#editorElement.removeEventListener("lexxy:change", this.#filterOptions);
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover);
 
@@ -7809,14 +7809,14 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   #showResults(filteredListItems) {
-    this.popoverElement.classList.remove("lexical-prompt-menu--empty");
+    this.popoverElement.classList.remove("lexxy-prompt-menu--empty");
     this.popoverElement.append(...filteredListItems);
   }
 
   #showEmptyResults() {
-    this.popoverElement.classList.add("lexical-prompt-menu--empty");
+    this.popoverElement.classList.add("lexxy-prompt-menu--empty");
     const el = createElement("li", { innerHTML: this.#emptyResultsMessage });
-    el.classList.add("lexical-prompt-menu__item--empty");
+    el.classList.add("lexxy-prompt-menu__item--empty");
     this.popoverElement.append(el);
   }
 
@@ -7910,7 +7910,7 @@ class LexicalPromptElement extends HTMLElement {
 
   async #buildPopover() {
     const popoverContainer = createElement("ul", { role: "listbox", id: generateDomId("prompt-popover") }); // Avoiding [popover] due to not being able to position at an arbitrary X, Y position.
-    popoverContainer.classList.add("lexical-prompt-menu");
+    popoverContainer.classList.add("lexxy-prompt-menu");
     popoverContainer.style.position = "absolute";
     popoverContainer.append(...(await this.source.buildListItems()));
     popoverContainer.addEventListener("click", this.#handlePopoverClick);
@@ -7919,7 +7919,7 @@ class LexicalPromptElement extends HTMLElement {
   }
 
   #handlePopoverClick = (event) => {
-    const listItem = event.target.closest(".lexical-prompt-menu__item");
+    const listItem = event.target.closest(".lexxy-prompt-menu__item");
     if (listItem) {
       this.#selectOption(listItem);
       this.#optionWasSelected();
@@ -7927,11 +7927,11 @@ class LexicalPromptElement extends HTMLElement {
   }
 }
 
-customElements.define("lexical-prompt", LexicalPromptElement);
+customElements.define("lexxy-prompt", LexicalPromptElement);
 
 class CodeLanguagePicker extends HTMLElement {
   connectedCallback() {
-    this.editorElement = this.closest("lexical-editor");
+    this.editorElement = this.closest("lexxy-editor");
     this.editor = this.editorElement.editor;
 
     this.#attachLanguagePicker();
@@ -7950,7 +7950,7 @@ class CodeLanguagePicker extends HTMLElement {
   }
 
   #createLanguagePicker() {
-    const selectElement = createElement("select", { hidden: true, className: "lexical-code-language-picker", "aria-label": "Pick a language…", name: "lexical-code-language" });
+    const selectElement = createElement("select", { hidden: true, className: "lexxy-code-language-picker", "aria-label": "Pick a language…", name: "lexxy-code-language" });
 
     for (const [ value, label ] of Object.entries(this.#languages)) {
       const option = document.createElement("option");
@@ -8062,7 +8062,7 @@ class CodeLanguagePicker extends HTMLElement {
   }
 }
 
-customElements.define("lexical-code-language-picker", CodeLanguagePicker);
+customElements.define("lexxy-code-language-picker", CodeLanguagePicker);
 
 /**
  * Original by Samuel Flores

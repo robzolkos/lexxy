@@ -85,7 +85,7 @@ class ToolbarTest < ApplicationSystemTestCase
     click_on "Link"
     fill_in "Enter a URL…", with: "https://37signals.com"
 
-    within ".lexical-link-dialog" do
+    within ".lexxy-link-dialog" do
       click_on "Link"
     end
 
@@ -93,10 +93,10 @@ class ToolbarTest < ApplicationSystemTestCase
   end
 
   test "disable toolbar" do
-    assert_selector "lexical-toolbar"
+    assert_selector "lexxy-toolbar"
 
     visit edit_post_path(posts(:hello_world), toolbar_disabled: true)
 
-    assert_no_selector "lexical-toolbar"
+    assert_no_selector "lexxy-toolbar"
   end
 end

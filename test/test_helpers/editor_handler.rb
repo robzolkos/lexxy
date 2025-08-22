@@ -76,6 +76,6 @@ class EditorHandler
 
   private
     def content_element
-      @content_element ||= editor_element.find(".lexical-editor__content")
+      @content_element ||= editor_element.find(".lexxy-editor__content")
     end
 end
