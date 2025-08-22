@@ -1,2 +1,2 @@
-Actiontext::Lexical::Engine.routes.draw do
+Lexxy::Engine.routes.draw do
 end
