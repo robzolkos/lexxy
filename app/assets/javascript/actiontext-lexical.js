@@ -5591,7 +5591,7 @@ class ActionTextAttachmentNode extends gi {
   }
 
   #select(figure) {
-    dispatchCustomEvent(figure, "lexical:node-selected", { key: this.getKey() });
+    dispatchCustomEvent(figure, "lexxy:node-selected", { key: this.getKey() });
   }
 
   #createEditableCaption() {
@@ -5623,13 +5623,13 @@ class ActionTextAttachmentNode extends gi {
   }
 
   #updateCaptionValueFromInput(input) {
-    dispatchCustomEvent(input, "lexical:node-invalidated", { key: this.getKey(), values: { caption: input.value } });
+    dispatchCustomEvent(input, "lexxy:node-invalidated", { key: this.getKey(), values: { caption: input.value } });
   }
 
   #handleCaptionInputKeydown(event) {
     if (event.key === "Enter") {
       this.#updateCaptionValueFromInput(event.target);
-      dispatchCustomEvent(event.target, "lexical:next-node-selection-request");
+      dispatchCustomEvent(event.target, "lexxy:next-node-selection-request");
       event.preventDefault();
     }
     event.stopPropagation();
@@ -6328,7 +6328,7 @@ class Selection {
   }
 
   #listenForNodeSelections() {
-    this.editor.getRootElement().addEventListener("lexical:node-selected", async (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:node-selected", async (event) => {
       await nextFrame(); // If not, clipboard won't work on the selection
 
       const { key } = event.detail;
@@ -6343,7 +6343,7 @@ class Selection {
       });
     });
 
-    this.editor.getRootElement().addEventListener("lexical:next-node-selection-request", (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:next-node-selection-request", (event) => {
       this.#selectNextNode();
     });
   }
@@ -7027,7 +7027,7 @@ class CustomActionTextAttachmentNode extends gi {
     const figure = createElement("action-text-attachment", { "content-type": this.contentType, "data-lexical-decorator": true });
 
     figure.addEventListener("click", (event) => {
-      dispatchCustomEvent(figure, "lexical:node-selected", { key: this.getKey() });
+      dispatchCustomEvent(figure, "lexxy:node-selected", { key: this.getKey() });
     });
 
     figure.insertAdjacentHTML("beforeend", this.innerHtml);
@@ -7301,7 +7301,7 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #listenForInvalidatedNodes() {
-    this.editor.getRootElement().addEventListener("lexical:node-invalidated", (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:node-invalidated", (event) => {
       const { key, values } = event.detail;
 
       this.editor.update(() => {
