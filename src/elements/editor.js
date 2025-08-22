@@ -201,7 +201,7 @@ export default class LexicalEditorElement extends HTMLElement {
     this._internalFormValue = html
 
     if (changed) {
-      dispatch(this, "actiontext:change")
+      dispatch(this, "lexxy:change")
     }
   }
 

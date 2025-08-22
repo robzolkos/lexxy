@@ -7251,7 +7251,7 @@ class LexicalEditorElement extends HTMLElement {
     this._internalFormValue = html;
 
     if (changed) {
-      dispatch(this, "actiontext:change");
+      dispatch(this, "lexxy:change");
     }
   }
 
@@ -7702,7 +7702,7 @@ class LexicalPromptElement extends HTMLElement {
     this.#selectFirstOption();
 
     this.#editorElement.addEventListener("keydown", this.#handleKeydownOnPopover);
-    this.#editorElement.addEventListener("actiontext:change", this.#filterOptions);
+    this.#editorElement.addEventListener("lexxy:change", this.#filterOptions);
 
     this.#registerKeyListeners();
   }
@@ -7768,7 +7768,7 @@ class LexicalPromptElement extends HTMLElement {
   async #hidePopover() {
     this.#clearSelection();
     this.popoverElement.classList.toggle("lexical-prompt-menu--visible", false);
-    this.#editorElement.removeEventListener("actiontext:change", this.#filterOptions);
+    this.#editorElement.removeEventListener("lexxy:change", this.#filterOptions);
     this.#editorElement.removeEventListener("keydown", this.#handleKeydownOnPopover);
 
     this.#unregisterKeyListeners();
