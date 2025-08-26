@@ -43,7 +43,7 @@ class LoadHtmlTest < ApplicationSystemTestCase
   end
 
   private
-    EMPTY_SELECTOR = "lexical-editor.lexical-editor--empty"
+    EMPTY_SELECTOR = "lexxy-editor.lexxy-editor--empty"
 
     def assert_empty_class
       assert_selector EMPTY_SELECTOR

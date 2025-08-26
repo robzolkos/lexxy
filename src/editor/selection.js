@@ -297,7 +297,7 @@ export default class Selection {
   }
 
   #listenForNodeSelections() {
-    this.editor.getRootElement().addEventListener("lexical:node-selected", async (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:node-selected", async (event) => {
       await nextFrame() // If not, clipboard won't work on the selection
 
       const { key } = event.detail
@@ -312,7 +312,7 @@ export default class Selection {
       })
     })
 
-    this.editor.getRootElement().addEventListener("lexical:next-node-selection-request", (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:next-node-selection-request", (event) => {
       this.#selectNextNode()
     })
   }

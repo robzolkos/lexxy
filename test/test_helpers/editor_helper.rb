@@ -1,5 +1,5 @@
 module EditorHelper
-  def find_editor(selector = "lexical-editor")
+  def find_editor(selector = "lexxy-editor")
     @handlers_by_selector ||= {}
     @handlers_by_selector[selector] = begin
       editor_element = find(selector)

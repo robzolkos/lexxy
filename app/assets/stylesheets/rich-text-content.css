@@ -205,7 +205,7 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
-    .lexical-editor--drag-over {
+    .lexxy-editor--drag-over {
       background-color: var(--color-ink-lighter);
       border: 2px dashed var(--color-ink-medium);
       border-radius: 4px;

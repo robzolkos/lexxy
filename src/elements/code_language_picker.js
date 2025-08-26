@@ -4,7 +4,7 @@ import { createElement } from "../helpers/html_helper";
 
 export default class CodeLanguagePicker extends HTMLElement {
   connectedCallback() {
-    this.editorElement = this.closest("lexical-editor")
+    this.editorElement = this.closest("lexxy-editor")
     this.editor = this.editorElement.editor
 
     this.#attachLanguagePicker()
@@ -23,7 +23,7 @@ export default class CodeLanguagePicker extends HTMLElement {
   }
 
   #createLanguagePicker() {
-    const selectElement = createElement("select", { hidden: true, className: "lexical-code-language-picker", "aria-label": "Pick a language…", name: "lexical-code-language" })
+    const selectElement = createElement("select", { hidden: true, className: "lexxy-code-language-picker", "aria-label": "Pick a language…", name: "lexxy-code-language" })
 
     for (const [ value, label ] of Object.entries(this.#languages)) {
       const option = document.createElement("option")
@@ -135,4 +135,4 @@ export default class CodeLanguagePicker extends HTMLElement {
   }
 }
 
-customElements.define("lexical-code-language-picker", CodeLanguagePicker)
+customElements.define("lexxy-code-language-picker", CodeLanguagePicker)

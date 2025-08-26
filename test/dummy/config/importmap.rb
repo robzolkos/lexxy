@@ -3,7 +3,7 @@
 pin "application"
 
 pin "@rails/actiontext", to: "actiontext.esm.js"
-pin "actiontext-lexical", to: "actiontext-lexical.js"
+pin "lexxy", to: "lexxy.js"
 pin "@rails/activestorage", to: "activestorage.esm.js"
 pin "@hotwired/turbo-rails", to: "turbo.min.js"
 pin "@hotwired/stimulus", to: "stimulus.min.js"

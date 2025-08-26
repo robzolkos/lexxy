@@ -32,7 +32,7 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   connectedCallback() {
-    this.id ??= generateDomId("lexical-editor")
+    this.id ??= generateDomId("lexxy-editor")
     this.editor = this.#createEditor()
     this.contents = new Contents(this)
     this.selection = new Selection(this)
@@ -180,7 +180,7 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   #createEditorContentElement() {
-    const editorContentElement = createElement("div", { classList: "lexical-editor__content", contenteditable: true, placeholder: this.getAttribute("placeholder") })
+    const editorContentElement = createElement("div", { classList: "lexxy-editor__content", contenteditable: true, placeholder: this.getAttribute("placeholder") })
     editorContentElement.id = `${this.id}-content`
     this.appendChild(editorContentElement)
 
@@ -201,7 +201,7 @@ export default class LexicalEditorElement extends HTMLElement {
     this._internalFormValue = html
 
     if (changed) {
-      dispatch(this, "actiontext:change")
+      dispatch(this, "lexxy:change")
     }
   }
 
@@ -251,7 +251,7 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   #listenForInvalidatedNodes() {
-    this.editor.getRootElement().addEventListener("lexical:node-invalidated", (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:node-invalidated", (event) => {
       const { key, values } = event.detail
 
       this.editor.update(() => {
@@ -314,14 +314,14 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   #createDefaultToolbar() {
-    const toolbar = createElement("lexical-toolbar")
+    const toolbar = createElement("lexxy-toolbar")
     toolbar.innerHTML = LexicalToolbar.defaultTemplate
     this.prepend(toolbar)
     return toolbar
   }
 
   #toggleEmptyStatus() {
-    this.classList.toggle("lexical-editor--empty", this.#isEmpty)
+    this.classList.toggle("lexxy-editor--empty", this.#isEmpty)
   }
 
   get #isEmpty() {
@@ -355,4 +355,4 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 }
 
-customElements.define("lexical-editor", LexicalEditorElement)
+customElements.define("lexxy-editor", LexicalEditorElement)

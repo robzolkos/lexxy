@@ -1,6 +1,6 @@
-<lexical-prompt-item search="<%= "#{person.name} #{person.initials}" %>" sgid="<%= person.attachable_sgid %>">
+<lexxy-prompt-item search="<%= "#{person.name} #{person.initials}" %>" sgid="<%= person.attachable_sgid %>">
   <template type="menu"><%= person.name %></template>
   <template type="editor">
     <%= render "people/person", person: person %>
   </template>
-</lexical-prompt-item>
+</lexxy-prompt-item>

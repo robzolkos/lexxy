@@ -182,14 +182,14 @@ export class CommandDispatcher {
   #handleDragEnter(event) {
     this.dragCounter++
     if (this.dragCounter === 1) {
-      this.editor.getRootElement().classList.add("lexical-editor--drag-over")
+      this.editor.getRootElement().classList.add("lexxy-editor--drag-over")
     }
   }
 
   #handleDragLeave(event) {
     this.dragCounter--
     if (this.dragCounter === 0) {
-      this.editor.getRootElement().classList.remove("lexical-editor--drag-over")
+      this.editor.getRootElement().classList.remove("lexxy-editor--drag-over")
     }
   }
 
@@ -201,7 +201,7 @@ export class CommandDispatcher {
     event.preventDefault()
 
     this.dragCounter = 0
-    this.editor.getRootElement().classList.remove("lexical-editor--drag-over")
+    this.editor.getRootElement().classList.remove("lexxy-editor--drag-over")
 
     const dataTransfer = event.dataTransfer
     if (!dataTransfer) return

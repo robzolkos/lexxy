@@ -1,18 +1,18 @@
 require "application_system_test_case"
 
 class EventsTest < ApplicationSystemTestCase
-  test "no actiontext:change event on initial load" do
+  test "no lexxy:change event on initial load" do
     visit edit_post_path(posts(:empty))
 
-    assert_no_dispatched_event "actiontext:change"
+    assert_no_dispatched_event "lexxy:change"
   end
 
-  test "dispatch actiontext:change event on edits" do
+  test "dispatch lexxy:change event on edits" do
     visit edit_post_path(posts(:empty))
 
     find_editor.send "Y"
 
-    assert_dispatched_event "actiontext:change"
+    assert_dispatched_event "lexxy:change"
   end
 
   private

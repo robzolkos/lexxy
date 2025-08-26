@@ -1,9 +1,9 @@
 {
-  "name": "actiontext-lexical",
+  "name": "lexxy",
   "version": "0.0.1",
-  "description": "Action text 🤝 Lexical",
-  "main": "dist/actiontext-lexical.js",
-  "repository": "https://github.com/jorgemanrubia/actiontext-lexical.git",
+  "description": "Lexxy - A rich text editor",
+  "main": "dist/lexxy.js",
+  "repository": "https://github.com/jorgemanrubia/lexxy.git",
   "author": "Jorge Manrubia <jorge@37signals.com>",
   "license": "MIT",
   "devDependencies": {
