@@ -7328,8 +7328,13 @@ class LexicalEditorElement extends HTMLElement {
     Mt(this.editor);
     v$1(this.editor, E(), 20);
     _t$3(this.editor);
-    Nt$1(this.editor);
+    this.#registerCodeHiglightingComponents();
     et(this.editor, Bt);
+  }
+
+  #registerCodeHiglightingComponents() {
+    Nt$1(this.editor);
+    this.append(createElement("lexxy-code-language-picker"));
   }
 
   #listenForInvalidatedNodes() {
