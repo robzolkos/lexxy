@@ -212,7 +212,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   #handleCaptionInputKeydown(event) {
     if (event.key === "Enter") {
       this.#updateCaptionValueFromInput(event.target)
-      dispatchCustomEvent(event.target, "lexxy:next-node-selection-request")
+      dispatchCustomEvent(event.target, "lexxy:move-to-next-line")
       event.preventDefault()
     }
     event.stopPropagation()

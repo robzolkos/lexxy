@@ -2,7 +2,7 @@ import {
   $createNodeSelection, $isElementNode, $isRangeSelection, $getNodeByKey, $getSelection, $isNodeSelection,
   $setSelection, $getRoot, $isTextNode, $isLineBreakNode, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, KEY_ARROW_LEFT_COMMAND,
   KEY_ARROW_RIGHT_COMMAND, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_UP_COMMAND, KEY_DELETE_COMMAND,
-  KEY_BACKSPACE_COMMAND, DecoratorNode
+  KEY_BACKSPACE_COMMAND, DecoratorNode, $createParagraphNode
 } from "lexical"
 import { nextFrame } from "../helpers/timing_helpers"
 import { getNearestListItemNode } from "../helpers/lexical_helper"
@@ -205,6 +205,38 @@ export default class Selection {
     }
   }
 
+  async #selectOrAppendNextLine() {
+    this.editor.update(() => {
+      const selection = $getSelection()
+      if (!selection) return
+
+      let topLevelElement = null
+
+      if ($isNodeSelection(selection)) {
+        const nodes = selection.getNodes()
+        if (nodes.length > 0) {
+          topLevelElement = nodes[0].getTopLevelElement()
+        }
+      } else if ($isRangeSelection(selection)) {
+        const anchorNode = selection.anchor.getNode()
+        topLevelElement = anchorNode.getTopLevelElement()
+      }
+
+      if (!topLevelElement) return
+
+      const nextSibling = topLevelElement.getNextSibling()
+
+      if (nextSibling) {
+        nextSibling.selectStart()
+      } else {
+        const root = $getRoot()
+        const newParagraph = $createParagraphNode()
+        root.append(newParagraph)
+        newParagraph.selectStart()
+      }
+    })
+  }
+
   get nodeAfterCursor() {
     const selection = $getSelection()
     if (!$isRangeSelection(selection) || !selection.isCollapsed()) { return null }
@@ -312,8 +344,8 @@ export default class Selection {
       })
     })
 
-    this.editor.getRootElement().addEventListener("lexxy:next-node-selection-request", (event) => {
-      this.#selectNextNode()
+    this.editor.getRootElement().addEventListener("lexxy:move-to-next-line", (event) => {
+      this.#selectOrAppendNextLine()
     })
   }
 
