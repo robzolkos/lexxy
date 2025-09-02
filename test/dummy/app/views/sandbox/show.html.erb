@@ -1,0 +1,24 @@
+<% content_for :title, "Sandbox" %>
+
+<main>
+  <article>
+    <section aria-label="Editor">
+      <header>
+        <h2>Editor</h2>
+      </header>
+      <div id="editor-container">
+        <%= rich_text_area_tag :sandbox, nil, placeholder: "Write something..." do %>
+        <% end %>
+      </div>
+    </section>
+
+    <section aria-label="Output">
+      <header>
+        <h2>Output</h2>
+      </header>
+      <div id="output-container">
+        <!-- Editor output will be displayed here -->
+      </div>
+    </section>
+  </article>
+</main>
