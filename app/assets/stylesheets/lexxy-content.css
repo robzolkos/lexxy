@@ -1,45 +1,37 @@
 @import url("lexxy-variables.css");
 
-.lexxy-content {
-  --block-margin: var(--lexxy-block-margin);
+/* Text styles
+/* -------------------------------------------------------------------------- */
 
-  :where(h1, h2, h3, h4, h5, h6) {
+:where(.lexxy-content) {
+  --lexxy-block-margin: 1rem;
+
+  color: var(--lexxy-color-ink);
+
+  h1, h2, h3, h4, h5, h6 {
     display: block;
-    font-weight: 800;
+    font-weight: bold;
     hyphens: auto;
-    letter-spacing: -0.02ch;
-    line-height: 1.1;
-    margin-block: var(--block-margin);
+    margin-block: 0 var(--lexxy-block-margin);
     overflow-wrap: break-word;
     text-wrap: balance;
   }
 
-  :where(h1) {
-    font-size: 2em;
-  }
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  h4 { font-size: 1rem; }
+  h5 { font-size: 0.875rem; }
+  h6 { font-size: 0.75rem; }
 
-  :where(h2) {
-    font-size: 1.5em;
-  }
-
-  :where(h3) {
-    font-size: 1.17em;
-  }
-
-  :where(h4) {
-    font-size: 1em;
-  }
-
-  :where(h5) {
-    font-size: 0.83em;
-  }
-
-  :where(h6) {
-    font-size: 0.67em;
-  }
-
-  :where(p, ul, ol, dl, blockquote, figure, .attachment) {
-    margin-block: 0 var(--block-margin);
+  p,
+  ul,
+  ol,
+  dl,
+  blockquote,
+  figure,
+  .attachment {
+    margin-block: 0 var(--lexxy-block-margin);
 
     &:not(lexxy-editor &) {
       overflow-wrap: break-word;
@@ -47,143 +39,130 @@
     }
   }
 
-  :where(blockquote) {
+  blockquote {
     border-inline-start: 0.25em solid var(--lexxy-color-ink-lighter);
     font-style: italic;
-    margin: var(--block-margin) 0;
+    margin: var(--lexxy-block-margin) 0;
     padding: 0.5lh 2ch;
   }
 
-  :where(img, video, embed, object) {
+  p:empty {
+    display: none;
+  }
+
+  img,
+  video,
+  embed,
+  object {
     inline-size: auto;
     margin-inline: auto;
     max-block-size: 32rem;
     object-fit: contain;
-
-    /* Links should hug media contained within */
 
     a:has(&) {
       display: inline-block;
     }
   }
 
-  /* Avoid extra space due to empty paragraphs */
-
-  p:empty {
-    display: none;
-  }
-
-  /* Code */
-
-  :where(code, pre) {
-    background-color: var(--lexxy-color-canvas);
-    border: 1px solid var(--lexxy-color-ink-lighter);
-    border-radius: 0.3em;
+  code, pre {
+    background-color: var(--lexxy-color-ink-lightest);
+    border-radius: 0.5ch;
     color: var(--lexxy-color-ink);
     font-family: var(--lexxy-font-mono);
-    font-size: 0.85em;
-    font-weight: 500;
-    margin-block: var(--block-margin);
-    padding: 0.1em 0.3em;
+    font-size: 0.9em;
+    margin-block: var(--lexxy-block-margin);
+    padding: 0.25ch 0.5ch;
 
     &:is(pre),
     &[data-language] {
-      border-radius: 0.5em;
+      border-radius: 0.75ch;
       display: block;
       hyphens: none;
       overflow-x: auto;
-      padding: 0.5lh 2ch;
+      padding: 1ch;
       tab-size: 2;
       text-wrap: nowrap;
       white-space: pre;
       word-break: break-word;
-
-      /* Keywords and attributes */
-
-      .code-token__attr,
-      .token.atrule,
-      .token.attr,
-      .token.keyword {
-        color: var(--lexxy-color-code-token-att);
-      }
-
-      /* Constants, booleans, numbers, properties, tags */
-
-      .code-token__property,
-      .token.boolean,
-      .token.constant,
-      .token.deleted,
-      .token.number,
-      .token.property,
-      .token.symbol,
-      .token.tag {
-        color: var(--lexxy-color-code-token-property);
-      }
-
-      /* Strings, selectors, and built-in constructs */
-
-      .code-token__selector,
-      .token.builtin,
-      .token.char,
-      .token.inserted,
-      .token.selector,
-      .token.string {
-        color: var(--lexxy-color-code-token-selector);
-      }
-
-      /* Comments and meta information */
-
-      .code-token__comment,
-      .token.cdata,
-      .token.comment,
-      .token.doctype,
-      .token.prolog {
-        color: var(--lexxy-color-code-token-comment);
-        font-style: italic;
-      }
-
-      /* Operators and symbolic entities */
-
-      .code-token__operator,
-      .token.entity,
-      .token.operator,
-      .token.url {
-        color: var(--lexxy-color-code-token-operator);
-      }
-
-      /* Functions and class names */
-
-      .code-token__function,
-      .token.class,
-      .token.class-name,
-      .token.function {
-        color: var(--lexxy-color-code-token-function);
-      }
-
-      /* Variables, regex, namespaces, important */
-
-      .code-token__variable,
-      .token.important,
-      .token.namespace,
-      .token.regex,
-      .token.variable {
-        color: var(--lexxy-color-code-token-variable);
-      }
-
-      /* Punctuation */
-
-      .code-token__punctuation,
-      .token.punctuation {
-        color: var(--lexxy-color-code-token-punctuation);
-      }
     }
+  }
+
+  /* Keywords and attributes */
+  .code-token__attr,
+  .token.atrule,
+  .token.attr,
+  .token.keyword {
+    color: var(--lexxy-color-code-token-att);
+  }
+
+  /* Constants, booleans, numbers, properties, tags */
+  .code-token__property,
+  .token.boolean,
+  .token.constant,
+  .token.deleted,
+  .token.number,
+  .token.property,
+  .token.symbol,
+  .token.tag {
+    color: var(--lexxy-color-code-token-property);
+  }
+
+  /* Strings, selectors, and built-in constructs */
+  .code-token__selector,
+  .token.builtin,
+  .token.char,
+  .token.inserted,
+  .token.selector,
+  .token.string {
+    color: var(--lexxy-color-code-token-selector);
+  }
+
+  /* Comments and meta information */
+  .code-token__comment,
+  .token.cdata,
+  .token.comment,
+  .token.doctype,
+  .token.prolog {
+    color: var(--lexxy-color-code-token-comment);
+    font-style: italic;
+  }
+
+  /* Operators and symbolic entities */
+  .code-token__operator,
+  .token.entity,
+  .token.operator,
+  .token.url {
+    color: var(--lexxy-color-code-token-operator);
+  }
+
+  /* Functions and class names */
+  .code-token__function,
+  .token.class,
+  .token.class-name,
+  .token.function {
+    color: var(--lexxy-color-code-token-function);
+  }
+
+  /* Variables, regex, namespaces, important */
+  .code-token__variable,
+  .token.important,
+  .token.namespace,
+  .token.regex,
+  .token.variable {
+    color: var(--lexxy-color-code-token-variable);
+  }
+
+  /* Punctuation */
+  .code-token__punctuation,
+  .token.punctuation {
+    color: var(--lexxy-color-code-token-punctuation);
   }
 }
 
 /* Attachments
 /* ------------------------------------------------------------------------ */
 
-.attachment {
+:where(.attachment) {
   block-size: auto;
   display: block;
   inline-size: 100%;
@@ -198,15 +177,11 @@
   }
 }
 
-.attachment__caption {
+:where(.attachment__caption) {
   color: var(--lexxy-color-text-subtle);
   font-size: var(--lexxy-text-small);
 
   .input {
-    --input-border-radius: var(--lexxy-input-border-radius);
-    --input-border-size: var(--lexxy-input-border-size);
-    --input-padding: var(--lexxy-input-padding);
-
     color: inherit;
     border: none;
     inline-size: 100%;
@@ -227,10 +202,24 @@
   }
 }
 
-/* Attachments with image previews
-/* -------------------------------------------------------------------------- */
+:where(.attachment__icon) {
+  aspect-ratio: 4/5;
+  background-color: color-mix(var(--lexxy-attachment-icon-color), transparent 90%);
+  block-size: 3lh;
+  border: 2px solid var(--lexxy-attachment-icon-color);
+  border-block-start-width: 1ch;
+  border-radius: 0.5ch;
+  box-sizing: border-box;
+  color: var(--lexxy-attachment-icon-color);
+  display: grid;
+  font-size: var(--lexxy-text-small);
+  font-weight: bold;
+  inline-size: auto;
+  place-content: center;
+  text-transform: uppercase;
+}
 
-.attachment--preview {
+:where(.attachment--preview) {
   inline-size: fit-content;
 
   img, video {
@@ -250,10 +239,7 @@
   }
 }
 
-/* Attachments with icons
-/* -------------------------------------------------------------------------- */
-
-.attachment--file {
+:where(.attachment--file) {
   --lexxy-attachment-icon-color: var(--lexxy-color-text-subtle);
 
   align-items: center;
@@ -272,67 +258,56 @@
   }
 }
 
-.attachment--psd,
-.attachment--key,
-.attachment--sketch,
-.attachment--ai,
-.attachment--eps,
-.attachment--indd,
-.attachment--svg,
-.attachment--ppt,
-.attachment--pptx {
-  --lexxy-attachment-icon-color: var(--lexxy-color-red-medium);
+:where(
+  .attachment--psd,
+  .attachment--key,
+  .attachment--sketch,
+  .attachment--ai,
+  .attachment--eps,
+  .attachment--indd,
+  .attachment--svg,
+  .attachment--ppt,
+  .attachment--pptx
+) {
+  --lexxy-attachment-icon-color: var(--lexxy-color-red);
 }
 
-.attachment--css,
-.attachment--php,
-.attachment--json,
-.attachment--htm,
-.attachment--html,
-.attachment--rb,
-.attachment--erb,
-.attachment--ts,
-.attachment--js {
-  --lexxy-attachment-icon-color: var(--lexxy-color-purple-medium);
+:where(
+  .attachment--css,
+  .attachment--php,
+  .attachment--json,
+  .attachment--htm,
+  .attachment--html,
+  .attachment--rb,
+  .attachment--erb,
+  .attachment--ts,
+  .attachment--js
+) {
+  --lexxy-attachment-icon-color: var(--lexxy-color-purple);
 }
 
-.attachment--txt,
-.attachment--pages,
-.attachment--rtf,
-.attachment--md,
-.attachment--doc,
-.attachment--docx {
-  --lexxy-attachment-icon-color: var(--lexxy-color-blue-medium);
+:where (
+  .attachment--txt,
+  .attachment--pages,
+  .attachment--rtf,
+  .attachment--md,
+  .attachment--doc,
+  .attachment--docx
+) {
+  --lexxy-attachment-icon-color: var(--lexxy-color-blue);
 }
 
-.attachment--csv,
-.attachment--numbers,
-.attachment--xls,
-.attachment--xlsx {
-  --lexxy-attachment-icon-color: var(--lexxy-color-green-medium);
+:where(
+  .attachment--csv,
+  .attachment--numbers,
+  .attachment--xls,
+  .attachment--xlsx
+) {
+  --lexxy-attachment-icon-color: var(--lexxy-color-green);
 }
 
-.attachment__icon {
-  aspect-ratio: 4/5;
-  background-color: color-mix(var(--lexxy-attachment-icon-color), transparent 90%);
-  block-size: 3lh;
-  border: 2px solid var(--lexxy-attachment-icon-color);
-  border-block-start-width: 1ch;
-  border-radius: 0.5ch;
-  box-sizing: border-box;
-  color: var(--lexxy-attachment-icon-color);
-  display: grid;
-  font-size: var(--lexxy-text-small);
-  font-weight: bold;
-  inline-size: auto;
-  place-content: center;
-  text-transform: uppercase;
-}
-
-/* Custom attachments such as mentions, etc.
-/* -------------------------------------------------------------------------- */
-
-action-text-attachment[content-type^="application/vnd.actiontext"] {
+/* Custom attachments such as mentions, etc. */
+:where(action-text-attachment[content-type^="application/vnd.actiontext"]) {
   --lexxy-attachment-bg-color: transparent;
   --lexxy-attachment-image-size: 1em;
   --lexxy-attachment-text-color: currentColor;
@@ -361,7 +336,7 @@ action-text-attachment[content-type^="application/vnd.actiontext"] {
   }
 
   &.node--selected {
-    --lexxy-attachment-bg-color: var(--lexxy-color-blue-dark);
+    --lexxy-attachment-bg-color: var(--lexxy-color-accent-dark);
     --lexxy-attachment-text-color: var(--lexxy-color-ink-inverted);
   }
 }
@@ -369,7 +344,7 @@ action-text-attachment[content-type^="application/vnd.actiontext"] {
 /* Cursor
 /* -------------------------------------------------------------------------- */
 
-[data-lexical-cursor] {
+:where([data-lexical-cursor]) {
   animation: blink 1s step-end infinite;
   block-size: 1lh;
   border-inline-start: 1px solid currentColor;

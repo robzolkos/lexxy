@@ -2,34 +2,28 @@
   /* Colors: named */
   --lexxy-color-ink: oklch(20% 0 0);
   --lexxy-color-ink-medium: oklch(40% 0 0);
-  --lexxy-color-ink-lighter: oklch(60% 0 0);
+  --lexxy-color-ink-light: oklch(60% 0 0);
   --lexxy-color-ink-lighter: oklch(85% 0 0);
-  --lexxy-color-ink-lightest: oklch(95% 0 0);
+  --lexxy-color-ink-lightest: oklch(96% 0 0);
   --lexxy-color-ink-inverted: white;
-  --lexxy-color-red-dark: oklch(40% 0.18 27);
-  --lexxy-color-red-medium: oklch(60% 0.15 27);
-  --lexxy-color-red-lightest: oklch(95% 0.05 27);
-  --lexxy-color-green-dark: oklch(40% 0.18 145);
-  --lexxy-color-green-medium: oklch(60% 0.15 145);
-  --lexxy-color-green-lightest: oklch(95% 0.05 145);
-  --lexxy-color-blue-dark: oklch(57% 0.19 260);
-  --lexxy-color-blue-medium: oklch(66% 0.196 258);
-  --lexxy-color-blue-lightest: oklch(96% 0.016 252);
-  --lexxy-color-purple-dark: oklch(40% 0.18 305);
-  --lexxy-color-purple-medium: oklch(60% 0.15 305);
-  --lexxy-color-purple-lightest: oklch(95% 0.05 305);
 
-  /* Colors: abstractions */
+  --lexxy-color-accent-dark: oklch(57% 0.19 260);
+  --lexxy-color-accent-medium: oklch(66% 0.196 258);
+  --lexxy-color-accent-lightest: oklch(92% 0.026 254);
+
+  --lexxy-color-red: oklch(60% 0.15 27);
+  --lexxy-color-green: oklch(60% 0.15 145);
+  --lexxy-color-blue: oklch(66% 0.196 258);
+  --lexxy-color-purple: oklch(60% 0.15 305);
+
   --lexxy-color-canvas: var(--lexxy-color-ink-inverted);
-  --lexxy-color-accent: var(--lexxy-color-blue-dark);
   --lexxy-color-text: var(--lexxy-color-ink);
   --lexxy-color-text-subtle: var(--lexxy-color-ink-medium);
-  --lexxy-color-link: var(--lexxy-color-blue-dark);
-  --lexxy-color-selected: var(--lexxy-color-blue-lightest);
+  --lexxy-color-link: var(--lexxy-color-accent-dark);
+  --lexxy-color-selected: var(--lexxy-color-accent-lightest);
   --lexxy-color-selected-dark: var(--lexxy-color-blue-medium);
   --lexxy-color-code-bg: var(--lexxy-color-ink-lightest);
 
-  /* Colors: code tokens */
   --lexxy-color-code-token-att: #d73a49;
   --lexxy-color-code-token-comment: #6a737d;
   --lexxy-color-code-token-function: #6f42c1;
@@ -39,36 +33,18 @@
   --lexxy-color-code-token-selector: #22863a;
   --lexxy-color-code-token-variable: #e36209;
 
-  /* Fonts */
+  /* Typography */
   --lexxy-font-base: system-ui, sans-serif;
   --lexxy-font-mono: ui-monospace, "Menlo", "Monaco", Consolas, monospace;
-
-  /* Font Sizes */
-  --lexxy-text-x-small: 0.875rem;
-  --lexxy-text-small: 0.9rem;
-
-  /* Spacing */
-  --lexxy-block-space: 1rem;
-  --lexxy-block-space-half: 0.5rem;
-  --lexxy-inline-space: 1rem;
-  --lexxy-inline-space-half: 0.5rem;
-  --lexxy-block-margin: 1rem;
+  --lexxy-text-small: 0.875rem;
 
   /* Focus ring */
-  --lexxy-focus-ring-size: 2px;
-  --lexxy-focus-ring-color: #0077ff;
+  --lexxy-focus-ring-color: var(--lexxy-color-accent-medium);
   --lexxy-focus-ring-offset: 2px;
-
-  /* Input styles */
-  --lexxy-input-border-radius: 0.3em;
-  --lexxy-input-border-size: 0;
-  --lexxy-input-padding: 0;
+  --lexxy-focus-ring-size: 2px;
 
   /* Shadows */
   --lexxy-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
-  /* Border style */
-  --lexxy-border-style: solid;
 
   /* Z-index */
   --lexxy-z-popup: 1000;
