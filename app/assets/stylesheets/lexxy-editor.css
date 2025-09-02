@@ -7,14 +7,14 @@ lexxy-editor {
 
   figure.node--selected {
     &:not(:has(img)) {
-      outline: var(--fizzy-focus-ring-size) solid var(--fizzy-focus-ring-color);
-      outline-offset: var(--fizzy-focus-ring-offset);
+      outline: var(--lexxy-focus-ring-size) solid var(--lexxy-focus-ring-color);
+      outline-offset: var(--lexxy-focus-ring-offset);
     }
 
     &:has(img) {
       img {
-        outline: var(--fizzy-focus-ring-size) solid var(--fizzy-focus-ring-color);
-        outline-offset: var(--fizzy-focus-ring-offset);
+        outline: var(--lexxy-focus-ring-size) solid var(--lexxy-focus-ring-color);
+        outline-offset: var(--lexxy-focus-ring-offset);
       }
     }
   }
@@ -45,10 +45,10 @@ lexxy-editor {
 
 .lexxy-dialog-actions {
   display: flex;
-  font-size: var(--fizzy-text-x-small);
+  font-size: var(--lexxy-text-x-small);
   flex: 1 1 0%;
-  gap: var(--fizzy-inline-space-half);
-  margin-block-start: var(--fizzy-block-space-half);
+  gap: var(--lexxy-inline-space-half);
+  margin-block-start: var(--lexxy-block-space-half);
 
   .btn {
     --radius: 0.3em;
@@ -57,9 +57,9 @@ lexxy-editor {
     justify-content: center;
 
     &:is([type="submit"]) {
-      --btn-background: var(--fizzy-card-color, var(--fizzy-color-link));
-      --btn-color: var(--fizzy-color-ink-inverted);
-      --fizzy-focus-ring-color: var(--fizzy-card-color, var(--fizzy-color-link));
+      --btn-background: var(--lexxy-card-color, var(--lexxy-color-link));
+      --btn-color: var(--lexxy-color-ink-inverted);
+      --lexxy-focus-ring-color: var(--lexxy-card-color, var(--lexxy-color-link));
     }
   }
 
@@ -69,8 +69,8 @@ lexxy-editor {
 }
 
 .lexxy-editor__content {
-  margin: var(--fizzy-block-space-half) 0;
-  min-block-size: calc(7lh + var(--fizzy-block-space));
+  margin: var(--lexxy-block-space-half) 0;
+  min-block-size: calc(7lh + var(--lexxy-block-space));
   outline: 0;
 
   * {
@@ -85,14 +85,14 @@ lexxy-editor {
 }
 
 .lexxy-editor--drag-over {
-  background-color: var(--fizzy-color-selected);
+  background-color: var(--lexxy-color-selected);
   border-radius: 4px;
-  outline: 2px dashed var(--fizzy-color-selected-dark);
+  outline: 2px dashed var(--lexxy-color-selected-dark);
 }
 
 lexxy-toolbar {
   background-color: inherit;
-  border-block-end: 1px solid var(--fizzy-color-ink-light);
+  border-block-end: 1px solid var(--lexxy-color-ink-light);
   color: currentColor;
   display: flex;
   font-size: inherit;
@@ -102,12 +102,12 @@ lexxy-toolbar {
   position: relative;
 
   dialog {
-    background-color: var(--fizzy-color-canvas);
-    border: 1px solid var(--fizzy-color-ink-lighter);
+    background-color: var(--lexxy-color-canvas);
+    border: 1px solid var(--lexxy-color-ink-lighter);
     border-radius: 0.5em;
-    box-shadow: var(--fizzy-shadow);
-    color: var(--fizzy-color-ink);
-    padding: var(--fizzy-block-space) calc(var(--fizzy-inline-space) * 1.5);
+    box-shadow: var(--lexxy-shadow);
+    color: var(--lexxy-color-ink);
+    padding: var(--lexxy-block-space) calc(var(--lexxy-inline-space) * 1.5);
     position: absolute;
     z-index: 1;
 
@@ -141,16 +141,16 @@ lexxy-toolbar {
     }
 
     &:is(:focus, :hover) {
-      background-color: var(--fizzy-color-ink-lighter);
+      background-color: var(--lexxy-color-ink-lighter);
       box-shadow: none;
     }
 
     &:is(:active) {
-      background-color: var(--fizzy-color-selected);
+      background-color: var(--lexxy-color-selected);
     }
 
     &[aria-pressed="true"] {
-      background-color: var(--fizzy-color-selected);
+      background-color: var(--lexxy-color-selected);
     }
   }
 }
@@ -159,16 +159,16 @@ lexxy-toolbar {
   /* Based on .input, .input--select */
   -webkit-appearance: none;
   appearance: none;
-  background-color: var(--fizzy-color-canvas);
+  background-color: var(--lexxy-color-canvas);
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 19.5c-.7 0-1.3-.3-1.7-.8l-9.8-11.1c-.7-.8-.6-1.9.2-2.6.8-.6 1.9-.6 2.5.2l8.6 9.8c0 .1.2.1.4 0l8.6-9.8c.7-.8 1.8-.9 2.6-.2s.9 1.8.2 2.6l-9.8 11.1c-.4.5-1.1.8-1.7.8z' fill='%23000'/%3E%3C/svg%3E");
   background-position: center right 0.9em;
   background-repeat: no-repeat;
   background-size: 0.5em;
-  border: 1px solid var(--fizzy-color-ink-lighter);
+  border: 1px solid var(--lexxy-color-ink-lighter);
   border-radius: 0.3em;
-  color: var(--fizzy-color-ink);
-  font-family: var(--fizzy-font-mono);
-  font-size: var(--fizzy-text-x-small);
+  color: var(--lexxy-color-ink);
+  font-family: var(--lexxy-font-mono);
+  font-size: var(--lexxy-text-x-small);
   font-weight: 500;
   line-height: inherit;
   margin: 0.3em 0.3em 0 -0.3em;
@@ -180,8 +180,8 @@ lexxy-toolbar {
   }
 
   option {
-    background-color: var(--fizzy-color-canvas);
-    color: var(--fizzy-color-ink);
+    background-color: var(--lexxy-color-canvas);
+    color: var(--lexxy-color-ink);
   }
 }
 
@@ -193,18 +193,18 @@ lexxy-toolbar {
   --lexxy-prompt-min-width: 20ch;
   --lexxy-prompt-padding: 0.5ch;
 
-  background-color: var(--fizzy-color-canvas);
+  background-color: var(--lexxy-color-canvas);
   border-radius: calc(var(--lexxy-prompt-padding) * 2);
-  box-shadow: var(--fizzy-shadow);
-  color: var(--fizzy-color-ink);
-  font-family: var(--fizzy-font-sans);
-  font-size: var(--fizzy-text-small);
+  box-shadow: var(--lexxy-shadow);
+  color: var(--lexxy-color-ink);
+  font-family: var(--lexxy-font-sans);
+  font-size: var(--lexxy-text-small);
   list-style: none;
   margin: 0;
   min-inline-size: var(--lexxy-prompt-min-width);
   padding: var(--lexxy-prompt-padding);
   visibility: hidden;
-  z-index: var(--fizzy-z-popup);
+  z-index: var(--lexxy-z-popup);
 
   max-height: 200px;
   overflow: scroll;
@@ -224,11 +224,11 @@ lexxy-toolbar {
   white-space: nowrap;
 
   &:hover {
-    background-color: var(--fizzy-color-ink-lightest);
+    background-color: var(--lexxy-color-ink-lightest);
   }
 
   &[aria-selected] {
-    background-color: var(--fizzy-color-selected);
+    background-color: var(--lexxy-color-selected);
   }
 
   img {
@@ -244,7 +244,7 @@ lexxy-toolbar {
   }
 
   code {
-    background-color: var(--fizzy-color-terminal-text-light);
+    background-color: var(--lexxy-color-terminal-text-light);
     border-radius: 0.25ch;
     font-size: 0.95em;
     padding-inline: 0.5ch;
@@ -253,6 +253,6 @@ lexxy-toolbar {
 
 /* Empty state */
 .lexxy-prompt-menu__item--empty {
-  color: var(--fizzy-color-ink-medium);
+  color: var(--lexxy-color-ink-medium);
   padding: var(--lexxy-prompt-padding);
 }

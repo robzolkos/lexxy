@@ -1,76 +1,76 @@
 :root {
   /* Colors - Base */
-  --fizzy-color-ink: #333;
-  --fizzy-color-ink-inverted: white;
-  --fizzy-color-ink-dark: #555;
-  --fizzy-color-ink-medium: #666;
-  --fizzy-color-ink-light: #999;
-  --fizzy-color-ink-lighter: #ddd;
-  --fizzy-color-ink-lightest: #f5f5f5;
-  --fizzy-color-canvas: white;
-  --fizzy-color-link: #0077ff;
-  --fizzy-color-selected: #e6f2ff;
-  --fizzy-color-selected-dark: #0056cc;
-  --fizzy-color-terminal-text-light: #f0f0f0;
+  --lexxy-color-ink: #333;
+  --lexxy-color-ink-inverted: white;
+  --lexxy-color-ink-dark: #555;
+  --lexxy-color-ink-medium: #666;
+  --lexxy-color-ink-light: #999;
+  --lexxy-color-ink-lighter: #ddd;
+  --lexxy-color-ink-lightest: #f5f5f5;
+  --lexxy-color-canvas: white;
+  --lexxy-color-link: #0077ff;
+  --lexxy-color-selected: #e6f2ff;
+  --lexxy-color-selected-dark: #0056cc;
+  --lexxy-color-terminal-text-light: #f0f0f0;
 
   /* Card colors */
-  --fizzy-card-color: var(--fizzy-color-link);
+  --lexxy-card-color: var(--lexxy-color-link);
 
   /* Code token colors */
-  --fizzy-color-code-token__att: #d73a49;
-  --fizzy-color-code-token__property: #005cc5;
-  --fizzy-color-code-token__selector: #22863a;
-  --fizzy-color-code-token__comment: #6a737d;
-  --fizzy-color-code-token__operator: #d73a49;
-  --fizzy-color-code-token__function: #6f42c1;
-  --fizzy-color-code-token__variable: #e36209;
-  --fizzy-color-code-token__punctuation: #24292e;
+  --lexxy-color-code-token__att: #d73a49;
+  --lexxy-color-code-token__property: #005cc5;
+  --lexxy-color-code-token__selector: #22863a;
+  --lexxy-color-code-token__comment: #6a737d;
+  --lexxy-color-code-token__operator: #d73a49;
+  --lexxy-color-code-token__function: #6f42c1;
+  --lexxy-color-code-token__variable: #e36209;
+  --lexxy-color-code-token__punctuation: #24292e;
 
   /* LCH color values for attachment icons */
-  --fizzy-lch-red-dark: 40% 0.18 27;
-  --fizzy-lch-red-lightest: 95% 0.05 27;
-  --fizzy-lch-red-medium: 60% 0.15 27;
-  --fizzy-lch-purple-dark: 40% 0.18 305;
-  --fizzy-lch-purple-lightest: 95% 0.05 305;
-  --fizzy-lch-purple-medium: 60% 0.15 305;
-  --fizzy-lch-blue-dark: 40% 0.18 250;
-  --fizzy-lch-blue-lightest: 95% 0.05 250;
-  --fizzy-lch-blue-medium: 60% 0.15 250;
-  --fizzy-lch-green-dark: 40% 0.18 145;
-  --fizzy-lch-green-lightest: 95% 0.05 145;
-  --fizzy-lch-green-medium: 60% 0.15 145;
+  --lexxy-lch-red-dark: 40% 0.18 27;
+  --lexxy-lch-red-lightest: 95% 0.05 27;
+  --lexxy-lch-red-medium: 60% 0.15 27;
+  --lexxy-lch-purple-dark: 40% 0.18 305;
+  --lexxy-lch-purple-lightest: 95% 0.05 305;
+  --lexxy-lch-purple-medium: 60% 0.15 305;
+  --lexxy-lch-blue-dark: 40% 0.18 250;
+  --lexxy-lch-blue-lightest: 95% 0.05 250;
+  --lexxy-lch-blue-medium: 60% 0.15 250;
+  --lexxy-lch-green-dark: 40% 0.18 145;
+  --lexxy-lch-green-lightest: 95% 0.05 145;
+  --lexxy-lch-green-medium: 60% 0.15 145;
 
   /* Typography */
-  --fizzy-font-mono: 'Menlo', 'Monaco', 'Courier New', monospace;
-  --fizzy-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --lexxy-font-mono: 'Menlo', 'Monaco', 'Courier New', monospace;
+  --lexxy-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Text sizes */
-  --fizzy-text-x-small: 0.875rem;
-  --fizzy-text-small: 0.9rem;
+  --lexxy-text-x-small: 0.875rem;
+  --lexxy-text-small: 0.9rem;
 
   /* Spacing */
-  --fizzy-block-space: 1rem;
-  --fizzy-block-space-half: 0.5rem;
-  --fizzy-inline-space: 1rem;
-  --fizzy-inline-space-half: 0.5rem;
-  --fizzy-block-margin: 1rem;
+  --lexxy-block-space: 1rem;
+  --lexxy-block-space-half: 0.5rem;
+  --lexxy-inline-space: 1rem;
+  --lexxy-inline-space-half: 0.5rem;
+  --lexxy-block-margin: 1rem;
 
   /* Focus ring */
-  --fizzy-focus-ring-size: 2px;
-  --fizzy-focus-ring-color: #0077ff;
-  --fizzy-focus-ring-offset: 2px;
+  --lexxy-focus-ring-size: 2px;
+  --lexxy-focus-ring-color: #0077ff;
+  --lexxy-focus-ring-offset: 2px;
 
   /* Input styles */
-  --fizzy-input-border-radius: 0.3em;
-  --fizzy-input-border-size: 0;
-  --fizzy-input-padding: 0;
+  --lexxy-input-border-radius: 0.3em;
+  --lexxy-input-border-size: 0;
+  --lexxy-input-padding: 0;
 
   /* Shadows */
-  --fizzy-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --lexxy-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   /* Border style */
-  --fizzy-border-style: solid;
+  --lexxy-border-style: solid;
 
   /* Z-index */
-  --fizzy-z-popup: 1000;
+  --lexxy-z-popup: 1000;
 }
