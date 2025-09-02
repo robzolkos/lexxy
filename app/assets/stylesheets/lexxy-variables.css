@@ -1,5 +1,5 @@
 :root {
-  /* Colors: named */
+  /* Colors */
   --lexxy-color-ink: oklch(20% 0 0);
   --lexxy-color-ink-medium: oklch(40% 0 0);
   --lexxy-color-ink-light: oklch(60% 0 0);
@@ -16,14 +16,6 @@
   --lexxy-color-blue: oklch(66% 0.196 258);
   --lexxy-color-purple: oklch(60% 0.15 305);
 
-  --lexxy-color-canvas: var(--lexxy-color-ink-inverted);
-  --lexxy-color-text: var(--lexxy-color-ink);
-  --lexxy-color-text-subtle: var(--lexxy-color-ink-medium);
-  --lexxy-color-link: var(--lexxy-color-accent-dark);
-  --lexxy-color-selected: var(--lexxy-color-accent-lightest);
-  --lexxy-color-selected-dark: var(--lexxy-color-blue-medium);
-  --lexxy-color-code-bg: var(--lexxy-color-ink-lightest);
-
   --lexxy-color-code-token-att: #d73a49;
   --lexxy-color-code-token-comment: #6a737d;
   --lexxy-color-code-token-function: #6f42c1;
@@ -33,19 +25,26 @@
   --lexxy-color-code-token-selector: #22863a;
   --lexxy-color-code-token-variable: #e36209;
 
+  --lexxy-color-canvas: var(--lexxy-color-ink-inverted);
+  --lexxy-color-text: var(--lexxy-color-ink);
+  --lexxy-color-text-subtle: var(--lexxy-color-ink-medium);
+  --lexxy-color-link: var(--lexxy-color-accent-dark);
+  --lexxy-color-selected: var(--lexxy-color-accent-lightest);
+  --lexxy-color-selected-dark: var(--lexxy-color-blue-medium);
+  --lexxy-color-code-bg: var(--lexxy-color-ink-lightest);
+
   /* Typography */
   --lexxy-font-base: system-ui, sans-serif;
   --lexxy-font-mono: ui-monospace, "Menlo", "Monaco", Consolas, monospace;
   --lexxy-text-small: 0.875rem;
 
   /* Focus ring */
-  --lexxy-focus-ring-color: var(--lexxy-color-accent-medium);
+  --lexxy-focus-ring-color: var(--lexxy-color-accent-dark);
   --lexxy-focus-ring-offset: 2px;
   --lexxy-focus-ring-size: 2px;
 
-  /* Shadows */
+  /* Misc */
+  --lexxy-radius: 0.5ch;
   --lexxy-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
-  /* Z-index */
   --lexxy-z-popup: 1000;
 }

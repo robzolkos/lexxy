@@ -1,19 +1,23 @@
 @import url("lexxy-variables.css");
 
 :where(lexxy-editor) {
-  --lexxy-toolbar-gap: 2px;
-  --lexxy-toolbar-radius: 0.5ch;
-
   display: block;
   overflow: visible;
   position: relative;
+
+  input,
+  button {
+    &:focus-visible {
+      outline-color: var(--lexxy-focus-ring-color);
+    }
+  }
 
   button {
     -webkit-appearance: none;
     appearance: none;
     background: var(--lexxy-color-canvas);
     border: none;
-    border-radius: var(--lexxy-toolbar-radius);
+    border-radius: var(--lexxy-radius);
     cursor: pointer;
     font-size: inherit;
     inline-size: auto;
@@ -58,7 +62,7 @@
 
 :where(.lexxy-editor--drag-over) {
   background-color: var(--lexxy-color-selected);
-  border-radius: 4px;
+  border-radius: var(--lexxy-radius);
   outline: 2px dashed var(--lexxy-color-selected-dark);
 }
 
@@ -66,8 +70,10 @@
 /* -------------------------------------------------------------------------- */
 
 :where(lexxy-toolbar) {
+  --lexxy-toolbar-gap: 2px;
+
   border: 1px solid var(--lexxy-color-ink-lighter);
-  border-radius: calc(var(--lexxy-toolbar-radius) + var(--lexxy-toolbar-gap));
+  border-radius: calc(var(--lexxy-radius) + var(--lexxy-toolbar-gap));
   color: currentColor;
   display: flex;
   font-size: inherit;
@@ -110,7 +116,7 @@
   dialog {
     background-color: var(--lexxy-color-canvas);
     border: 1px solid var(--lexxy-color-ink-lighter);
-    border-radius: var(--lexxy-toolbar-radius);
+    border-radius: var(--lexxy-radius);
     box-shadow: var(--lexxy-shadow);
     color: var(--lexxy-color-ink);
     padding: 1ch;
@@ -134,7 +140,7 @@
 
   .input[type="url"] {
     border: 1px solid var(--lexxy-color-ink-lighter);
-    border-radius: var(--lexxy-toolbar-radius);
+    border-radius: var(--lexxy-radius);
     min-inline-size: 30ch;
   }
 
@@ -147,8 +153,6 @@
   button[type="submit"] {
     background-color: var(--lexxy-color-accent-dark);
     color: var(--lexxy-color-ink-inverted);
-
-    --lexxy-focus-ring-color: var(--lexxy-color-accent-dark, var(--lexxy-color-link));
   }
 }
 
@@ -165,7 +169,7 @@
   background-size: 1ch;
   block-size: 1.5lh;
   border: 1px solid var(--lexxy-color-ink-lighter);
-  border-radius: 0.5ch;
+  border-radius: var(--lexxy-radius);
   color: var(--lexxy-color-ink);
   font-family: var(--lexxy-font-base);
   font-size: var(--lexxy-text-small);
@@ -211,7 +215,7 @@
 
 :where(.lexxy-prompt-menu__item) {
   align-items: center;
-  border-radius: 0.5ch;
+  border-radius: var(--lexxy-radius);
   cursor: pointer;
   display: flex;
   gap: var(--lexxy-prompt-padding);
@@ -236,13 +240,6 @@
 
   + & {
     margin-top: 2px;
-  }
-
-  code {
-    background-color: var(--lexxy-color-code-bg);
-    border-radius: 0.25ch;
-    font-size: 0.95em;
-    padding-inline: 0.5ch;
   }
 }
 

@@ -66,7 +66,7 @@
 
   code, pre {
     background-color: var(--lexxy-color-ink-lightest);
-    border-radius: 0.5ch;
+    border-radius: var(--lexxy-radius);
     color: var(--lexxy-color-ink);
     font-family: var(--lexxy-font-mono);
     font-size: 0.9em;
@@ -75,7 +75,7 @@
 
     &:is(pre),
     &[data-language] {
-      border-radius: 0.75ch;
+      border-radius: var(--lexxy-radius);
       display: block;
       hyphens: none;
       overflow-x: auto;
@@ -165,7 +165,7 @@
 :where(.attachment) {
   block-size: auto;
   display: block;
-  inline-size: 100%;
+  inline-size: fit-content;
   position: relative;
   margin-inline: auto;
   max-inline-size: 100%;
@@ -189,8 +189,6 @@
     text-align: center;
 
     &:focus {
-      --lexxy-focus-ring-size: 0;
-
       outline: none;
     }
 
@@ -208,7 +206,7 @@
   block-size: 3lh;
   border: 2px solid var(--lexxy-attachment-icon-color);
   border-block-start-width: 1ch;
-  border-radius: 0.5ch;
+  border-radius: var(--lexxy-radius);
   box-sizing: border-box;
   color: var(--lexxy-attachment-icon-color);
   display: grid;
@@ -220,7 +218,7 @@
 }
 
 :where(.attachment--preview) {
-  inline-size: fit-content;
+  border-radius: var(--lexxy-radius);
 
   img, video {
     block-size: auto;
@@ -314,7 +312,7 @@
 
   align-items: center;
   background: var(--lexxy-attachment-bg-color);
-  border-radius: 99rem;
+  border-radius: var(--lexxy-radius);
   box-shadow: -0.25ch 0 0 var(--lexxy-attachment-bg-color), 0.5ch 0 0 var(--lexxy-attachment-bg-color);
   color: var(--lexxy-attachment-text-color);
   display: inline-flex;
