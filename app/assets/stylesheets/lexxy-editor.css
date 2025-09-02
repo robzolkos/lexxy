@@ -36,6 +36,10 @@
       outline-offset: var(--lexxy-focus-ring-offset);
     }
   }
+
+  action-text-attachment {
+    cursor: pointer;
+  }
 }
 
 /* Placeholder */
@@ -54,10 +58,6 @@
 :where(.lexxy-editor__content) {
   min-block-size: 8lh;
   outline: 0;
-
-  > :last-child {
-    margin-block-end: 0;
-  }
 }
 
 :where(.lexxy-editor--drag-over) {
@@ -200,13 +200,12 @@
   font-size: var(--lexxy-text-small);
   list-style: none;
   margin: 0;
+  max-block-size: 200px;
   min-inline-size: var(--lexxy-prompt-min-width);
+  overflow: auto;
   padding: var(--lexxy-prompt-padding);
   visibility: hidden;
   z-index: var(--lexxy-z-popup);
-
-  max-height: 200px;
-  overflow: scroll;
 }
 
 :where(.lexxy-prompt-menu--visible) {
@@ -243,7 +242,6 @@
   }
 }
 
-/* Empty state */
 :where(.lexxy-prompt-menu__item--empty) {
   color: var(--lexxy-color-ink-medium);
   padding: var(--lexxy-prompt-padding);
