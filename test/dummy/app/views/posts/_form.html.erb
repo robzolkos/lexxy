@@ -1,4 +1,6 @@
-<%= form_with(model: post) do |form| %>
+
+
+<%= form_with model: post, data: { controller: "events-logger", action: "lexxy:change->events-logger#log" } do |form| %>
   <div>
     <%= form.label :title, style: "display: block" %>
     <%= form.text_field :title %>
@@ -30,5 +32,8 @@
 
   <div>
     <%= form.submit %>
+  </div>
+
+  <div id="events" data-events-logger-target="log">
   </div>
 <% end %>
