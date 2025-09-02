@@ -12,10 +12,10 @@
   --fizzy-color-selected: #e6f2ff;
   --fizzy-color-selected-dark: #0056cc;
   --fizzy-color-terminal-text-light: #f0f0f0;
-  
+
   /* Card colors */
   --fizzy-card-color: var(--fizzy-color-link);
-  
+
   /* Code token colors */
   --fizzy-color-code-token__att: #d73a49;
   --fizzy-color-code-token__property: #005cc5;
@@ -25,7 +25,7 @@
   --fizzy-color-code-token__function: #6f42c1;
   --fizzy-color-code-token__variable: #e36209;
   --fizzy-color-code-token__punctuation: #24292e;
-  
+
   /* LCH color values for attachment icons */
   --fizzy-lch-red-dark: 40% 0.18 27;
   --fizzy-lch-red-lightest: 95% 0.05 27;
@@ -39,38 +39,38 @@
   --fizzy-lch-green-dark: 40% 0.18 145;
   --fizzy-lch-green-lightest: 95% 0.05 145;
   --fizzy-lch-green-medium: 60% 0.15 145;
-  
+
   /* Typography */
   --fizzy-font-mono: 'Menlo', 'Monaco', 'Courier New', monospace;
   --fizzy-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  
+
   /* Text sizes */
   --fizzy-text-x-small: 0.875rem;
   --fizzy-text-small: 0.9rem;
-  
+
   /* Spacing */
   --fizzy-block-space: 1rem;
   --fizzy-block-space-half: 0.5rem;
   --fizzy-inline-space: 1rem;
   --fizzy-inline-space-half: 0.5rem;
   --fizzy-block-margin: 1rem;
-  
+
   /* Focus ring */
   --fizzy-focus-ring-size: 2px;
   --fizzy-focus-ring-color: #0077ff;
   --fizzy-focus-ring-offset: 2px;
-  
+
   /* Input styles */
   --fizzy-input-border-radius: 0.3em;
   --fizzy-input-border-size: 0;
   --fizzy-input-padding: 0;
-  
+
   /* Shadows */
   --fizzy-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  
+
   /* Border style */
   --fizzy-border-style: solid;
-  
+
   /* Z-index */
   --fizzy-z-popup: 1000;
 }
