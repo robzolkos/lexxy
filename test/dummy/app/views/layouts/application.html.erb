@@ -26,11 +26,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="rich-text-content" data-controller="events-logger" data-action="lexxy:change->events-logger#log">
+  <body class="rich-text-content">
     <%= yield %>
-
-    <div id="events" data-events-logger-target="log">
-
-    </div>
   </body>
 </html>
