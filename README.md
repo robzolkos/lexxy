@@ -18,7 +18,7 @@ bundle install
 
 ## Features
 
-- Built on top of [Lexical](https://lexical.dev): Meta's powerful text editor framework.
+- Built on top of [Lexical](https://lexical.dev), the powerful text editor framework from Meta.
 - Good HTML semantics. Paragraphs are real `<p>` tags, as they should be.
 - Markdown support: shortcuts, auto-formatting on paste.
 - Real-time code syntax highlighting.
@@ -51,7 +51,7 @@ The `<lexxy-editor>` element supports these options:
 - `toolbar` - Pass `"false"` to disable the toolbar entirely, or pass an element ID to render the toolbar in an external element. By default, the toolbar is bootstrapped and displayed above the editor.
 - `attachments` - Pass `"false"` to disable attachments completely. By default, attachments are supported, including paste and Drag & Drop support.
 
-Lexxy uses the `ElementInternals` API to participate in HTML forms as any standard control. This means that you can use standard HTML attributes like `name`, `required`, `disabled`, etc.
+Lexxy uses the `ElementInternals` API to participate in HTML forms as any standard control. This means that you can use standard HTML attributes like `name`, `value`, `required`, `disabled`, etc.
 
 ## Prompts
 
