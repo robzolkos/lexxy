@@ -1,135 +1,100 @@
 @import url("lexxy-variables.css");
 
-lexxy-editor {
+:where(lexxy-editor) {
+  --lexxy-toolbar-gap: 2px;
+
+  border: 1px solid var(--lexxy-color-ink-lighter);
+  border-radius: calc(var(--lexxy-radius) + var(--lexxy-toolbar-gap));
   display: block;
-  position: relative;
   overflow: visible;
+  position: relative;
+  transition: opacity 150ms;
 
-  figure.node--selected {
-    &:not(:has(img)) {
-      outline: var(--lexxy-focus-ring-size) solid var(--lexxy-focus-ring-color);
-      outline-offset: var(--lexxy-focus-ring-offset);
+  &:not(:has(lexxy-toolbar)) {
+    opacity: 0;
+  }
+
+  input,
+  button {
+    &:focus-visible {
+      outline-color: var(--lexxy-focus-ring-color);
     }
+  }
 
-    &:has(img) {
-      img {
-        outline: var(--lexxy-focus-ring-size) solid var(--lexxy-focus-ring-color);
-        outline-offset: var(--lexxy-focus-ring-offset);
+  button {
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--lexxy-color-canvas);
+    border: none;
+    border-radius: var(--lexxy-radius);
+    cursor: pointer;
+    font-size: inherit;
+    inline-size: auto;
+
+    @media(any-hover: hover) {
+      &:hover {
+        filter: brightness(0.9);
       }
     }
   }
 
-  /* Lexical still uses the `lexxy-editor--empty` class if you have a list
-     started with no other characters. Here, we won't show the placeholder if
-     you've clicked the List button in the toolbar. */
-
-  &.lexxy-editor--empty {
-    .lexxy-editor__content:not(:has(ul, ol))::before {
-      content: attr(placeholder);
-      color: currentColor;
-      cursor: text;
-      opacity: 0.66;
-      pointer-events: none;
-      position: absolute;
-      white-space: pre-line;
+  .node--selected {
+    &:has(img) img,
+    &:not(:has(img)) {
+      outline: var(--lexxy-focus-ring-size) solid var(--lexxy-focus-ring-color);
+      outline-offset: var(--lexxy-focus-ring-offset);
     }
+  }
 
-    /* Disable the submit button when Lexical is empty */
-
-    + .comment__submit {
-      opacity: 0.5;
-      pointer-events: none;
-    }
+  action-text-attachment {
+    cursor: pointer;
   }
 }
 
-.lexxy-dialog-actions {
-  display: flex;
-  font-size: var(--lexxy-text-x-small);
-  flex: 1 1 0%;
-  gap: var(--lexxy-inline-space-half);
-  margin-block-start: var(--lexxy-block-space-half);
-
-  .btn {
-    --radius: 0.3em;
-
-    inline-size: 100%;
-    justify-content: center;
-
-    &:is([type="submit"]) {
-      --btn-background: var(--lexxy-card-color, var(--lexxy-color-link));
-      --btn-color: var(--lexxy-color-ink-inverted);
-      --lexxy-focus-ring-color: var(--lexxy-card-color, var(--lexxy-color-link));
-    }
-  }
-
-  span {
-    inline-size: 100%;
+/* Placeholder */
+:where(.lexxy-editor--empty) {
+  .lexxy-editor__content:not(:has(ul, ol))::before {
+    content: attr(placeholder);
+    color: currentColor;
+    cursor: text;
+    opacity: 0.66;
+    pointer-events: none;
+    position: absolute;
+    white-space: pre-line;
   }
 }
 
-.lexxy-editor__content {
-  margin: var(--lexxy-block-space-half) 0;
-  min-block-size: calc(7lh + var(--lexxy-block-space));
+:where(.lexxy-editor__content) {
+  min-block-size: 8lh;
   outline: 0;
-
-  * {
-    &:first-child {
-      margin-block-start: 0;
-    }
-
-    &:last-child {
-      margin-block-end: 0;
-    }
-  }
+  padding: 1ch;
 }
 
-.lexxy-editor--drag-over {
+:where(.lexxy-editor--drag-over) {
   background-color: var(--lexxy-color-selected);
-  border-radius: 4px;
+  border-radius: var(--lexxy-radius);
   outline: 2px dashed var(--lexxy-color-selected-dark);
 }
 
-lexxy-toolbar {
-  background-color: inherit;
-  border-block-end: 1px solid var(--lexxy-color-ink-light);
+/* Toolbar
+/* -------------------------------------------------------------------------- */
+
+:where(lexxy-toolbar) {
+  border-block-end: 1px solid var(--lexxy-color-ink-lighter);
   color: currentColor;
   display: flex;
   font-size: inherit;
-  margin: 0;
+  gap: var(--lexxy-toolbar-gap);
   max-inline-size: 100%;
-  padding: 0.2em 0;
+  padding: 2px;
   position: relative;
 
-  dialog {
-    background-color: var(--lexxy-color-canvas);
-    border: 1px solid var(--lexxy-color-ink-lighter);
-    border-radius: 0.5em;
-    box-shadow: var(--lexxy-shadow);
-    color: var(--lexxy-color-ink);
-    padding: var(--lexxy-block-space) calc(var(--lexxy-inline-space) * 1.5);
-    position: absolute;
-    z-index: 1;
-
-    .input[type="url"] {
-      min-inline-size: 30ch;
-    }
-  }
-
   > button {
-    aspect-ratio: 4/3.5;
-    appearance: none;
-    background-color: transparent;
-    block-size: 2em;
-    border: none;
-    border-radius: 0.2em;
+    aspect-ratio: 1;
+    block-size: 2lh;
     color: currentColor;
-    cursor: pointer;
     display: grid;
-    font-size: inherit;
-    inline-size: auto;
     place-items: center;
-    transition: background-color 300ms ease;
 
     svg {
       -webkit-touch-callout: none;
@@ -138,11 +103,6 @@ lexxy-toolbar {
       grid-area: 1/1;
       inline-size: auto;
       user-select: none;
-    }
-
-    &:is(:focus, :hover) {
-      background-color: var(--lexxy-color-ink-lighter);
-      box-shadow: none;
     }
 
     &:is(:active) {
@@ -155,40 +115,85 @@ lexxy-toolbar {
   }
 }
 
-.lexxy-code-language-picker {
-  /* Based on .input, .input--select */
+/* Link dialog
+/* -------------------------------------------------------------------------- */
+
+:where(.lexxy-link-dialog) {
+  dialog {
+    background-color: var(--lexxy-color-canvas);
+    border: 1px solid var(--lexxy-color-ink-lighter);
+    border-radius: var(--lexxy-radius);
+    box-shadow: var(--lexxy-shadow);
+    color: var(--lexxy-color-ink);
+    padding: 1ch;
+    position: absolute;
+    z-index: 1;
+  }
+
+  .lexxy-dialog-actions {
+    display: flex;
+    font-size: var(--lexxy-text-small);
+    flex: 1 1 0%;
+    gap: 1ch;
+    margin-block-start: 1ch;
+  }
+
+  input[type="url"],
+  button {
+    line-height: 1.5lh;
+    padding-inline: 1ch;
+  }
+
+  input[type="url"] {
+    border: 1px solid var(--lexxy-color-ink-lighter);
+    border-radius: var(--lexxy-radius);
+    min-inline-size: 30ch;
+  }
+
+  button {
+    background-color: var(--lexxy-color-ink-lightest);
+    inline-size: 100%;
+    justify-content: center;
+  }
+
+  button[type="submit"] {
+    background-color: var(--lexxy-color-accent-dark);
+    color: var(--lexxy-color-ink-inverted);
+  }
+}
+
+/* Language picker
+/* -------------------------------------------------------------------------- */
+
+:where(.lexxy-code-language-picker) {
   -webkit-appearance: none;
   appearance: none;
   background-color: var(--lexxy-color-canvas);
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 19.5c-.7 0-1.3-.3-1.7-.8l-9.8-11.1c-.7-.8-.6-1.9.2-2.6.8-.6 1.9-.6 2.5.2l8.6 9.8c0 .1.2.1.4 0l8.6-9.8c.7-.8 1.8-.9 2.6-.2s.9 1.8.2 2.6l-9.8 11.1c-.4.5-1.1.8-1.7.8z' fill='%23000'/%3E%3C/svg%3E");
-  background-position: center right 0.9em;
+  background-position: center right 1ch;
   background-repeat: no-repeat;
-  background-size: 0.5em;
+  background-size: 1ch;
+  block-size: 1.5lh;
   border: 1px solid var(--lexxy-color-ink-lighter);
-  border-radius: 0.3em;
+  border-radius: var(--lexxy-radius);
   color: var(--lexxy-color-ink);
-  font-family: var(--lexxy-font-mono);
-  font-size: var(--lexxy-text-x-small);
-  font-weight: 500;
-  line-height: inherit;
-  margin: 0.3em 0.3em 0 -0.3em;
-  padding: 0.5em 1.8em 0.5em 1.2em;
+  font-family: var(--lexxy-font-base);
+  font-size: var(--lexxy-text-small);
+  font-weight: normal;
+  inset-inline-end: 0;
+  margin: 0.5ch 0.5ch 0 -0.5ch;
+  padding: 0 2ch 0 1ch;
   text-align: start;
 
   @media (prefers-color-scheme: dark) {
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m12 19.5c-.7 0-1.3-.3-1.7-.8l-9.8-11.1c-.7-.8-.6-1.9.2-2.6.8-.6 1.9-.6 2.5.2l8.6 9.8c0 .1.2.1.4 0l8.6-9.8c.7-.8 1.8-.9 2.6-.2s.9 1.8.2 2.6l-9.8 11.1c-.4.5-1.1.8-1.7.8z' fill='%23fff'/%3E%3C/svg%3E");
-  }
-
-  option {
-    background-color: var(--lexxy-color-canvas);
-    color: var(--lexxy-color-ink);
   }
 }
 
 /* Prompt
 /* ------------------------------------------------------------------------ */
 
-.lexxy-prompt-menu {
+:where(.lexxy-prompt-menu) {
   --lexxy-prompt-avatar-size: 24px;
   --lexxy-prompt-min-width: 20ch;
   --lexxy-prompt-padding: 0.5ch;
@@ -197,26 +202,25 @@ lexxy-toolbar {
   border-radius: calc(var(--lexxy-prompt-padding) * 2);
   box-shadow: var(--lexxy-shadow);
   color: var(--lexxy-color-ink);
-  font-family: var(--lexxy-font-sans);
+  font-family: var(--lexxy-font-base);
   font-size: var(--lexxy-text-small);
   list-style: none;
   margin: 0;
+  max-block-size: 200px;
   min-inline-size: var(--lexxy-prompt-min-width);
+  overflow: auto;
   padding: var(--lexxy-prompt-padding);
   visibility: hidden;
   z-index: var(--lexxy-z-popup);
-
-  max-height: 200px;
-  overflow: scroll;
 }
 
-.lexxy-prompt-menu--visible {
+:where(.lexxy-prompt-menu--visible) {
   visibility: initial;
 }
 
-.lexxy-prompt-menu__item {
+:where(.lexxy-prompt-menu__item) {
   align-items: center;
-  border-radius: 0.5ch;
+  border-radius: var(--lexxy-radius);
   cursor: pointer;
   display: flex;
   gap: var(--lexxy-prompt-padding);
@@ -242,17 +246,9 @@ lexxy-toolbar {
   + & {
     margin-top: 2px;
   }
-
-  code {
-    background-color: var(--lexxy-color-terminal-text-light);
-    border-radius: 0.25ch;
-    font-size: 0.95em;
-    padding-inline: 0.5ch;
-  }
 }
 
-/* Empty state */
-.lexxy-prompt-menu__item--empty {
+:where(.lexxy-prompt-menu__item--empty) {
   color: var(--lexxy-color-ink-medium);
   padding: var(--lexxy-prompt-padding);
 }

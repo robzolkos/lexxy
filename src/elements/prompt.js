@@ -52,7 +52,7 @@ export default class LexicalPromptElement extends HTMLElement {
         return new DeferredPromptSource(src)
       }
     } else {
-      return new InlinePromptSource(document.getElementById(src).querySelectorAll("lexxy-prompt-item"))
+      return new InlinePromptSource(this.querySelectorAll("lexxy-prompt-item"))
     }
   }
 
