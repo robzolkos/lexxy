@@ -1,4 +1,4 @@
- # Lexxy
+# Lexxy
 
 A modern rich text editor for Rails.
 
@@ -6,13 +6,13 @@ A modern rich text editor for Rails.
 
 Add this line to your application's Gemfile:
 
-```ruby
+"`ruby
 gem 'lexxy'
 ```
 
 And then execute:
 
-```bash
+"`bash
 bundle install
 ```
 
@@ -31,15 +31,15 @@ bundle install
 
 You can add a Lexxy instance using the regular Action Text form helper:
 
-```erb
+"'erb
 <%= form_with model: @post do |form| %>
-  <%= form.rich_text_area :content %>
+<%= form.rich_text_area :content %>
 <% end %>
 ```
 
 Under the hood, this will insert a `<lexxy-editor>` tag, that will be a first-class form control:
 
-```html
+"`html
 <lexxy-editor name="post[body]"...>...</lexxy-editor>
 ```
 
@@ -57,28 +57,28 @@ Lexxy uses the `ElementInternals` API to participate in HTML forms as any standa
 
 Prompts let you implement features like @mentions, /commands, or any other trigger-based suggestions. When you select an item from the prompt, you have two options:
 
-1. Insert the item as an [Action Text custom attachment](https://guides.rubyonrails.org/action_text_overview.html#signed-globalid). This lets you use standard Action Text to customize how they should render or to process them on the server side.
+1. Insert the item as an [Action Text custom attachment](https://guides.rubyonrails.org/action_text_overview.html#signed-globalid). This allows you to use standard Action Text to customize how it renders or processes them on the server side.
 2. Insert the item as free text in the editor.
 
-Lexxy also lets you configure how to load the items: inline or remotely, and how to do the filtering (locally or on the server). As you see, that's quite a bit of flexibility, but it will be easily understood with an example.
+Lexxy also lets you configure how to load the items: inline or remotely, and how to do the filtering (locally or on the server).
 
 ### General setup
 
 The first thing to do is to add a `<lexxy-prompt>` element to the editor:
 
-```erb
+"'erb
 <%= form_with model: @post do |form| %>
-  <lexxy-prompt trigger="@" src="...">
-  </lexxy-prompt>
+<lexxy-prompt trigger="@" src="...">
+</lexxy-prompt>
 <% end %>
 ```
 
-The `trigger` option determines will key will open the prompt, and the `src` property how the prompt menu items load (inline or remotely). It can be either:
+The `trigger` option determines which key will open the prompt, and the `src` property determines how the prompt menu items load (inline or remotely). It can be either:
 
 - An element ID, to reference a `<lexxy-prompt-source>` element that will contain all the prompt items.
 - A path or URL to fetch options from.
 
-Regardless the source, the prompt items are defined using `<lexxy-prompt-item>` elements. A basic prompt item looks like this:
+Regardless of the source, the prompt items are defined using `<lexxy-prompt-item>` elements. A basic prompt item looks like this:
 
 ```
 <lexxy-prompt-item search="...">
@@ -92,87 +92,87 @@ Regardless the source, the prompt items are defined using `<lexxy-prompt-item>` 
 Where:
 
 * `search` contains the text to match against when filtering.
-* `template[type="menu"]` defines how the item appears in the dropdown menu.
-* `template[type="editor"]` defines how the item appears in the editor when selected.
+* `template[type= "menu"]` defines how the item appears in the dropdown menu.
+* `template[type= "editor"]` defines how the item appears in the editor when selected.
 
 ### Custom attachments with inline loading
 
-Imagine you want to implement a *mentions* feature, where users can type "@" and select a person to mention. You want to save mentions as action text attachments, for further server-side processing when the form is submitted.
+Imagine you want to implement a *mentions* feature, where users can type "@" and select a person to mention. You want to save mentions as action text attachments for further server-side processing when the form is submitted.
 
 First, you need to include the `ActionText::Attachable` concern in your model.
 
-```ruby
+"`ruby
 # app/models/person.rb
 class Person < ApplicationRecord
-  include ActionText::Attachable
+include ActionText::Attachable
 end
 ```
 
 By default, the partial to render the attachment will be looked up in `app/views/[model plural]/_[model singular].html.erb`. You can customize this by implementing `#to_attachable_partial_path` in the model. Let's go with the default and render a simple view that renders the person's name and initials:
 
-```erb
+"'erb
 # app/views/people/_person.html.erb
 <em><%= person.name %></em> (<strong><%= person.initials %></strong>)
 ```
 
 On the editor side, let's start with the *inline* approach:
 
-```erb
+"'erb
 <lexxy-prompt-source id="inline-source">
-    <%= Person.find_each do |person| %>
-      <%= render "people/prompt_item", person: person %>
-    <% end %>
+<%= Person.find_each do |person| %>
+<%= render "people/prompt_item", person: person %>
+<% end %>
 </lexxy-prompt-source>
 
 <%= form.rich_text_area :body do %>
-  <lexxy-prompt trigger="inline-source" src="<%= people_path %>" name="mention">
-  </lexxy-prompt>
+<lexxy-prompt trigger="inline-source" src="<%= people_path %>" name="mention">
+</lexxy-prompt>
 <% end %>
 
 With `app/views/people/_prompt_item.html.erb` defining each prompt item.:
 
-```erb
+"'erb
 <lexxy-prompt-item search="<%= "#{person.name} #{person.initials}" %>" sgid="<%= person.attachable_sgid %>">
-  <template type="menu"><%= person.name %></template>
-  <template type="editor">
-    <%= render "people/person", person: person %>
-  </template>
+<template type="menu"><%= person.name %></template>
+<template type="editor">
+<%= render "people/person", Person: Person %>
+</template>
 </lexxy-prompt-item>
 ```
 
-Notice how the template for rendering the editor representation (`type="editor") uses the same template as the attachment partial. This way, you ensure consistency between how the mention looks in the editor and how it will be rendered when displaying the text in view mode with Action Text.
+Notice how the template for rendering the editor representation (`type=" editor") uses the same template as the attachment partial. This way, you ensure consistency between how the mention looks in the editor and how it will render when displaying the text in view mode with Action Text.
 
 Two important additional notes to use action text with custom attachments:
 
 * Each `<lexxy-prompt-item>` must include a `sgid` attribute with the [global id that Action Text will use to find the associated model](https://guides.rubyonrails.org/action_text_overview.html#signed-globalid).
-* The `<lexxy-prompt>` must include a `name` attribute that will determine the content type of the attachment. For example, for `name="mention"`, the attachment will be saved as `application/vnd.actiontext.mention`.
+* The `<lexxy-prompt>` must include a `name` attribute that will determine the content type of the attachment. For example, for `name= "mention"`, the attachment will be saved as `application/vnd.actiontext.mention`.
 
 ### Custom attachments, remote loading
 
 For moderately large sets, you can configure Lexxy to load all the options from a remote endpoint once, and filter them locally as the user types. This is a good balance between performance and responsiveness.
 
-Following with the mentions example, we could have a controller action that returns all people as prompt items, and configure it as the remote source:
+Continuing with the mentions example, we could have a controller action that returns all people as prompt items, and configure it as the remote source:
 
-```erb
+"'erb
 <lexxy-prompt trigger="@" src="<%= people_path %>" name="mention">
 </lexxy-prompt>
 ```
 
 We could define the controller action to serve the prompt items like this:
 
-```ruby
+"`ruby
 class PeopleController < ApplicationController
-  def index
-    @people = Person.all
+def index
+@people = Person.all
 
     render layout: false
-  end
+end
 end
 ```
 
 And the action would just list the prompt items:
 
-```erb
+"'erb
 <% @people.each do |person| %>
   <%= render "people/prompt_item", person: person %>
 <% end %>
@@ -180,22 +180,22 @@ And the action would just list the prompt items:
 
 ### Free HTML attachments
 
-If you don't want to use custom action text attachments, you can use configure prompts to simply insert the prompt item HTML directly in the editor. This is useful for things like hashtags, emojis, or other inline elements that don't require server-side processing.
+If you don't want to use custom action text attachments, you can configure prompts to simply insert the prompt item HTML directly in the editor. This is useful for things like hashtags, emojis, or other inline elements that don't require server-side processing.
 
 To enable these, you must add the `insert-editable-text` attribute to the `<lexxy-prompt>` element:
 
-```erb
+"'erb
 <lexxy-prompt trigger="@" src="<%= people_path %>" insert-editable-text>
 </lexxy-prompt>
 ```
 
-When configured like this,if you select an item from the prompt, the content of the `template[type="editor"]` will be inserted directly in the editor as HTML you can edit freely, instead of as an `<action-text-attachment>` element. Notice that in this case you need to make sure that the HTML is compatible with the tags that Lexxy supports.
+When configured like this,if you select an item from the prompt, the content of the `template[type= "editor"]` will be inserted directly in the editor as HTML you can edit freely, instead of as an `<action-text-attachment>` element. Notice that in this case, you need to make sure that the HTML is compatible with the tags that Lexxy supports.
 
 ### Remote filtering
 
 There are scenarios where you want to query the server for filtering, instead of loading all options at once. This is useful for large datasets or complex searches. In this case, you must add the `remote-filtering` attribute to the `<lexxy-prompt>` element:
 
-```erb
+"'erb
 <lexxy-prompt trigger="@" src="<%= people_path %>" name="mention" remote-filtering>
 </lexxy-prompt>
 ```
@@ -206,9 +206,9 @@ By default, the `SPACE` key will select the current item in the prompt. If you w
 
 #### `<lexxy-prompt>`
 
-- `trigger` - The character that activate the prompt (e.g., "@", "#", "/").
+- `trigger` - The character that activates the prompt (e.g., "@", "#", "/").
 - `src` - Data source (element ID for inline, URL for remote).
-- `name` - Identifier for the prompt type (determines attachment content type, e.g., `name="mention"` creates `application/vnd.actiontext.mention`). Mandatory unless using `insert-editable-text`.
+- `name` - Identifier for the prompt type (determines attachment content type, e.g., `name= "mention"` creates `application/vnd.actiontext.mention`). Mandatory unless using `insert-editable-text`.
 - `empty-results` - Message shown when no matches found. By default it is "Nothing found".
 - `remote-filtering` - Enable server-side filtering instead of loading all options at once.
 - `insert-editable-text` - Insert prompt item HTML directly as editable text instead of Action Text attachments.
@@ -227,20 +227,20 @@ This is an early beta. Here's what's coming next:
 - Image galleries - The only remaining feature for full Action Text compatibility
 - Standalone JS package - to use in non-Rails environments.
 - Enhanced editing features:
-  - Tables
-  - Text highlighting
+    - Tables
+    - Text highlighting
 
 ## Development
 
 To build the JS source when it changes, run:
 
-```bash
+"`bash
 yarn build -w
 ```
 
 To the sandbox app:
 
-```bash
+"`bash
 bin/rails server
 ```
 
