@@ -118,7 +118,7 @@ By default, the partial to render the attachment will be looked up in `app/views
 <em><%= person.name %></em> (<strong><%= person.initials %></strong>)
 ```
 
-On the editor side, let's start with the *inline* approach:
+On the editor side, let's start with the *inline* approach by rendering all the prompt items inside the `<lexxy-prompt>` element:
 
 ```erb
 <%= form.rich_text_area :body do %>
