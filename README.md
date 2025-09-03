@@ -2,6 +2,9 @@
 
 A modern rich text editor for Rails.
 
+> [!IMPORTANT]  
+> This is an early beta that hasn't been battle-tested yet. Please try it out and report any issues you find.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -221,10 +224,7 @@ By default, the `SPACE` key will select the current item in the prompt. If you w
 
 ## Roadmap
 
-> [!IMPORTANT]  
-> This is an early beta.
-
-Here's what's coming next:
+This is an early beta. Here's what's coming next:
 
 - Configurable editors in Action Text - Choose your editor like you choose your database.
 - Image galleries - The only remaining feature for full Action Text compatibility
