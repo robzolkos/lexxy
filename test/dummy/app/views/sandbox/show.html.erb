@@ -1,13 +1,14 @@
 <% content_for :title, "Sandbox" %>
 
 <main>
-  <article>
+  <article data-controller="lexxy-output" data-action="lexxy:change->lexxy-output#refresh">
     <section aria-label="Editor">
       <header>
         <h2>Editor</h2>
       </header>
-      <div id="editor-container">
-        <%= rich_text_area_tag :sandbox, nil, placeholder: "Write something..." do %>
+
+      <div>
+        <%= rich_text_area_tag :sandbox, nil, placeholder: "Write something...", data: { lexxy_output_target: "editor" } do %>
         <% end %>
       </div>
     </section>
@@ -16,8 +17,9 @@
       <header>
         <h2>Output</h2>
       </header>
-      <div id="output-container">
-        <!-- Editor output will be displayed here -->
+
+      <div data-lexxy-output-target="output">
+
       </div>
     </section>
   </article>

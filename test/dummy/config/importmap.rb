@@ -11,3 +11,8 @@ pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
 pin "@rails/request.js", to: "@rails--request.js" # @0.0.11
 
 pin_all_from "app/javascript/controllers", under: "controllers"
+
+# Sandbox
+pin "prismjs"
+pin "prettier"
+pin "prettier/parser-html", to: "prettier--parser-html.js"
