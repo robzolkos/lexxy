@@ -246,8 +246,13 @@ export default class LexicalEditorElement extends HTMLElement {
     registerRichText(this.editor)
     registerHistory(this.editor, createEmptyHistoryState(), 20)
     registerList(this.editor)
-    registerCodeHighlighting(this.editor)
+    this.#registerCodeHiglightingComponents()
     registerMarkdownShortcuts(this.editor, TRANSFORMERS)
+  }
+
+  #registerCodeHiglightingComponents() {
+    registerCodeHighlighting(this.editor)
+    this.append(createElement("lexxy-code-language-picker"))
   }
 
   #listenForInvalidatedNodes() {

@@ -5629,7 +5629,7 @@ class ActionTextAttachmentNode extends gi {
   #handleCaptionInputKeydown(event) {
     if (event.key === "Enter") {
       this.#updateCaptionValueFromInput(event.target);
-      dispatchCustomEvent(event.target, "lexxy:next-node-selection-request");
+      dispatchCustomEvent(event.target, "lexxy:move-to-next-line");
       event.preventDefault();
     }
     event.stopPropagation();
@@ -6236,6 +6236,38 @@ class Selection {
     }
   }
 
+  async #selectOrAppendNextLine() {
+    this.editor.update(() => {
+      const selection = Nr();
+      if (!selection) return
+
+      let topLevelElement = null;
+
+      if (ur(selection)) {
+        const nodes = selection.getNodes();
+        if (nodes.length > 0) {
+          topLevelElement = nodes[0].getTopLevelElement();
+        }
+      } else if (cr(selection)) {
+        const anchorNode = selection.anchor.getNode();
+        topLevelElement = anchorNode.getTopLevelElement();
+      }
+
+      if (!topLevelElement) return
+
+      const nextSibling = topLevelElement.getNextSibling();
+
+      if (nextSibling) {
+        nextSibling.selectStart();
+      } else {
+        const root = ps();
+        const newParagraph = Pi();
+        root.append(newParagraph);
+        newParagraph.selectStart();
+      }
+    });
+  }
+
   get nodeAfterCursor() {
     const selection = Nr();
     if (!cr(selection) || !selection.isCollapsed()) { return null }
@@ -6343,8 +6375,8 @@ class Selection {
       });
     });
 
-    this.editor.getRootElement().addEventListener("lexxy:next-node-selection-request", (event) => {
-      this.#selectNextNode();
+    this.editor.getRootElement().addEventListener("lexxy:move-to-next-line", (event) => {
+      this.#selectOrAppendNextLine();
     });
   }
 
@@ -7296,8 +7328,13 @@ class LexicalEditorElement extends HTMLElement {
     Mt(this.editor);
     v$1(this.editor, E(), 20);
     _t$3(this.editor);
-    Nt$1(this.editor);
+    this.#registerCodeHiglightingComponents();
     et(this.editor, Bt);
+  }
+
+  #registerCodeHiglightingComponents() {
+    Nt$1(this.editor);
+    this.append(createElement("lexxy-code-language-picker"));
   }
 
   #listenForInvalidatedNodes() {
@@ -7651,7 +7688,7 @@ class LexicalPromptElement extends HTMLElement {
         return new DeferredPromptSource(src)
       }
     } else {
-      return new InlinePromptSource(document.getElementById(src).querySelectorAll("lexxy-prompt-item"))
+      return new InlinePromptSource(this.querySelectorAll("lexxy-prompt-item"))
     }
   }
 

@@ -19,17 +19,14 @@
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app %>
-    <%= stylesheet_link_tag "lexxy" %>
-    <%= stylesheet_link_tag "rich-text-content" %>
+
+    <%= stylesheet_link_tag "lexxy-content" %>
+    <%= stylesheet_link_tag "lexxy-editor" %>
 
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="rich-text-content" data-controller="events-logger" data-action="lexxy:change->events-logger#log">
+  <body class="rich-text-content">
     <%= yield %>
-
-    <div id="events" data-events-logger-target="log">
-
-    </div>
   </body>
 </html>

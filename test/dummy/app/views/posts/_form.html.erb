@@ -1,4 +1,6 @@
-<%= form_with(model: post) do |form| %>
+
+
+<%= form_with model: post, data: { controller: "events-logger", action: "lexxy:change->events-logger#log" } do |form| %>
   <div>
     <%= form.label :title, style: "display: block" %>
     <%= form.text_field :title %>
@@ -9,13 +11,8 @@
     <%= form.rich_text_area :body, placeholder: "Write something...",
           attachments: params[:attachments_disabled] ? "false" : nil,
           toolbar: params[:toolbar_disabled] ? "false" : nil do %>
-      <lexxy-prompt-source id="inline-source">
-        <%= Person.find_each do |person| %>
-          <%= render "people/prompt_item", person: person %>
-        <% end %>
-      </lexxy-prompt-source>
-
-      <lexxy-prompt trigger="1" src="inline-source" empty-results="No results"  name="mention">
+      <lexxy-prompt trigger="1" empty-results="No results"  name="mention">
+        <%= render partial: "people/prompt_item", collection: Person.all, as: :person %>
       </lexxy-prompt>
 
       <lexxy-prompt trigger="2" src="<%= people_path %>" name="mention">
@@ -23,12 +20,13 @@
 
       <lexxy-prompt trigger="3" src="<%= people_path %>" name="mention" remote-filtering insert-editable-text supports-space-in-searches>
       </lexxy-prompt>
-
-      <lexxy-code-language-picker/>
     <% end %>
   </div>
 
   <div>
     <%= form.submit %>
+  </div>
+
+  <div id="events" data-events-logger-target="log">
   </div>
 <% end %>
