@@ -78,8 +78,8 @@ The first thing to do is to add a `<lexxy-prompt>` element to the editor:
 
 The `trigger` option determines which key will open the prompt. A prompt can load its items from two sources:
 
-- Inline: by defining items inside the `<lexxy-prompt>` element.
-- Remotely: by setting a `src` attribute with an endpoint to load the items.
+- Inline, by defining the items inside the `<lexxy-prompt>` element.
+- Remotely, by setting a `src` attribute with an endpoint to load the items.
 
 Regardless of the source, the prompt items are defined using `<lexxy-prompt-item>` elements. A basic prompt item looks like this:
 
