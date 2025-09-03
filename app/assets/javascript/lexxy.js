@@ -8235,17 +8235,9 @@ class CodeLanguagePicker extends HTMLElement {
 
     const codeRect = codeElement.getBoundingClientRect();
     const editorRect = this.editorElement.getBoundingClientRect();
-    const pickerWidth = this.languagePickerElement.offsetWidth;
-
     const relativeTop = codeRect.top - editorRect.top;
-    const codeRightEdge = codeRect.right - editorRect.left;
-    const relativeLeft = codeRightEdge - pickerWidth;
-
-    const codeLeftEdge = codeRect.left - editorRect.left;
-    const left = Math.max(codeLeftEdge, relativeLeft);
 
     this.languagePickerElement.style.top = `${relativeTop}px`;
-    this.languagePickerElement.style.left = `${left}px`;
   }
 
   #showLanguagePicker() {

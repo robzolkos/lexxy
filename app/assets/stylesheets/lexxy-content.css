@@ -68,7 +68,6 @@
     color: var(--lexxy-color-ink);
     font-family: var(--lexxy-font-mono);
     font-size: 0.9em;
-    margin-block: var(--lexxy-content-margin);
     padding: 0.25ch 0.5ch;
 
     &:is(pre),
@@ -76,6 +75,7 @@
       border-radius: var(--lexxy-radius);
       display: block;
       hyphens: none;
+      margin-block: 0 var(--lexxy-content-margin);
       overflow-x: auto;
       padding: 1ch;
       tab-size: 2;
