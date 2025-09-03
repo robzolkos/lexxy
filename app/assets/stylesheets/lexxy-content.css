@@ -252,11 +252,13 @@
 
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
   gap: 1ch;
   inline-size: auto;
 
   .attachment__caption {
     display: grid;
+    flex: 1;
     text-align: start;
   }
 

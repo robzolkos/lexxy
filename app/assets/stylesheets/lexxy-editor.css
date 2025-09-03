@@ -1,9 +1,18 @@
 @import url("lexxy-variables.css");
 
 :where(lexxy-editor) {
+  --lexxy-toolbar-gap: 2px;
+
+  border: 1px solid var(--lexxy-color-ink-lighter);
+  border-radius: calc(var(--lexxy-radius) + var(--lexxy-toolbar-gap));
   display: block;
   overflow: visible;
   position: relative;
+  transition: opacity 150ms;
+
+  &:not(:has(lexxy-toolbar)) {
+    opacity: 0;
+  }
 
   input,
   button {
@@ -58,6 +67,7 @@
 :where(.lexxy-editor__content) {
   min-block-size: 8lh;
   outline: 0;
+  padding: 1ch;
 }
 
 :where(.lexxy-editor--drag-over) {
@@ -70,15 +80,11 @@
 /* -------------------------------------------------------------------------- */
 
 :where(lexxy-toolbar) {
-  --lexxy-toolbar-gap: 2px;
-
-  border: 1px solid var(--lexxy-color-ink-lighter);
-  border-radius: calc(var(--lexxy-radius) + var(--lexxy-toolbar-gap));
+  border-block-end: 1px solid var(--lexxy-color-ink-lighter);
   color: currentColor;
   display: flex;
   font-size: inherit;
   gap: var(--lexxy-toolbar-gap);
-  margin: 0 0 1ch;
   max-inline-size: 100%;
   padding: 2px;
   position: relative;

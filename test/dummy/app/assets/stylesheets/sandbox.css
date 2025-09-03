@@ -1,34 +1,63 @@
-[data-controller="lexxy-output"] {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+html {
+  font-size: 16px;
+}
 
-  @media (min-width: 768px) {
-    flex-direction: row;
+body {
+  margin: 0;
+  padding: 0;
+}
 
-    section {
-      flex: 0 0 50%;
-      overflow-x: auto;
-    }
-  }
-  
-  [data-lexxy-output-target="output"] {
-    overflow-x: auto;
-    
-    pre {
-      overflow-x: visible;
-      white-space: pre;
-    }
+main {
+  --sandbox-padding: 2rem;
+
+  display: grid;
+  min-height: 100dvh;
+
+  @media (min-width: 800px) {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Prism.js light theme for syntax highlighting */
+section {
+  padding: var(--sandbox-padding);
+
+  &:first-child {
+    box-shadow: 1px 0 2px oklch(95% 0 0);
+    position: relative;
+  }
+
+  &:last-child {
+    background: oklch(98% 0 0);
+    overflow: hidden;
+  }
+}
+
+h2 {
+  margin-block-start: 0;
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+[data-lexxy-output-target="output"] {
+  overflow-x: auto;
+
+  pre {
+    margin: 0;
+    overflow-x: visible;
+    white-space: pre;
+  }
+}
+
+/* Prism.js light theme for syntax highlighting
+/* -------------------------------------------------------------------------- */
+
 pre[class*="language-"],
 code[class*="language-"] {
   color: #2d3748;
   background: none;
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   text-align: left;
   white-space: pre;
   word-spacing: normal;
