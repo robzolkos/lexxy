@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(./bin/importmap pin \"prettier/parser-html\")"
-    ],
-    "deny": [],
-    "ask": []
-  }
-}

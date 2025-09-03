@@ -9,6 +9,7 @@
 
       <div>
         <%= rich_text_area_tag :sandbox, nil, placeholder: "Write something...", data: { lexxy_output_target: "editor" } do %>
+          <lexxy-prompt trigger="@" src="<%= people_path %>" name="mention"></lexxy-prompt>
         <% end %>
       </div>
     </section>
