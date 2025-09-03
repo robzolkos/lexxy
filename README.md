@@ -225,17 +225,33 @@ This is an early beta. Here's what's coming next:
 
 - Configurable editors in Action Text - Choose your editor like you choose your database.
 - Image galleries - The only remaining feature for full Action Text compatibility
+- Standalone JS package - to use in non-Rails environments.
 - Enhanced editing features:
   - Tables
   - Text highlighting
 
 ## Development
 
+To build the JS source when it changes, run:
 
+```bash
+yarn build -w
+```
+
+To the sandbox app:
+
+```bash
+bin/rails server
+```
+
+The sandbox app is available at http://localhost:3000. There is also a CRUD example at http://localhost:3000/posts.
+
+```bash
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at [your-github-url].
+- Bug reports and pull requests are welcome on [GitHub Issues](https://github.com/basecamp/lexxy/issues). Help is especially welcome with [those tagged as "Help Wanted"](https://github.com/basecamp/lexxy/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22help%20wanted%22).
+- For questions and general Lexxy discussion, please use the [Discussions section](https://github.com/basecamp/lexxy/discussions)
 
 ## License
 
