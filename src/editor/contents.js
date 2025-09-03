@@ -67,70 +67,11 @@ export default class Contents {
       const selection = $getSelection()
       if (!$isRangeSelection(selection)) return
 
-      let selectedNodes
-      let selectedParagraphs
-
-      // If no selection (collapsed cursor), treat the current line as selected
       if (selection.isCollapsed()) {
-        const anchorNode = selection.anchor.getNode()
-        const topLevelElement = anchorNode.getTopLevelElementOrThrow()
-
-        // If the line has content, wrap it
-        if (topLevelElement.getTextContent()) {
-          const wrappingNode = newNodeFn()
-          wrappingNode.append(...topLevelElement.getChildren())
-          topLevelElement.replace(wrappingNode)
-        } else {
-          // If empty line, just insert new block
-          $insertNodes([ newNodeFn() ])
-        }
-        return
+        this.#wrapCurrentLine(selection, newNodeFn)
+      } else {
+        this.#wrapMultipleSelectedLines(selection, newNodeFn)
       }
-
-      selectedNodes = selection.extract()
-      selectedParagraphs = selectedNodes.map((node) => $isParagraphNode(node) ? node : $isTextNode(node) && node.getParent() && $isParagraphNode(node.getParent()) ? node.getParent() : null).filter(Boolean)
-
-      $setSelection(null)
-      if (selectedParagraphs.length === 0) return
-
-      const lineSet = new Set()
-      const nodesToDelete = new Set()
-
-      // Extract and deduplicate lines from paragraph content
-      selectedParagraphs.forEach((paragraphNode) => {
-        const textContent = paragraphNode.getTextContent()
-        if (textContent) {
-          const lineTexts = textContent.split("\n")
-          lineTexts.forEach((line) => {
-            if (line.trim()) {
-              lineSet.add(line)
-            }
-          })
-        }
-        nodesToDelete.add(paragraphNode)
-      })
-
-      if (lineSet.size === 0) return
-
-      const wrappingNode = newNodeFn()
-
-      // Append each unique line to the new wrapping node
-      Array.from(lineSet).forEach((lineText, index, arr) => {
-        wrappingNode.append($createTextNode(lineText))
-        if (index < arr.length - 1) {
-          wrappingNode.append($createLineBreakNode())
-        }
-      })
-
-      // Replace the current location with the new wrapping node
-      const anchorNode = selection.anchor.getNode()
-      const parent = anchorNode.getParent()
-      if (parent) {
-        parent.replace(wrappingNode)
-      }
-
-      // Remove original nodes
-      nodesToDelete.forEach((node) => node.remove())
     })
   }
 
@@ -178,78 +119,11 @@ export default class Contents {
       const selection = $getSelection()
       if (!$isRangeSelection(selection)) return
 
-      // Get all unique list items in the selection
-      const nodes = selection.getNodes()
-      const listItems = new Set()
-      const parentLists = new Set()
-
-      // Collect all list items that contain selected nodes
-      for (const node of nodes) {
-        const listItem = getNearestListItemNode(node)
-        if (listItem) {
-          listItems.add(listItem)
-          const parentList = listItem.getParent()
-          if (parentList && $isListNode(parentList)) {
-            parentLists.add(parentList)
-          }
-        }
-      }
-
-      if (listItems.size === 0) return
-
-      // Convert list items to paragraphs
-      const newParagraphs = []
-      for (const listItem of listItems) {
-        const parentList = listItem.getParent()
-        if (!parentList || !$isListNode(parentList)) continue
-
-        // Create a paragraph to replace the list item
-        const paragraph = $createParagraphNode()
-
-        // Collect any sublists to reinsert after
-        const sublists = []
-        listItem.getChildren().forEach(function (child) {
-          if ($isListNode(child)) {
-            sublists.push(child)
-          } else {
-            paragraph.append(child)
-          }
-        })
-
-        // Insert the paragraph and then the sublists
-        listItem.insertAfter(paragraph)
-        sublists.forEach(function (sub) {
-          paragraph.insertAfter(sub)
-        })
-
-        newParagraphs.push(paragraph)
-
-        // Remove the original list item
-        listItem.remove()
-      }
-
-      // Remove any parent lists that are now empty
-      for (const parentList of parentLists) {
-        if ($isListNode(parentList) && parentList.getChildrenSize() === 0) {
-          parentList.remove()
-        }
-      }
-
-      // Select the range of new paragraphs
-      if (newParagraphs.length > 0) {
-        const firstParagraph = newParagraphs[0]
-        const lastParagraph = newParagraphs[newParagraphs.length - 1]
-
-        if (newParagraphs.length === 1) {
-          firstParagraph.selectEnd()
-        } else {
-          firstParagraph.selectStart()
-          const currentSelection = $getSelection()
-          if (currentSelection && $isRangeSelection(currentSelection)) {
-            currentSelection.anchor.set(firstParagraph.getKey(), 0, 'element')
-            currentSelection.focus.set(lastParagraph.getKey(), lastParagraph.getChildrenSize(), 'element')
-          }
-        }
+      const { listItems, parentLists } = this.#collectSelectedListItems(selection)
+      if (listItems.size > 0) {
+        const newParagraphs = this.#convertListItemsToParagraphs(listItems)
+        this.#removeEmptyParentLists(parentLists)
+        this.#selectNewParagraphs(newParagraphs)
       }
     })
   }
@@ -321,44 +195,13 @@ export default class Contents {
     replacementNodes = Array.isArray(replacementNodes) ? replacementNodes : [ replacementNodes ]
 
     this.editor.update(() => {
-      const selection = $getSelection()
-      if (!selection || !selection.isCollapsed()) return
+      const { anchorNode, offset } = this.#getTextAnchorData()
+      if (!anchorNode) return
 
-      const anchor = selection.anchor
-      const anchorNode = anchor.getNode()
-
-      if (!$isTextNode(anchorNode)) return
-
-      const fullText = anchorNode.getTextContent()
-      const offset = anchor.offset
-
-      const textBeforeCursor = fullText.slice(0, offset)
-      const lastIndex = textBeforeCursor.lastIndexOf(stringToReplace)
-
+      const lastIndex = this.#findLastIndexBeforeCursor(anchorNode, offset, stringToReplace)
       if (lastIndex === -1) return
 
-      const textBeforeString = fullText.slice(0, lastIndex)
-      const textAfterCursor = fullText.slice(offset)
-      const textNodeBefore = $createTextNode(textBeforeString)
-      const textNodeAfter = $createTextNode(textAfterCursor || " ") // Default to Space to prevent cursor rendering issues in Safari
-
-      // Replace the anchor node with the first node
-      anchorNode.replace(textNodeBefore)
-
-      // Insert replacement nodes in sequence
-      let previousNode = textNodeBefore
-      for (const node of replacementNodes) {
-        previousNode.insertAfter(node)
-        previousNode = node
-      }
-
-      // Insert the text after cursor
-      previousNode.insertAfter(textNodeAfter)
-
-      this.#appendLineBreakIfNeeded(textNodeAfter.getParentOrThrow())
-
-      // Place the cursor at the start of textNodeAfter
-      textNodeAfter.select(0, 0)
+      this.#performTextReplacement(anchorNode, offset, lastIndex, replacementNodes)
     })
   }
 
@@ -419,7 +262,232 @@ export default class Contents {
     return this.editorElement.selection
   }
 
-  // Add line break if last node is not a textual one to get a visible cursor
+  #wrapCurrentLine(selection, newNodeFn) {
+    const anchorNode = selection.anchor.getNode()
+    const topLevelElement = anchorNode.getTopLevelElementOrThrow()
+
+    if (topLevelElement.getTextContent()) {
+      const wrappingNode = newNodeFn()
+      wrappingNode.append(...topLevelElement.getChildren())
+      topLevelElement.replace(wrappingNode)
+    } else {
+      $insertNodes([ newNodeFn() ])
+    }
+  }
+
+  #wrapMultipleSelectedLines(selection, newNodeFn) {
+    const selectedParagraphs = this.#extractSelectedParagraphs(selection)
+    if (selectedParagraphs.length === 0) return
+
+    const { lineSet, nodesToDelete } = this.#extractUniqueLines(selectedParagraphs)
+    if (lineSet.size === 0) return
+
+    const wrappingNode = this.#createWrappingNodeWithLines(newNodeFn, lineSet)
+    this.#replaceWithWrappingNode(selection, wrappingNode)
+    this.#removeNodes(nodesToDelete)
+  }
+
+  #extractSelectedParagraphs(selection) {
+    const selectedNodes = selection.extract()
+    const selectedParagraphs = selectedNodes
+      .map((node) => this.#getParagraphFromNode(node))
+      .filter(Boolean)
+
+    $setSelection(null)
+    return selectedParagraphs
+  }
+
+  #getParagraphFromNode(node) {
+    if ($isParagraphNode(node)) return node
+    if ($isTextNode(node) && node.getParent() && $isParagraphNode(node.getParent())) {
+      return node.getParent()
+    }
+    return null
+  }
+
+  #extractUniqueLines(selectedParagraphs) {
+    const lineSet = new Set()
+    const nodesToDelete = new Set()
+
+    selectedParagraphs.forEach((paragraphNode) => {
+      const textContent = paragraphNode.getTextContent()
+      if (textContent) {
+        textContent.split("\n").forEach((line) => {
+          if (line.trim()) lineSet.add(line)
+        })
+      }
+      nodesToDelete.add(paragraphNode)
+    })
+
+    return { lineSet, nodesToDelete }
+  }
+
+  #createWrappingNodeWithLines(newNodeFn, lineSet) {
+    const wrappingNode = newNodeFn()
+    const lines = Array.from(lineSet)
+
+    lines.forEach((lineText, index) => {
+      wrappingNode.append($createTextNode(lineText))
+      if (index < lines.length - 1) {
+        wrappingNode.append($createLineBreakNode())
+      }
+    })
+
+    return wrappingNode
+  }
+
+  #replaceWithWrappingNode(selection, wrappingNode) {
+    const anchorNode = selection.anchor.getNode()
+    const parent = anchorNode.getParent()
+    if (parent) {
+      parent.replace(wrappingNode)
+    }
+  }
+
+  #removeNodes(nodesToDelete) {
+    nodesToDelete.forEach((node) => node.remove())
+  }
+
+  #collectSelectedListItems(selection) {
+    const nodes = selection.getNodes()
+    const listItems = new Set()
+    const parentLists = new Set()
+
+    for (const node of nodes) {
+      const listItem = getNearestListItemNode(node)
+      if (listItem) {
+        listItems.add(listItem)
+        const parentList = listItem.getParent()
+        if (parentList && $isListNode(parentList)) {
+          parentLists.add(parentList)
+        }
+      }
+    }
+
+    return { listItems, parentLists }
+  }
+
+  #convertListItemsToParagraphs(listItems) {
+    const newParagraphs = []
+
+    for (const listItem of listItems) {
+      const paragraph = this.#convertListItemToParagraph(listItem)
+      if (paragraph) {
+        newParagraphs.push(paragraph)
+      }
+    }
+
+    return newParagraphs
+  }
+
+  #convertListItemToParagraph(listItem) {
+    const parentList = listItem.getParent()
+    if (!parentList || !$isListNode(parentList)) return null
+
+    const paragraph = $createParagraphNode()
+    const sublists = this.#extractSublistsAndContent(listItem, paragraph)
+
+    listItem.insertAfter(paragraph)
+    this.#insertSublists(paragraph, sublists)
+    listItem.remove()
+
+    return paragraph
+  }
+
+  #extractSublistsAndContent(listItem, paragraph) {
+    const sublists = []
+
+    listItem.getChildren().forEach((child) => {
+      if ($isListNode(child)) {
+        sublists.push(child)
+      } else {
+        paragraph.append(child)
+      }
+    })
+
+    return sublists
+  }
+
+  #insertSublists(paragraph, sublists) {
+    sublists.forEach((sublist) => {
+      paragraph.insertAfter(sublist)
+    })
+  }
+
+  #removeEmptyParentLists(parentLists) {
+    for (const parentList of parentLists) {
+      if ($isListNode(parentList) && parentList.getChildrenSize() === 0) {
+        parentList.remove()
+      }
+    }
+  }
+
+  #selectNewParagraphs(newParagraphs) {
+    if (newParagraphs.length === 0) return
+
+    const firstParagraph = newParagraphs[0]
+    const lastParagraph = newParagraphs[newParagraphs.length - 1]
+
+    if (newParagraphs.length === 1) {
+      firstParagraph.selectEnd()
+    } else {
+      this.#selectParagraphRange(firstParagraph, lastParagraph)
+    }
+  }
+
+  #selectParagraphRange(firstParagraph, lastParagraph) {
+    firstParagraph.selectStart()
+    const currentSelection = $getSelection()
+    if (currentSelection && $isRangeSelection(currentSelection)) {
+      currentSelection.anchor.set(firstParagraph.getKey(), 0, 'element')
+      currentSelection.focus.set(lastParagraph.getKey(), lastParagraph.getChildrenSize(), 'element')
+    }
+  }
+
+  #getTextAnchorData() {
+    const selection = $getSelection()
+    if (!selection || !selection.isCollapsed()) return { anchorNode: null, offset: 0 }
+
+    const anchor = selection.anchor
+    const anchorNode = anchor.getNode()
+
+    if (!$isTextNode(anchorNode)) return { anchorNode: null, offset: 0 }
+
+    return { anchorNode, offset: anchor.offset }
+  }
+
+  #findLastIndexBeforeCursor(anchorNode, offset, stringToReplace) {
+    const fullText = anchorNode.getTextContent()
+    const textBeforeCursor = fullText.slice(0, offset)
+    return textBeforeCursor.lastIndexOf(stringToReplace)
+  }
+
+  #performTextReplacement(anchorNode, offset, lastIndex, replacementNodes) {
+    const fullText = anchorNode.getTextContent()
+    const textBeforeString = fullText.slice(0, lastIndex)
+    const textAfterCursor = fullText.slice(offset)
+
+    const textNodeBefore = $createTextNode(textBeforeString)
+    const textNodeAfter = $createTextNode(textAfterCursor || " ")
+
+    anchorNode.replace(textNodeBefore)
+
+    const lastInsertedNode = this.#insertReplacementNodes(textNodeBefore, replacementNodes)
+    lastInsertedNode.insertAfter(textNodeAfter)
+
+    this.#appendLineBreakIfNeeded(textNodeAfter.getParentOrThrow())
+    textNodeAfter.select(0, 0)
+  }
+
+  #insertReplacementNodes(startNode, replacementNodes) {
+    let previousNode = startNode
+    for (const node of replacementNodes) {
+      previousNode.insertAfter(node)
+      previousNode = node
+    }
+    return previousNode
+  }
+
   #appendLineBreakIfNeeded(paragraph) {
     if ($isParagraphNode(paragraph) && !this.editorElement.isSingleLineMode) {
       const children = paragraph.getChildren()
@@ -431,5 +499,4 @@ export default class Contents {
       }
     }
   }
-
 }

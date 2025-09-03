@@ -9,7 +9,7 @@ export function getNearestListItemNode(node) {
   return null
 }
 
-export function   getListType(node) {
+export function getListType(node) {
   let current = node
   while (current) {
     if ($isListNode(current)) {
