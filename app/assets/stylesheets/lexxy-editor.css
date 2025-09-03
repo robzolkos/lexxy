@@ -180,7 +180,6 @@
   font-family: var(--lexxy-font-base);
   font-size: var(--lexxy-text-small);
   font-weight: normal;
-  inset-inline-end: 0;
   margin: 0.5ch 0.5ch 0 -0.5ch;
   padding: 0 2ch 0 1ch;
   text-align: start;
