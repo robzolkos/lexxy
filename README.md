@@ -71,15 +71,15 @@ The first thing to do is to add a `<lexxy-prompt>` element to the editor:
 
 ```erb
 <%= form_with model: @post do |form| %>
-  <lexxy-prompt trigger="@" src="...">
+  <lexxy-prompt trigger="@">
   </lexxy-prompt>
 <% end %>
 ```
 
-The `trigger` option determines which key will open the prompt, and the `src` property determines how the prompt menu items load (inline or remotely). It can be either:
+The `trigger` option determines which key will open the prompt. A prompt can load its items from two sources:
 
-- An element ID, to reference a `<lexxy-prompt-source>` element that will contain all the prompt items.
-- A path or URL to fetch options from.
+- Inline: by defining items inside the `<lexxy-prompt>` element.
+- Remotely: by setting a `src` attribute with an endpoint to load the items.
 
 Regardless of the source, the prompt items are defined using `<lexxy-prompt-item>` elements. A basic prompt item looks like this:
 
@@ -121,14 +121,11 @@ By default, the partial to render the attachment will be looked up in `app/views
 On the editor side, let's start with the *inline* approach:
 
 ```erb
-<lexxy-prompt-source id="inline-source">
-  <%= Person.find_each do |person| %>
-    <%= render "people/prompt_item", person: person %>
-  <% end %>
-</lexxy-prompt-source>
-
 <%= form.rich_text_area :body do %>
-  <lexxy-prompt trigger="inline-source" src="<%= people_path %>" name="mention">
+  <lexxy-prompt trigger="@" name="mention">
+      <%= Person.find_each do |person| %>
+        <%= render "people/prompt_item", person: person %>
+      <% end %>
   </lexxy-prompt>
 <% end %>
 ```
@@ -151,11 +148,11 @@ Two important additional notes to use action text with custom attachments:
 * Each `<lexxy-prompt-item>` must include a `sgid` attribute with the [global id that Action Text will use to find the associated model](https://guides.rubyonrails.org/action_text_overview.html#signed-globalid).
 * The `<lexxy-prompt>` must include a `name` attribute that will determine the content type of the attachment. For example, for `name= "mention"`, the attachment will be saved as `application/vnd.actiontext.mention`.
 
-### Custom attachments, remote loading
+### Custom attachments with remote loading
 
 For moderately large sets, you can configure Lexxy to load all the options from a remote endpoint once, and filter them locally as the user types. This is a good balance between performance and responsiveness.
 
-Continuing with the mentions example, we could have a controller action that returns all people as prompt items, and configure it as the remote source:
+Continuing with the mentions example, we could have a controller action that returns all people as prompt items, and configure it as the remote source via the `src` attribute:
 
 ```erb
 <lexxy-prompt trigger="@" src="<%= people_path %>" name="mention">
@@ -211,7 +208,7 @@ By default, the `SPACE` key will select the current item in the prompt. If you w
 #### `<lexxy-prompt>`
 
 - `trigger` - The character that activates the prompt (e.g., "@", "#", "/").
-- `src` - Data source (element ID for inline, URL for remote).
+- `src` - Path or URL to load items remotely.
 - `name` - Identifier for the prompt type (determines attachment content type, e.g., `name= "mention"` creates `application/vnd.actiontext.mention`). Mandatory unless using `insert-editable-text`.
 - `empty-results` - Message shown when no matches found. By default it is "Nothing found".
 - `remote-filtering` - Enable server-side filtering instead of loading all options at once.
