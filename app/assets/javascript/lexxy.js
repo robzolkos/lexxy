@@ -3734,7 +3734,7 @@ function getNearestListItemNode(node) {
   return null
 }
 
-function   getListType(node) {
+function getListType(node) {
   let current = node;
   while (current) {
     if (ot$2(current)) {
@@ -6072,58 +6072,13 @@ class Selection {
     let position = { x: 0, y: 0 };
 
     this.editor.getEditorState().read(() => {
-      const lexicalSelection = Nr();
-      if (!lexicalSelection || !lexicalSelection.isCollapsed()) return
+      const range = this.#getValidSelectionRange();
+      if (!range) return
 
-      const nativeSelection = window.getSelection();
-      if (!nativeSelection || nativeSelection.rangeCount === 0) return
-
-      const range = nativeSelection.getRangeAt(0);
-      let rect = range.getBoundingClientRect();
-
-      // Create a span marker if the rect is unreliable
-      let marker;
-      if ((rect.width === 0 && rect.height === 0) || (rect.top === 0 && rect.left === 0)) {
-        marker = this.#createMarker();
-        range.insertNode(marker);
-        rect = marker.getBoundingClientRect();
-
-        // Reset selection after inserting the marker
-        nativeSelection.removeAllRanges();
-        const newRange = document.createRange();
-        newRange.setStartAfter(marker);
-        newRange.collapse(true);
-        nativeSelection.addRange(newRange);
-      }
-
+      const rect = this.#getReliableRectFromRange(range);
       if (!rect) return
 
-      const rootRect = this.editor.getRootElement().getBoundingClientRect();
-      let x = rect.left - rootRect.left;
-      let y = rect.top - rootRect.top;
-
-      // Try to get the font size from the marker or its parent
-      let fontSize = 0;
-      if (marker) {
-        const computed = window.getComputedStyle(marker);
-        fontSize = parseFloat(computed.fontSize);
-        marker.remove();
-      } else {
-        const anchorNode = nativeSelection.anchorNode;
-        const parentElement = anchorNode?.nodeType === Node.TEXT_NODE
-          ? anchorNode.parentElement
-          : anchorNode;
-        if (parentElement instanceof HTMLElement) {
-          const computed = window.getComputedStyle(parentElement);
-          fontSize = parseFloat(computed.fontSize);
-        }
-      }
-
-      if (!isNaN(fontSize)) {
-        y += fontSize;
-      }
-
-      position = { x, y, fontSize };
+      position = this.#calculateCursorPosition(rect, range);
     });
 
     return position
@@ -6151,7 +6106,6 @@ class Selection {
     const anchorElement = anchorNode.getTopLevelElement();
     if (!anchorElement) return false
 
-    // Check if any of the nodes is a line break
     const nodes = selection.getNodes();
     for (const node of nodes) {
       if (Fn(node)) {
@@ -6170,6 +6124,54 @@ class Selection {
     return getNearestListItemNode(anchorNode) !== null
   }
 
+  get nodeAfterCursor() {
+    const { anchorNode, offset } = this.#getCollapsedSelectionData();
+    if (!anchorNode) return null
+
+    if (Qn(anchorNode)) {
+      return this.#getNodeAfterTextNode(anchorNode, offset)
+    }
+
+    if (di(anchorNode)) {
+      return this.#getNodeAfterElementNode(anchorNode, offset)
+    }
+
+    return this.#findNextSiblingUp(anchorNode)
+  }
+
+  get nodeBeforeCursor() {
+    const { anchorNode, offset } = this.#getCollapsedSelectionData();
+    if (!anchorNode) return null
+
+    if (Qn(anchorNode)) {
+      return this.#getNodeBeforeTextNode(anchorNode, offset)
+    }
+
+    if (di(anchorNode)) {
+      return this.#getNodeBeforeElementNode(anchorNode, offset)
+    }
+
+    return this.#findPreviousSiblingUp(anchorNode)
+  }
+
+  get #contents() {
+    return this.editorElement.contents
+  }
+
+  get #currentlySelectedKeys() {
+    if (this._currentlySelectedKeys) { return this._currentlySelectedKeys }
+
+    this._currentlySelectedKeys = new Set();
+
+    if (this.current) {
+      for (const node of this.current.getNodes()) {
+        this._currentlySelectedKeys.add(node.getKey());
+      }
+    }
+
+    return this._currentlySelectedKeys
+  }
+
   #processSelectionChangeCommands() {
     this.editor.registerCommand(Te$1, this.#selectPreviousNode.bind(this), Ii);
     this.editor.registerCommand(Ne$1, this.#selectPreviousNode.bind(this), Ii);
@@ -6182,6 +6184,27 @@ class Selection {
     this.editor.registerCommand(le$1, () => {
       this.current = Nr();
     }, Ii);
+  }
+
+  #listenForNodeSelections() {
+    this.editor.getRootElement().addEventListener("lexxy:node-selected", async (event) => {
+      await nextFrame();
+
+      const { key } = event.detail;
+      this.editor.update(() => {
+        const node = us(key);
+        if (node) {
+          const selection = kr();
+          selection.add(node.getKey());
+          ms(selection);
+        }
+        this.editor.focus();
+      });
+    });
+
+    this.editor.getRootElement().addEventListener("lexxy:move-to-next-line", (event) => {
+      this.#selectOrAppendNextLine();
+    });
   }
 
   #syncSelectedClasses() {
@@ -6210,16 +6233,6 @@ class Selection {
     }
   }
 
-  #createMarker() {
-    const marker = document.createElement("span");
-    marker.textContent = "\u200b";
-    marker.style.display = "inline-block";
-    marker.style.width = "1px";
-    marker.style.height = "1em";
-    marker.style.lineHeight = "normal";
-    return marker
-  }
-
   async #selectPreviousNode() {
     if (this.current) {
       await this.#withCurrentNode((currentNode) => currentNode.selectPrevious());
@@ -6236,104 +6249,6 @@ class Selection {
     }
   }
 
-  async #selectOrAppendNextLine() {
-    this.editor.update(() => {
-      const selection = Nr();
-      if (!selection) return
-
-      let topLevelElement = null;
-
-      if (ur(selection)) {
-        const nodes = selection.getNodes();
-        if (nodes.length > 0) {
-          topLevelElement = nodes[0].getTopLevelElement();
-        }
-      } else if (cr(selection)) {
-        const anchorNode = selection.anchor.getNode();
-        topLevelElement = anchorNode.getTopLevelElement();
-      }
-
-      if (!topLevelElement) return
-
-      const nextSibling = topLevelElement.getNextSibling();
-
-      if (nextSibling) {
-        nextSibling.selectStart();
-      } else {
-        const root = ps();
-        const newParagraph = Pi();
-        root.append(newParagraph);
-        newParagraph.selectStart();
-      }
-    });
-  }
-
-  get nodeAfterCursor() {
-    const selection = Nr();
-    if (!cr(selection) || !selection.isCollapsed()) { return null }
-
-    const { anchor } = selection;
-    const anchorNode = anchor.getNode();
-    const offset = anchor.offset;
-
-    if (Qn(anchorNode)) {
-      if (offset === anchorNode.getTextContentSize()) {
-        if (anchorNode.getNextSibling() instanceof gi) {
-          return anchorNode.getNextSibling()
-        } else {
-          const parent = anchorNode.getParent();
-          return parent ? parent.getNextSibling() : null
-        }
-      }
-      return null
-    }
-
-    if (di(anchorNode) && offset < anchorNode.getChildrenSize()) {
-      return anchorNode.getChildAtIndex(offset)
-    }
-
-    let node = anchorNode;
-    while (node && node.getNextSibling() == null) {
-      node = node.getParent();
-    }
-
-    return node ? node.getNextSibling() : null
-  }
-
-  get nodeBeforeCursor() {
-    const selection = Nr();
-    if (!cr(selection) || !selection.isCollapsed()) { return null }
-
-    const { anchor } = selection;
-    const anchorNode = anchor.getNode();
-    const offset = anchor.offset;
-
-    if (Qn(anchorNode)) {
-      if (offset === 0) {
-        if (anchorNode.getPreviousSibling() instanceof gi) {
-          return anchorNode.getPreviousSibling()
-        } else {
-          const parent = anchorNode.getParent();
-          return parent.getPreviousSibling()
-        }
-      }
-
-      return null
-    }
-
-    if (di(anchorNode) && offset > 0) {
-      return anchorNode.getChildAtIndex(offset - 1)
-    }
-
-    let node = anchorNode;
-    while (node && node.getPreviousSibling() == null) {
-      node = node.getParent();
-    }
-
-    const previousSibling = node ? node.getPreviousSibling() : null;
-    return previousSibling
-  }
-
   async #withCurrentNode(fn) {
     await nextFrame();
     if (this.current) {
@@ -6345,39 +6260,55 @@ class Selection {
     }
   }
 
-  get #currentlySelectedKeys() {
-    if (this._currentlySelectedKeys) { return this._currentlySelectedKeys }
+  async #selectOrAppendNextLine() {
+    this.editor.update(() => {
+      const topLevelElement = this.#getTopLevelElementFromSelection();
+      if (!topLevelElement) return
 
-    this._currentlySelectedKeys = new Set();
-
-    if (this.current) {
-      for (const node of this.current.getNodes()) {
-        this._currentlySelectedKeys.add(node.getKey());
-      }
-    }
-
-    return this._currentlySelectedKeys
+      this.#moveToOrCreateNextLine(topLevelElement);
+    });
   }
 
-  #listenForNodeSelections() {
-    this.editor.getRootElement().addEventListener("lexxy:node-selected", async (event) => {
-      await nextFrame(); // If not, clipboard won't work on the selection
+  #getTopLevelElementFromSelection() {
+    const selection = Nr();
+    if (!selection) return null
 
-      const { key } = event.detail;
-      this.editor.update(() => {
-        const node = us(key);
-        if (node) {
-          const selection = kr();
-          selection.add(node.getKey());
-          ms(selection);
-        }
-        this.editor.focus();
-      });
-    });
+    if (ur(selection)) {
+      return this.#getTopLevelFromNodeSelection(selection)
+    }
+    
+    if (cr(selection)) {
+      return this.#getTopLevelFromRangeSelection(selection)
+    }
 
-    this.editor.getRootElement().addEventListener("lexxy:move-to-next-line", (event) => {
-      this.#selectOrAppendNextLine();
-    });
+    return null
+  }
+
+  #getTopLevelFromNodeSelection(selection) {
+    const nodes = selection.getNodes();
+    return nodes.length > 0 ? nodes[0].getTopLevelElement() : null
+  }
+
+  #getTopLevelFromRangeSelection(selection) {
+    const anchorNode = selection.anchor.getNode();
+    return anchorNode.getTopLevelElement()
+  }
+
+  #moveToOrCreateNextLine(topLevelElement) {
+    const nextSibling = topLevelElement.getNextSibling();
+
+    if (nextSibling) {
+      nextSibling.selectStart();
+    } else {
+      this.#createAndSelectNewParagraph();
+    }
+  }
+
+  #createAndSelectNewParagraph() {
+    const root = ps();
+    const newParagraph = Pi();
+    root.append(newParagraph);
+    newParagraph.selectStart();
   }
 
   #selectInLexical(node) {
@@ -6412,8 +6343,156 @@ class Selection {
     return true
   }
 
-  get #contents() {
-    return this.editorElement.contents
+  #getValidSelectionRange() {
+    const lexicalSelection = Nr();
+    if (!lexicalSelection || !lexicalSelection.isCollapsed()) return null
+
+    const nativeSelection = window.getSelection();
+    if (!nativeSelection || nativeSelection.rangeCount === 0) return null
+
+    return nativeSelection.getRangeAt(0)
+  }
+
+  #getReliableRectFromRange(range) {
+    let rect = range.getBoundingClientRect();
+    
+    if (this.#isRectUnreliable(rect)) {
+      const marker = this.#createAndInsertMarker(range);
+      rect = marker.getBoundingClientRect();
+      this.#restoreSelectionAfterMarker(marker);
+      marker.remove();
+    }
+
+    return rect
+  }
+
+  #isRectUnreliable(rect) {
+    return (rect.width === 0 && rect.height === 0) || (rect.top === 0 && rect.left === 0)
+  }
+
+  #createAndInsertMarker(range) {
+    const marker = this.#createMarker();
+    range.insertNode(marker);
+    return marker
+  }
+
+  #createMarker() {
+    const marker = document.createElement("span");
+    marker.textContent = "\u200b";
+    marker.style.display = "inline-block";
+    marker.style.width = "1px";
+    marker.style.height = "1em";
+    marker.style.lineHeight = "normal";
+    return marker
+  }
+
+  #restoreSelectionAfterMarker(marker) {
+    const nativeSelection = window.getSelection();
+    nativeSelection.removeAllRanges();
+    const newRange = document.createRange();
+    newRange.setStartAfter(marker);
+    newRange.collapse(true);
+    nativeSelection.addRange(newRange);
+  }
+
+  #calculateCursorPosition(rect, range) {
+    const rootRect = this.editor.getRootElement().getBoundingClientRect();
+    let x = rect.left - rootRect.left;
+    let y = rect.top - rootRect.top;
+
+    const fontSize = this.#getFontSizeForCursor(range);
+    if (!isNaN(fontSize)) {
+      y += fontSize;
+    }
+
+    return { x, y, fontSize }
+  }
+
+  #getFontSizeForCursor(range) {
+    const nativeSelection = window.getSelection();
+    const anchorNode = nativeSelection.anchorNode;
+    const parentElement = this.#getElementFromNode(anchorNode);
+    
+    if (parentElement instanceof HTMLElement) {
+      const computed = window.getComputedStyle(parentElement);
+      return parseFloat(computed.fontSize)
+    }
+    
+    return 0
+  }
+
+  #getElementFromNode(node) {
+    return node?.nodeType === Node.TEXT_NODE ? node.parentElement : node
+  }
+
+  #getCollapsedSelectionData() {
+    const selection = Nr();
+    if (!cr(selection) || !selection.isCollapsed()) {
+      return { anchorNode: null, offset: 0 }
+    }
+
+    const { anchor } = selection;
+    return { anchorNode: anchor.getNode(), offset: anchor.offset }
+  }
+
+  #getNodeAfterTextNode(anchorNode, offset) {
+    if (offset === anchorNode.getTextContentSize()) {
+      return this.#getNextNodeFromTextEnd(anchorNode)
+    }
+    return null
+  }
+
+  #getNextNodeFromTextEnd(anchorNode) {
+    if (anchorNode.getNextSibling() instanceof gi) {
+      return anchorNode.getNextSibling()
+    }
+    const parent = anchorNode.getParent();
+    return parent ? parent.getNextSibling() : null
+  }
+
+  #getNodeAfterElementNode(anchorNode, offset) {
+    if (offset < anchorNode.getChildrenSize()) {
+      return anchorNode.getChildAtIndex(offset)
+    }
+    return this.#findNextSiblingUp(anchorNode)
+  }
+
+  #getNodeBeforeTextNode(anchorNode, offset) {
+    if (offset === 0) {
+      return this.#getPreviousNodeFromTextStart(anchorNode)
+    }
+    return null
+  }
+
+  #getPreviousNodeFromTextStart(anchorNode) {
+    if (anchorNode.getPreviousSibling() instanceof gi) {
+      return anchorNode.getPreviousSibling()
+    }
+    const parent = anchorNode.getParent();
+    return parent.getPreviousSibling()
+  }
+
+  #getNodeBeforeElementNode(anchorNode, offset) {
+    if (offset > 0) {
+      return anchorNode.getChildAtIndex(offset - 1)
+    }
+    return this.#findPreviousSiblingUp(anchorNode)
+  }
+
+  #findNextSiblingUp(node) {
+    let current = node;
+    while (current && current.getNextSibling() == null) {
+      current = current.getParent();
+    }
+    return current ? current.getNextSibling() : null
+  }
+
+  #findPreviousSiblingUp(node) {
+    let current = node;
+    while (current && current.getPreviousSibling() == null) {
+      current = current.getParent();
+    }
+    return current ? current.getPreviousSibling() : null
   }
 }
 
@@ -6474,70 +6553,11 @@ class Contents {
       const selection = Nr();
       if (!cr(selection)) return
 
-      let selectedNodes;
-      let selectedParagraphs;
-
-      // If no selection (collapsed cursor), treat the current line as selected
       if (selection.isCollapsed()) {
-        const anchorNode = selection.anchor.getNode();
-        const topLevelElement = anchorNode.getTopLevelElementOrThrow();
-
-        // If the line has content, wrap it
-        if (topLevelElement.getTextContent()) {
-          const wrappingNode = newNodeFn();
-          wrappingNode.append(...topLevelElement.getChildren());
-          topLevelElement.replace(wrappingNode);
-        } else {
-          // If empty line, just insert new block
-          Fr([ newNodeFn() ]);
-        }
-        return
+        this.#wrapCurrentLine(selection, newNodeFn);
+      } else {
+        this.#wrapMultipleSelectedLines(selection, newNodeFn);
       }
-
-      selectedNodes = selection.extract();
-      selectedParagraphs = selectedNodes.map((node) => Fi(node) ? node : Qn(node) && node.getParent() && Fi(node.getParent()) ? node.getParent() : null).filter(Boolean);
-
-      ms(null);
-      if (selectedParagraphs.length === 0) return
-
-      const lineSet = new Set();
-      const nodesToDelete = new Set();
-
-      // Extract and deduplicate lines from paragraph content
-      selectedParagraphs.forEach((paragraphNode) => {
-        const textContent = paragraphNode.getTextContent();
-        if (textContent) {
-          const lineTexts = textContent.split("\n");
-          lineTexts.forEach((line) => {
-            if (line.trim()) {
-              lineSet.add(line);
-            }
-          });
-        }
-        nodesToDelete.add(paragraphNode);
-      });
-
-      if (lineSet.size === 0) return
-
-      const wrappingNode = newNodeFn();
-
-      // Append each unique line to the new wrapping node
-      Array.from(lineSet).forEach((lineText, index, arr) => {
-        wrappingNode.append(Xn(lineText));
-        if (index < arr.length - 1) {
-          wrappingNode.append(Pn());
-        }
-      });
-
-      // Replace the current location with the new wrapping node
-      const anchorNode = selection.anchor.getNode();
-      const parent = anchorNode.getParent();
-      if (parent) {
-        parent.replace(wrappingNode);
-      }
-
-      // Remove original nodes
-      nodesToDelete.forEach((node) => node.remove());
     });
   }
 
@@ -6585,78 +6605,11 @@ class Contents {
       const selection = Nr();
       if (!cr(selection)) return
 
-      // Get all unique list items in the selection
-      const nodes = selection.getNodes();
-      const listItems = new Set();
-      const parentLists = new Set();
-
-      // Collect all list items that contain selected nodes
-      for (const node of nodes) {
-        const listItem = getNearestListItemNode(node);
-        if (listItem) {
-          listItems.add(listItem);
-          const parentList = listItem.getParent();
-          if (parentList && ot$2(parentList)) {
-            parentLists.add(parentList);
-          }
-        }
-      }
-
-      if (listItems.size === 0) return
-
-      // Convert list items to paragraphs
-      const newParagraphs = [];
-      for (const listItem of listItems) {
-        const parentList = listItem.getParent();
-        if (!parentList || !ot$2(parentList)) continue
-
-        // Create a paragraph to replace the list item
-        const paragraph = Pi();
-
-        // Collect any sublists to reinsert after
-        const sublists = [];
-        listItem.getChildren().forEach(function (child) {
-          if (ot$2(child)) {
-            sublists.push(child);
-          } else {
-            paragraph.append(child);
-          }
-        });
-
-        // Insert the paragraph and then the sublists
-        listItem.insertAfter(paragraph);
-        sublists.forEach(function (sub) {
-          paragraph.insertAfter(sub);
-        });
-
-        newParagraphs.push(paragraph);
-
-        // Remove the original list item
-        listItem.remove();
-      }
-
-      // Remove any parent lists that are now empty
-      for (const parentList of parentLists) {
-        if (ot$2(parentList) && parentList.getChildrenSize() === 0) {
-          parentList.remove();
-        }
-      }
-
-      // Select the range of new paragraphs
-      if (newParagraphs.length > 0) {
-        const firstParagraph = newParagraphs[0];
-        const lastParagraph = newParagraphs[newParagraphs.length - 1];
-
-        if (newParagraphs.length === 1) {
-          firstParagraph.selectEnd();
-        } else {
-          firstParagraph.selectStart();
-          const currentSelection = Nr();
-          if (currentSelection && cr(currentSelection)) {
-            currentSelection.anchor.set(firstParagraph.getKey(), 0, 'element');
-            currentSelection.focus.set(lastParagraph.getKey(), lastParagraph.getChildrenSize(), 'element');
-          }
-        }
+      const { listItems, parentLists } = this.#collectSelectedListItems(selection);
+      if (listItems.size > 0) {
+        const newParagraphs = this.#convertListItemsToParagraphs(listItems);
+        this.#removeEmptyParentLists(parentLists);
+        this.#selectNewParagraphs(newParagraphs);
       }
     });
   }
@@ -6728,44 +6681,13 @@ class Contents {
     replacementNodes = Array.isArray(replacementNodes) ? replacementNodes : [ replacementNodes ];
 
     this.editor.update(() => {
-      const selection = Nr();
-      if (!selection || !selection.isCollapsed()) return
+      const { anchorNode, offset } = this.#getTextAnchorData();
+      if (!anchorNode) return
 
-      const anchor = selection.anchor;
-      const anchorNode = anchor.getNode();
-
-      if (!Qn(anchorNode)) return
-
-      const fullText = anchorNode.getTextContent();
-      const offset = anchor.offset;
-
-      const textBeforeCursor = fullText.slice(0, offset);
-      const lastIndex = textBeforeCursor.lastIndexOf(stringToReplace);
-
+      const lastIndex = this.#findLastIndexBeforeCursor(anchorNode, offset, stringToReplace);
       if (lastIndex === -1) return
 
-      const textBeforeString = fullText.slice(0, lastIndex);
-      const textAfterCursor = fullText.slice(offset);
-      const textNodeBefore = Xn(textBeforeString);
-      const textNodeAfter = Xn(textAfterCursor || " "); // Default to Space to prevent cursor rendering issues in Safari
-
-      // Replace the anchor node with the first node
-      anchorNode.replace(textNodeBefore);
-
-      // Insert replacement nodes in sequence
-      let previousNode = textNodeBefore;
-      for (const node of replacementNodes) {
-        previousNode.insertAfter(node);
-        previousNode = node;
-      }
-
-      // Insert the text after cursor
-      previousNode.insertAfter(textNodeAfter);
-
-      this.#appendLineBreakIfNeeded(textNodeAfter.getParentOrThrow());
-
-      // Place the cursor at the start of textNodeAfter
-      textNodeAfter.select(0, 0);
+      this.#performTextReplacement(anchorNode, offset, lastIndex, replacementNodes);
     });
   }
 
@@ -6826,7 +6748,232 @@ class Contents {
     return this.editorElement.selection
   }
 
-  // Add line break if last node is not a textual one to get a visible cursor
+  #wrapCurrentLine(selection, newNodeFn) {
+    const anchorNode = selection.anchor.getNode();
+    const topLevelElement = anchorNode.getTopLevelElementOrThrow();
+
+    if (topLevelElement.getTextContent()) {
+      const wrappingNode = newNodeFn();
+      wrappingNode.append(...topLevelElement.getChildren());
+      topLevelElement.replace(wrappingNode);
+    } else {
+      Fr([ newNodeFn() ]);
+    }
+  }
+
+  #wrapMultipleSelectedLines(selection, newNodeFn) {
+    const selectedParagraphs = this.#extractSelectedParagraphs(selection);
+    if (selectedParagraphs.length === 0) return
+
+    const { lineSet, nodesToDelete } = this.#extractUniqueLines(selectedParagraphs);
+    if (lineSet.size === 0) return
+
+    const wrappingNode = this.#createWrappingNodeWithLines(newNodeFn, lineSet);
+    this.#replaceWithWrappingNode(selection, wrappingNode);
+    this.#removeNodes(nodesToDelete);
+  }
+
+  #extractSelectedParagraphs(selection) {
+    const selectedNodes = selection.extract();
+    const selectedParagraphs = selectedNodes
+      .map((node) => this.#getParagraphFromNode(node))
+      .filter(Boolean);
+
+    ms(null);
+    return selectedParagraphs
+  }
+
+  #getParagraphFromNode(node) {
+    if (Fi(node)) return node
+    if (Qn(node) && node.getParent() && Fi(node.getParent())) {
+      return node.getParent()
+    }
+    return null
+  }
+
+  #extractUniqueLines(selectedParagraphs) {
+    const lineSet = new Set();
+    const nodesToDelete = new Set();
+
+    selectedParagraphs.forEach((paragraphNode) => {
+      const textContent = paragraphNode.getTextContent();
+      if (textContent) {
+        textContent.split("\n").forEach((line) => {
+          if (line.trim()) lineSet.add(line);
+        });
+      }
+      nodesToDelete.add(paragraphNode);
+    });
+
+    return { lineSet, nodesToDelete }
+  }
+
+  #createWrappingNodeWithLines(newNodeFn, lineSet) {
+    const wrappingNode = newNodeFn();
+    const lines = Array.from(lineSet);
+
+    lines.forEach((lineText, index) => {
+      wrappingNode.append(Xn(lineText));
+      if (index < lines.length - 1) {
+        wrappingNode.append(Pn());
+      }
+    });
+
+    return wrappingNode
+  }
+
+  #replaceWithWrappingNode(selection, wrappingNode) {
+    const anchorNode = selection.anchor.getNode();
+    const parent = anchorNode.getParent();
+    if (parent) {
+      parent.replace(wrappingNode);
+    }
+  }
+
+  #removeNodes(nodesToDelete) {
+    nodesToDelete.forEach((node) => node.remove());
+  }
+
+  #collectSelectedListItems(selection) {
+    const nodes = selection.getNodes();
+    const listItems = new Set();
+    const parentLists = new Set();
+
+    for (const node of nodes) {
+      const listItem = getNearestListItemNode(node);
+      if (listItem) {
+        listItems.add(listItem);
+        const parentList = listItem.getParent();
+        if (parentList && ot$2(parentList)) {
+          parentLists.add(parentList);
+        }
+      }
+    }
+
+    return { listItems, parentLists }
+  }
+
+  #convertListItemsToParagraphs(listItems) {
+    const newParagraphs = [];
+
+    for (const listItem of listItems) {
+      const paragraph = this.#convertListItemToParagraph(listItem);
+      if (paragraph) {
+        newParagraphs.push(paragraph);
+      }
+    }
+
+    return newParagraphs
+  }
+
+  #convertListItemToParagraph(listItem) {
+    const parentList = listItem.getParent();
+    if (!parentList || !ot$2(parentList)) return null
+
+    const paragraph = Pi();
+    const sublists = this.#extractSublistsAndContent(listItem, paragraph);
+
+    listItem.insertAfter(paragraph);
+    this.#insertSublists(paragraph, sublists);
+    listItem.remove();
+
+    return paragraph
+  }
+
+  #extractSublistsAndContent(listItem, paragraph) {
+    const sublists = [];
+
+    listItem.getChildren().forEach((child) => {
+      if (ot$2(child)) {
+        sublists.push(child);
+      } else {
+        paragraph.append(child);
+      }
+    });
+
+    return sublists
+  }
+
+  #insertSublists(paragraph, sublists) {
+    sublists.forEach((sublist) => {
+      paragraph.insertAfter(sublist);
+    });
+  }
+
+  #removeEmptyParentLists(parentLists) {
+    for (const parentList of parentLists) {
+      if (ot$2(parentList) && parentList.getChildrenSize() === 0) {
+        parentList.remove();
+      }
+    }
+  }
+
+  #selectNewParagraphs(newParagraphs) {
+    if (newParagraphs.length === 0) return
+
+    const firstParagraph = newParagraphs[0];
+    const lastParagraph = newParagraphs[newParagraphs.length - 1];
+
+    if (newParagraphs.length === 1) {
+      firstParagraph.selectEnd();
+    } else {
+      this.#selectParagraphRange(firstParagraph, lastParagraph);
+    }
+  }
+
+  #selectParagraphRange(firstParagraph, lastParagraph) {
+    firstParagraph.selectStart();
+    const currentSelection = Nr();
+    if (currentSelection && cr(currentSelection)) {
+      currentSelection.anchor.set(firstParagraph.getKey(), 0, 'element');
+      currentSelection.focus.set(lastParagraph.getKey(), lastParagraph.getChildrenSize(), 'element');
+    }
+  }
+
+  #getTextAnchorData() {
+    const selection = Nr();
+    if (!selection || !selection.isCollapsed()) return { anchorNode: null, offset: 0 }
+
+    const anchor = selection.anchor;
+    const anchorNode = anchor.getNode();
+
+    if (!Qn(anchorNode)) return { anchorNode: null, offset: 0 }
+
+    return { anchorNode, offset: anchor.offset }
+  }
+
+  #findLastIndexBeforeCursor(anchorNode, offset, stringToReplace) {
+    const fullText = anchorNode.getTextContent();
+    const textBeforeCursor = fullText.slice(0, offset);
+    return textBeforeCursor.lastIndexOf(stringToReplace)
+  }
+
+  #performTextReplacement(anchorNode, offset, lastIndex, replacementNodes) {
+    const fullText = anchorNode.getTextContent();
+    const textBeforeString = fullText.slice(0, lastIndex);
+    const textAfterCursor = fullText.slice(offset);
+
+    const textNodeBefore = Xn(textBeforeString);
+    const textNodeAfter = Xn(textAfterCursor || " ");
+
+    anchorNode.replace(textNodeBefore);
+
+    const lastInsertedNode = this.#insertReplacementNodes(textNodeBefore, replacementNodes);
+    lastInsertedNode.insertAfter(textNodeAfter);
+
+    this.#appendLineBreakIfNeeded(textNodeAfter.getParentOrThrow());
+    textNodeAfter.select(0, 0);
+  }
+
+  #insertReplacementNodes(startNode, replacementNodes) {
+    let previousNode = startNode;
+    for (const node of replacementNodes) {
+      previousNode.insertAfter(node);
+      previousNode = node;
+    }
+    return previousNode
+  }
+
   #appendLineBreakIfNeeded(paragraph) {
     if (Fi(paragraph) && !this.editorElement.isSingleLineMode) {
       const children = paragraph.getChildren();
@@ -6838,7 +6985,6 @@ class Contents {
       }
     }
   }
-
 }
 
 /**

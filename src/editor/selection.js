@@ -41,58 +41,13 @@ export default class Selection {
     let position = { x: 0, y: 0 }
 
     this.editor.getEditorState().read(() => {
-      const lexicalSelection = $getSelection()
-      if (!lexicalSelection || !lexicalSelection.isCollapsed()) return
+      const range = this.#getValidSelectionRange()
+      if (!range) return
 
-      const nativeSelection = window.getSelection()
-      if (!nativeSelection || nativeSelection.rangeCount === 0) return
-
-      const range = nativeSelection.getRangeAt(0)
-      let rect = range.getBoundingClientRect()
-
-      // Create a span marker if the rect is unreliable
-      let marker
-      if ((rect.width === 0 && rect.height === 0) || (rect.top === 0 && rect.left === 0)) {
-        marker = this.#createMarker()
-        range.insertNode(marker)
-        rect = marker.getBoundingClientRect()
-
-        // Reset selection after inserting the marker
-        nativeSelection.removeAllRanges()
-        const newRange = document.createRange()
-        newRange.setStartAfter(marker)
-        newRange.collapse(true)
-        nativeSelection.addRange(newRange)
-      }
-
+      const rect = this.#getReliableRectFromRange(range)
       if (!rect) return
 
-      const rootRect = this.editor.getRootElement().getBoundingClientRect()
-      let x = rect.left - rootRect.left
-      let y = rect.top - rootRect.top
-
-      // Try to get the font size from the marker or its parent
-      let fontSize = 0
-      if (marker) {
-        const computed = window.getComputedStyle(marker)
-        fontSize = parseFloat(computed.fontSize)
-        marker.remove()
-      } else {
-        const anchorNode = nativeSelection.anchorNode
-        const parentElement = anchorNode?.nodeType === Node.TEXT_NODE
-          ? anchorNode.parentElement
-          : anchorNode
-        if (parentElement instanceof HTMLElement) {
-          const computed = window.getComputedStyle(parentElement)
-          fontSize = parseFloat(computed.fontSize)
-        }
-      }
-
-      if (!isNaN(fontSize)) {
-        y += fontSize
-      }
-
-      position = { x, y, fontSize }
+      position = this.#calculateCursorPosition(rect, range)
     })
 
     return position
@@ -120,7 +75,6 @@ export default class Selection {
     const anchorElement = anchorNode.getTopLevelElement()
     if (!anchorElement) return false
 
-    // Check if any of the nodes is a line break
     const nodes = selection.getNodes()
     for (const node of nodes) {
       if ($isLineBreakNode(node)) {
@@ -139,6 +93,54 @@ export default class Selection {
     return getNearestListItemNode(anchorNode) !== null
   }
 
+  get nodeAfterCursor() {
+    const { anchorNode, offset } = this.#getCollapsedSelectionData()
+    if (!anchorNode) return null
+
+    if ($isTextNode(anchorNode)) {
+      return this.#getNodeAfterTextNode(anchorNode, offset)
+    }
+
+    if ($isElementNode(anchorNode)) {
+      return this.#getNodeAfterElementNode(anchorNode, offset)
+    }
+
+    return this.#findNextSiblingUp(anchorNode)
+  }
+
+  get nodeBeforeCursor() {
+    const { anchorNode, offset } = this.#getCollapsedSelectionData()
+    if (!anchorNode) return null
+
+    if ($isTextNode(anchorNode)) {
+      return this.#getNodeBeforeTextNode(anchorNode, offset)
+    }
+
+    if ($isElementNode(anchorNode)) {
+      return this.#getNodeBeforeElementNode(anchorNode, offset)
+    }
+
+    return this.#findPreviousSiblingUp(anchorNode)
+  }
+
+  get #contents() {
+    return this.editorElement.contents
+  }
+
+  get #currentlySelectedKeys() {
+    if (this._currentlySelectedKeys) { return this._currentlySelectedKeys }
+
+    this._currentlySelectedKeys = new Set()
+
+    if (this.current) {
+      for (const node of this.current.getNodes()) {
+        this._currentlySelectedKeys.add(node.getKey())
+      }
+    }
+
+    return this._currentlySelectedKeys
+  }
+
   #processSelectionChangeCommands() {
     this.editor.registerCommand(KEY_ARROW_LEFT_COMMAND, this.#selectPreviousNode.bind(this), COMMAND_PRIORITY_LOW)
     this.editor.registerCommand(KEY_ARROW_UP_COMMAND, this.#selectPreviousNode.bind(this), COMMAND_PRIORITY_LOW)
@@ -151,6 +153,27 @@ export default class Selection {
     this.editor.registerCommand(SELECTION_CHANGE_COMMAND, () => {
       this.current = $getSelection()
     }, COMMAND_PRIORITY_LOW)
+  }
+
+  #listenForNodeSelections() {
+    this.editor.getRootElement().addEventListener("lexxy:node-selected", async (event) => {
+      await nextFrame()
+
+      const { key } = event.detail
+      this.editor.update(() => {
+        const node = $getNodeByKey(key)
+        if (node) {
+          const selection = $createNodeSelection()
+          selection.add(node.getKey())
+          $setSelection(selection)
+        }
+        this.editor.focus()
+      })
+    })
+
+    this.editor.getRootElement().addEventListener("lexxy:move-to-next-line", (event) => {
+      this.#selectOrAppendNextLine()
+    })
   }
 
   #syncSelectedClasses() {
@@ -179,16 +202,6 @@ export default class Selection {
     }
   }
 
-  #createMarker() {
-    const marker = document.createElement("span")
-    marker.textContent = "\u200b"
-    marker.style.display = "inline-block"
-    marker.style.width = "1px"
-    marker.style.height = "1em"
-    marker.style.lineHeight = "normal"
-    return marker
-  }
-
   async #selectPreviousNode() {
     if (this.current) {
       await this.#withCurrentNode((currentNode) => currentNode.selectPrevious())
@@ -205,104 +218,6 @@ export default class Selection {
     }
   }
 
-  async #selectOrAppendNextLine() {
-    this.editor.update(() => {
-      const selection = $getSelection()
-      if (!selection) return
-
-      let topLevelElement = null
-
-      if ($isNodeSelection(selection)) {
-        const nodes = selection.getNodes()
-        if (nodes.length > 0) {
-          topLevelElement = nodes[0].getTopLevelElement()
-        }
-      } else if ($isRangeSelection(selection)) {
-        const anchorNode = selection.anchor.getNode()
-        topLevelElement = anchorNode.getTopLevelElement()
-      }
-
-      if (!topLevelElement) return
-
-      const nextSibling = topLevelElement.getNextSibling()
-
-      if (nextSibling) {
-        nextSibling.selectStart()
-      } else {
-        const root = $getRoot()
-        const newParagraph = $createParagraphNode()
-        root.append(newParagraph)
-        newParagraph.selectStart()
-      }
-    })
-  }
-
-  get nodeAfterCursor() {
-    const selection = $getSelection()
-    if (!$isRangeSelection(selection) || !selection.isCollapsed()) { return null }
-
-    const { anchor } = selection
-    const anchorNode = anchor.getNode()
-    const offset = anchor.offset
-
-    if ($isTextNode(anchorNode)) {
-      if (offset === anchorNode.getTextContentSize()) {
-        if (anchorNode.getNextSibling() instanceof DecoratorNode) {
-          return anchorNode.getNextSibling()
-        } else {
-          const parent = anchorNode.getParent()
-          return parent ? parent.getNextSibling() : null
-        }
-      }
-      return null
-    }
-
-    if ($isElementNode(anchorNode) && offset < anchorNode.getChildrenSize()) {
-      return anchorNode.getChildAtIndex(offset)
-    }
-
-    let node = anchorNode
-    while (node && node.getNextSibling() == null) {
-      node = node.getParent()
-    }
-
-    return node ? node.getNextSibling() : null
-  }
-
-  get nodeBeforeCursor() {
-    const selection = $getSelection()
-    if (!$isRangeSelection(selection) || !selection.isCollapsed()) { return null }
-
-    const { anchor } = selection
-    const anchorNode = anchor.getNode()
-    const offset = anchor.offset
-
-    if ($isTextNode(anchorNode)) {
-      if (offset === 0) {
-        if (anchorNode.getPreviousSibling() instanceof DecoratorNode) {
-          return anchorNode.getPreviousSibling()
-        } else {
-          const parent = anchorNode.getParent()
-          return parent.getPreviousSibling()
-        }
-      }
-
-      return null
-    }
-
-    if ($isElementNode(anchorNode) && offset > 0) {
-      return anchorNode.getChildAtIndex(offset - 1)
-    }
-
-    let node = anchorNode
-    while (node && node.getPreviousSibling() == null) {
-      node = node.getParent()
-    }
-
-    const previousSibling = node ? node.getPreviousSibling() : null
-    return previousSibling
-  }
-
   async #withCurrentNode(fn) {
     await nextFrame()
     if (this.current) {
@@ -314,39 +229,55 @@ export default class Selection {
     }
   }
 
-  get #currentlySelectedKeys() {
-    if (this._currentlySelectedKeys) { return this._currentlySelectedKeys }
+  async #selectOrAppendNextLine() {
+    this.editor.update(() => {
+      const topLevelElement = this.#getTopLevelElementFromSelection()
+      if (!topLevelElement) return
 
-    this._currentlySelectedKeys = new Set()
-
-    if (this.current) {
-      for (const node of this.current.getNodes()) {
-        this._currentlySelectedKeys.add(node.getKey())
-      }
-    }
-
-    return this._currentlySelectedKeys
+      this.#moveToOrCreateNextLine(topLevelElement)
+    })
   }
 
-  #listenForNodeSelections() {
-    this.editor.getRootElement().addEventListener("lexxy:node-selected", async (event) => {
-      await nextFrame() // If not, clipboard won't work on the selection
+  #getTopLevelElementFromSelection() {
+    const selection = $getSelection()
+    if (!selection) return null
 
-      const { key } = event.detail
-      this.editor.update(() => {
-        const node = $getNodeByKey(key)
-        if (node) {
-          const selection = $createNodeSelection()
-          selection.add(node.getKey())
-          $setSelection(selection)
-        }
-        this.editor.focus()
-      })
-    })
+    if ($isNodeSelection(selection)) {
+      return this.#getTopLevelFromNodeSelection(selection)
+    }
+    
+    if ($isRangeSelection(selection)) {
+      return this.#getTopLevelFromRangeSelection(selection)
+    }
 
-    this.editor.getRootElement().addEventListener("lexxy:move-to-next-line", (event) => {
-      this.#selectOrAppendNextLine()
-    })
+    return null
+  }
+
+  #getTopLevelFromNodeSelection(selection) {
+    const nodes = selection.getNodes()
+    return nodes.length > 0 ? nodes[0].getTopLevelElement() : null
+  }
+
+  #getTopLevelFromRangeSelection(selection) {
+    const anchorNode = selection.anchor.getNode()
+    return anchorNode.getTopLevelElement()
+  }
+
+  #moveToOrCreateNextLine(topLevelElement) {
+    const nextSibling = topLevelElement.getNextSibling()
+
+    if (nextSibling) {
+      nextSibling.selectStart()
+    } else {
+      this.#createAndSelectNewParagraph()
+    }
+  }
+
+  #createAndSelectNewParagraph() {
+    const root = $getRoot()
+    const newParagraph = $createParagraphNode()
+    root.append(newParagraph)
+    newParagraph.selectStart()
   }
 
   #selectInLexical(node) {
@@ -381,7 +312,155 @@ export default class Selection {
     return true
   }
 
-  get #contents() {
-    return this.editorElement.contents
+  #getValidSelectionRange() {
+    const lexicalSelection = $getSelection()
+    if (!lexicalSelection || !lexicalSelection.isCollapsed()) return null
+
+    const nativeSelection = window.getSelection()
+    if (!nativeSelection || nativeSelection.rangeCount === 0) return null
+
+    return nativeSelection.getRangeAt(0)
+  }
+
+  #getReliableRectFromRange(range) {
+    let rect = range.getBoundingClientRect()
+    
+    if (this.#isRectUnreliable(rect)) {
+      const marker = this.#createAndInsertMarker(range)
+      rect = marker.getBoundingClientRect()
+      this.#restoreSelectionAfterMarker(marker)
+      marker.remove()
+    }
+
+    return rect
+  }
+
+  #isRectUnreliable(rect) {
+    return (rect.width === 0 && rect.height === 0) || (rect.top === 0 && rect.left === 0)
+  }
+
+  #createAndInsertMarker(range) {
+    const marker = this.#createMarker()
+    range.insertNode(marker)
+    return marker
+  }
+
+  #createMarker() {
+    const marker = document.createElement("span")
+    marker.textContent = "\u200b"
+    marker.style.display = "inline-block"
+    marker.style.width = "1px"
+    marker.style.height = "1em"
+    marker.style.lineHeight = "normal"
+    return marker
+  }
+
+  #restoreSelectionAfterMarker(marker) {
+    const nativeSelection = window.getSelection()
+    nativeSelection.removeAllRanges()
+    const newRange = document.createRange()
+    newRange.setStartAfter(marker)
+    newRange.collapse(true)
+    nativeSelection.addRange(newRange)
+  }
+
+  #calculateCursorPosition(rect, range) {
+    const rootRect = this.editor.getRootElement().getBoundingClientRect()
+    let x = rect.left - rootRect.left
+    let y = rect.top - rootRect.top
+
+    const fontSize = this.#getFontSizeForCursor(range)
+    if (!isNaN(fontSize)) {
+      y += fontSize
+    }
+
+    return { x, y, fontSize }
+  }
+
+  #getFontSizeForCursor(range) {
+    const nativeSelection = window.getSelection()
+    const anchorNode = nativeSelection.anchorNode
+    const parentElement = this.#getElementFromNode(anchorNode)
+    
+    if (parentElement instanceof HTMLElement) {
+      const computed = window.getComputedStyle(parentElement)
+      return parseFloat(computed.fontSize)
+    }
+    
+    return 0
+  }
+
+  #getElementFromNode(node) {
+    return node?.nodeType === Node.TEXT_NODE ? node.parentElement : node
+  }
+
+  #getCollapsedSelectionData() {
+    const selection = $getSelection()
+    if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
+      return { anchorNode: null, offset: 0 }
+    }
+
+    const { anchor } = selection
+    return { anchorNode: anchor.getNode(), offset: anchor.offset }
+  }
+
+  #getNodeAfterTextNode(anchorNode, offset) {
+    if (offset === anchorNode.getTextContentSize()) {
+      return this.#getNextNodeFromTextEnd(anchorNode)
+    }
+    return null
+  }
+
+  #getNextNodeFromTextEnd(anchorNode) {
+    if (anchorNode.getNextSibling() instanceof DecoratorNode) {
+      return anchorNode.getNextSibling()
+    }
+    const parent = anchorNode.getParent()
+    return parent ? parent.getNextSibling() : null
+  }
+
+  #getNodeAfterElementNode(anchorNode, offset) {
+    if (offset < anchorNode.getChildrenSize()) {
+      return anchorNode.getChildAtIndex(offset)
+    }
+    return this.#findNextSiblingUp(anchorNode)
+  }
+
+  #getNodeBeforeTextNode(anchorNode, offset) {
+    if (offset === 0) {
+      return this.#getPreviousNodeFromTextStart(anchorNode)
+    }
+    return null
+  }
+
+  #getPreviousNodeFromTextStart(anchorNode) {
+    if (anchorNode.getPreviousSibling() instanceof DecoratorNode) {
+      return anchorNode.getPreviousSibling()
+    }
+    const parent = anchorNode.getParent()
+    return parent.getPreviousSibling()
+  }
+
+  #getNodeBeforeElementNode(anchorNode, offset) {
+    if (offset > 0) {
+      return anchorNode.getChildAtIndex(offset - 1)
+    }
+    return this.#findPreviousSiblingUp(anchorNode)
+  }
+
+  #findNextSiblingUp(node) {
+    let current = node
+    while (current && current.getNextSibling() == null) {
+      current = current.getParent()
+    }
+    return current ? current.getNextSibling() : null
+  }
+
+  #findPreviousSiblingUp(node) {
+    let current = node
+    while (current && current.getPreviousSibling() == null) {
+      current = current.getParent()
+    }
+    return current ? current.getPreviousSibling() : null
   }
 }
