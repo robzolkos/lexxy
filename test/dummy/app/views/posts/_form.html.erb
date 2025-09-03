@@ -12,9 +12,7 @@
           attachments: params[:attachments_disabled] ? "false" : nil,
           toolbar: params[:toolbar_disabled] ? "false" : nil do %>
       <lexxy-prompt trigger="1" empty-results="No results"  name="mention">
-        <%= Person.find_each do |person| %>
-          <%= render "people/prompt_item", person: person %>
-        <% end %>
+        <%= render partial: "people/prompt_item", collection: Person.all, as: :person %>
       </lexxy-prompt>
 
       <lexxy-prompt trigger="2" src="<%= people_path %>" name="mention">

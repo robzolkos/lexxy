@@ -123,9 +123,7 @@ On the editor side, let's start with the *inline* approach:
 ```erb
 <%= form.rich_text_area :body do %>
   <lexxy-prompt trigger="@" name="mention">
-      <%= Person.find_each do |person| %>
-        <%= render "people/prompt_item", person: person %>
-      <% end %>
+    <%= render partial: "people/prompt_item", collection: Person.all, as: :person %>
   </lexxy-prompt>
 <% end %>
 ```
