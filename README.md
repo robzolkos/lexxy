@@ -18,12 +18,13 @@ bundle install
 
 ## Features
 
-- Built on top of [Lexical](https://lexical.dev), Meta's powerful text editor framework.
-- Good HTML semantics. A paragraph is a paragraph.
-- Markdown support: shortcuts, formatting on paste.
+- Built on top of [Lexical](https://lexical.dev): Meta's powerful text editor framework.
+- Good HTML semantics. Paragraphs are real `<p>` tags, as they should be.
+- Markdown support: shortcuts, auto-formatting on paste.
 - Real-time code syntax highlighting.
 - Create links by pasting URLs on selected text.
 - Configurable prompts. Support for mentions and other interactive prompts with multiple loading and filtering strategies.
+- Preview attachments like PDFs and Videos in the editor.
 - Works seamlessly with Action Text, generating the same canonical HTML format it expects for attachments.
 
 ## Configuration
@@ -32,14 +33,14 @@ You can add a Lexxy instance using the regular Action Text form helper:
 
 ```erb
 <%= form_with model: @post do |form| %>
-  <%= form.rich_text_area :content, placeholder: "Write something..." %>
+  <%= form.rich_text_area :content %>
 <% end %>
 ```
 
 Under the hood, this will insert a `<lexxy-editor>` tag, that will be a first-class form control:
 
 ```html
-<lexxy-editor placeholder="Write something..." ...>...</lexxy-editor>
+<lexxy-editor name="post[body]"...>...</lexxy-editor>
 ```
 
 ## Options
@@ -47,14 +48,14 @@ Under the hood, this will insert a `<lexxy-editor>` tag, that will be a first-cl
 The `<lexxy-editor>` element supports these options:
 
 - `placeholder` - Text displayed when the editor is empty.
-- `toolbar` - By default, the toolbar is bootstrapped and displayed above the editor. Pass `"false"` to disable the toolbar entirely, or pass an element ID to render the toolbar in an external element
-- `attachments` - By default, attachments are supported, including paste and Drag & Drop support. Pass `"false"` to disable attachments completely
+- `toolbar` - Pass `"false"` to disable the toolbar entirely, or pass an element ID to render the toolbar in an external element. By default, the toolbar is bootstrapped and displayed above the editor.
+- `attachments` - Pass `"false"` to disable attachments completely. By default, attachments are supported, including paste and Drag & Drop support.
 
-Lexxy uses the ElementInternals API to participate in HTML forms as any standard control. This means that you can use standard HTML attributes like `name`, `required`, `disabled`, etc.
+Lexxy uses the `ElementInternals` API to participate in HTML forms as any standard control. This means that you can use standard HTML attributes like `name`, `required`, `disabled`, etc.
 
 ## Prompts
 
-Prompts let you implement features like mentions, hashtags, or any trigger-based suggestions. When you select an item from the prompt, you have two options:
+Prompts let you implement features like @mentions, /commands, or any other trigger-based suggestions. When you select an item from the prompt, you have two options:
 
 1. Insert the item as an [Action Text custom attachment](https://guides.rubyonrails.org/action_text_overview.html#signed-globalid). This lets you use standard Action Text to customize how they should render or to process them on the server side.
 2. Insert the item as free text in the editor.
@@ -89,11 +90,12 @@ Regardless the source, the prompt items are defined using `<lexxy-prompt-item>` 
 ```
 
 Where:
+
 * `search` contains the text to match against when filtering.
 * `template[type="menu"]` defines how the item appears in the dropdown menu.
 * `template[type="editor"]` defines how the item appears in the editor when selected.
 
-### Custom attachments, inline loading
+### Custom attachments with inline loading
 
 Imagine you want to implement a *mentions* feature, where users can type "@" and select a person to mention. You want to save mentions as action text attachments, for further server-side processing when the form is submitted.
 
@@ -113,7 +115,7 @@ By default, the partial to render the attachment will be looked up in `app/views
 <em><%= person.name %></em> (<strong><%= person.initials %></strong>)
 ```
 
-Let's start with the *inline* approach:
+On the editor side, let's start with the *inline* approach:
 
 ```erb
 <lexxy-prompt-source id="inline-source">
@@ -147,7 +149,7 @@ Two important additional notes to use action text with custom attachments:
 
 ### Custom attachments, remote loading
 
-For moderately large sets, you can configure Lexxy to load all the options from a remote endpoint, and filter them locally as the user types. This is a good balance between performance and responsiveness.
+For moderately large sets, you can configure Lexxy to load all the options from a remote endpoint once, and filter them locally as the user types. This is a good balance between performance and responsiveness.
 
 Following with the mentions example, we could have a controller action that returns all people as prompt items, and configure it as the remote source:
 
@@ -156,7 +158,7 @@ Following with the mentions example, we could have a controller action that retu
 </lexxy-prompt>
 ```
 
-We could define the controller action like this:
+We could define the controller action to serve the prompt items like this:
 
 ```ruby
 class PeopleController < ApplicationController
@@ -187,7 +189,7 @@ To enable these, you must add the `insert-editable-text` attribute to the `<lexx
 </lexxy-prompt>
 ```
 
-When configured like this, when selecting an item from the prompt, the content of the `template[type="editor"]` will be inserted directly in the editor as HTML you can edit freely, instead of as an `<action-text-attachment>` element. Notice that in this case you need to be sure that the HTML is compatible with the tags that Lexxy supports.
+When configured like this,if you select an item from the prompt, the content of the `template[type="editor"]` will be inserted directly in the editor as HTML you can edit freely, instead of as an `<action-text-attachment>` element. Notice that in this case you need to make sure that the HTML is compatible with the tags that Lexxy supports.
 
 ### Remote filtering
 
@@ -217,16 +219,19 @@ By default, the `SPACE` key will select the current item in the prompt. If you w
 - `search` - The text to match against when filtering (can include multiple fields for better search).
 - `sgid` - The signed GlobalID for Action Text attachments (use `attachable_sgid` helper). Mandatory unless using `insert-editable-text`.
 
-## Plans and Vision
+## Roadmap
 
 This is an early beta. Here's what's coming next:
 
-- **Configurable editors in Action Text** - Choose your editor like you choose your database. Starting with official support for Trix and Lexxy, with hopes for community additions (like Tip Tap)
-- **Image galleries** - The only remaining feature for full Trix compatibility
-- **Enhanced editing features:**
-  - Tables without Trix's limitations
+- Configurable editors in Action Text - Choose your editor like you choose your database.
+- Image galleries - The only remaining feature for full Action Text compatibility
+- Enhanced editing features:
+  - Tables
   - Text highlighting
-  - More formatting options
+
+## Development
+
+
 
 ## Contributing
 
