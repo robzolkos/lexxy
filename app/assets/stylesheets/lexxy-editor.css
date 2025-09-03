@@ -132,13 +132,13 @@
     margin-block-start: 1ch;
   }
 
-  .input[type="url"],
+  input[type="url"],
   button {
     line-height: 1.5lh;
     padding-inline: 1ch;
   }
 
-  .input[type="url"] {
+  input[type="url"] {
     border: 1px solid var(--lexxy-color-ink-lighter);
     border-radius: var(--lexxy-radius);
     min-inline-size: 30ch;

@@ -191,7 +191,7 @@
   color: var(--lexxy-color-text-subtle);
   font-size: var(--lexxy-text-small);
 
-  .input {
+  input {
     color: inherit;
     border: none;
     inline-size: 100%;
