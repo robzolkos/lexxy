@@ -1,6 +1,7 @@
 @import url("lexxy-variables.css");
 
 :where(lexxy-editor) {
+  --lexxy-editor-padding: 1ch;
   --lexxy-toolbar-gap: 2px;
 
   border: 1px solid var(--lexxy-color-ink-lighter);
@@ -67,7 +68,7 @@
 :where(.lexxy-editor__content) {
   min-block-size: 8lh;
   outline: 0;
-  padding: 1ch;
+  padding: var(--lexxy-editor-padding);
 }
 
 :where(.lexxy-editor--drag-over) {
@@ -180,7 +181,7 @@
   font-family: var(--lexxy-font-base);
   font-size: var(--lexxy-text-small);
   font-weight: normal;
-  inset-inline-end: 0;
+  inset-inline-end: var(--lexxy-editor-padding);
   margin: 0.5ch 0.5ch 0 -0.5ch;
   padding: 0 2ch 0 1ch;
   text-align: start;
