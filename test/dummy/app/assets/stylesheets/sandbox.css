@@ -7,7 +7,17 @@
     flex-direction: row;
 
     section {
-      flex: 1;
+      flex: 0 0 50%;
+      overflow-x: auto;
+    }
+  }
+  
+  [data-lexxy-output-target="output"] {
+    overflow-x: auto;
+    
+    pre {
+      overflow-x: visible;
+      white-space: pre;
     }
   }
 }
