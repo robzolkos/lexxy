@@ -246,8 +246,6 @@ bin/rails server
 
 The sandbox app is available at http://localhost:3000. There is also a CRUD example at http://localhost:3000/posts.
 
-```bash
-
 ## Contributing
 
 - Bug reports and pull requests are welcome on [GitHub Issues](https://github.com/basecamp/lexxy/issues). Help is especially welcome with [those tagged as "Help Wanted"](https://github.com/basecamp/lexxy/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22help%20wanted%22).
