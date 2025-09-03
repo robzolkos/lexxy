@@ -30,8 +30,6 @@ bundle install
 - Preview attachments like PDFs and Videos in the editor.
 - Works seamlessly with Action Text, generating the same canonical HTML format it expects for attachments.
 
-![Lexxy editor screenshot](docs/images/home-screenshot.png)
-
 ## Configuration
 
 You can add a Lexxy instance using the regular Action Text form helper:
