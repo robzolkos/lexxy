@@ -7858,9 +7858,7 @@ class LexicalPromptElement extends HTMLElement {
           [ node ] = selection.getNodes();
         }
 
-        if (!node) return
-
-        if (Qn(node)) {
+        if (node && Qn(node)) {
           const text = node.getTextContent().trim();
           const lastChar = [ ...text ].pop();
 
