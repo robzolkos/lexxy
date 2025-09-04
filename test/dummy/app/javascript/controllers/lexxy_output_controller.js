@@ -8,13 +8,15 @@ export default class extends Controller {
 
   async refresh(event) {
     const code = this.editorTarget.value.trim()
-    const formattedCode = await prettier.format(code, {
+    let formattedCode = await prettier.format(code, {
       parser: "html",
       plugins: [ htmlParser ],
       printWidth: 80,
       tabWidth: 2,
       useTabs: false
     })
+
+    formattedCode = formattedCode.replace(/<br\s*\/>/g, '<br/>') // Remove space before self-closing slash for br tags
     const highlightedCode = Prism.highlight(formattedCode, Prism.languages.html, 'html')
     this.outputTarget.innerHTML = `<pre><code class="language-html">${highlightedCode}</code></pre>`
   }
