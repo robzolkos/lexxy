@@ -21,7 +21,6 @@ module Lexxy
 
     initializer "lexxy.assets" do |app|
       app.config.assets.paths << root.join("app/assets/stylesheets")
-      app.config.assets.paths << root.join("app/assets/javascript")
       app.config.assets.paths << root.join("app/javascript")
     end
 
