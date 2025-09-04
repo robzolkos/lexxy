@@ -48,7 +48,7 @@ For applying the same styles to rendered Action Text content, you need to overri
 Of course, you can copy the CSS to your project and adapt it to your needs. 
 
 > [!NOTE]  
-> We'll streamline this process as we upstream Lexxy to Action Text.
+> We'll streamline the configuration process as we upstream Lexxy to Action Text.
 
 ## Features
 
