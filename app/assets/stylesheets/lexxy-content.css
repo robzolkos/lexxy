@@ -296,7 +296,7 @@
   --lexxy-attachment-icon-color: var(--lexxy-color-purple);
 }
 
-:where (
+:where(
   .attachment--txt,
   .attachment--pages,
   .attachment--rtf,
