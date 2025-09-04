@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Lexxy - A rich text editor",
   "main": "dist/lexxy.js",
-  "repository": "https://github.com/jorgemanrubia/lexxy.git",
+  "repository": "https://github.com/basecamp/lexxy.git",
   "author": "Jorge Manrubia <jorge@37signals.com>",
   "license": "MIT",
   "devDependencies": {
