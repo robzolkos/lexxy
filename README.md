@@ -19,6 +19,34 @@ And then execute:
 bundle install
 ```
 
+Then, you need to import the lexxy source in your app. If you are using [propshaft](https://github.com/rails/propshaft) and [import maps](https://github.com/rails/importmap-rails) you can do:
+
+```ruby
+# importmap.rb
+pin "lexxy", to: "lexxy.js"
+```
+
+```javascript
+// application.js
+import "lexxy"
+```
+
+For the CSS, you can include it with the standard Rails helper:
+
+```erb
+<%= stylesheet_link_tag "lexxy" %>
+```
+
+For applying the same styles to rendered Action Text content, you need to override the current default by adding this template  `app/views/layouts/action_text/contents/_content.html.erb`:
+
+```erb
+<div class="lexxy-content">
+  <%= yield -%>
+</div>
+```
+
+Of course, you can copy the CSS to your project and adapt it to your needs. We'll streamline this process as we upstream Lexxy to Action Text.
+
 ## Features
 
 - Built on top of [Lexical](https://lexical.dev), the powerful text editor framework from Meta.
