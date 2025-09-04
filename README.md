@@ -256,11 +256,12 @@ By default, the `SPACE` key will select the current item in the prompt. If you w
 This is an early beta. Here's what's coming next:
 
 - Configurable editors in Action Text - Choose your editor like you choose your database.
-- Image galleries - The only remaining feature for full Action Text compatibility
-- Standalone JS package - to use in non-Rails environments.
 - Enhanced editing features:
     - Tables
     - Text highlighting
+- Image galleries - The only remaining feature for full Action Text compatibility
+- Install task that generates the necessary JS and adds stylesheets.
+- Standalone JS package - to use in non-Rails environments.
 
 ## Development
 
