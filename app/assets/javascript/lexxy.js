@@ -7076,10 +7076,6 @@ function isUrl(string) {
   }
 }
 
-function isPath(string) {
-  return /^\/.*$/.test(string);
-}
-
 function normalizeFilteredText(string) {
   return string
     .toLowerCase()
@@ -7839,7 +7835,7 @@ class LexicalPromptElement extends HTMLElement {
 
   #createSource() {
     const src = this.getAttribute("src");
-    if (isUrl(src) || isPath(src)) {
+    if (src) {
       if (this.hasAttribute("remote-filtering")) {
         return new RemoteFilterSource(src)
       } else {

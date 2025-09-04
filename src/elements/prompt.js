@@ -45,7 +45,7 @@ export default class LexicalPromptElement extends HTMLElement {
 
   #createSource() {
     const src = this.getAttribute("src")
-    if (isUrl(src) || isPath(src)) {
+    if (src) {
       if (this.hasAttribute("remote-filtering")) {
         return new RemoteFilterSource(src)
       } else {
