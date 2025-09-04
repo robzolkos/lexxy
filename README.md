@@ -103,7 +103,7 @@ Lexxy also lets you configure how to load the items: inline or remotely, and how
 The first thing to do is to add a `<lexxy-prompt>` element to the editor:
 
 ```erb
-<%= form_with model: @post do |form| %>
+<%= form.rich_text_area :body do %>
   <lexxy-prompt trigger="@">
   </lexxy-prompt>
 <% end %>
