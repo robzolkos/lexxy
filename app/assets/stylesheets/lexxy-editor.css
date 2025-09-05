@@ -38,10 +38,6 @@
     }
   }
 
-  details[open] summary {
-    filter: brightness(0.9);
-  }
-
   .node--selected {
     &:has(img) img,
     &:not(:has(img)) {
@@ -121,13 +117,22 @@
   }
 }
 
-
 :where(.lexxy-editor__toolbar-overflow) {
   display: none;
   position: relative;
+  z-index: 1;
 
-  > summary { list-style: none; }
-  > summary::-webkit-details-marker { display: none; }
+  summary {
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    [open] & {
+      filter: brightness(0.9);
+    }
+  }
 }
 
 :where(.lexxy-editor__toolbar-overflow-menu) {
