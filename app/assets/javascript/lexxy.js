@@ -3746,6 +3746,12 @@ function getListType(node) {
 }
 
 class LexicalToolbarElement extends HTMLElement {
+  constructor() {
+    super();
+    this.internals = this.attachInternals();
+    this.internals.role = "toolbar";
+  }
+
   setEditor(editorElement) {
     this.editorElement = editorElement;
     this.editor = editorElement.editor;
@@ -7264,7 +7270,7 @@ class LexicalEditorElement extends HTMLElement {
   constructor() {
     super();
     this.internals = this.attachInternals();
-    this.internals.role = "textbox";
+    this.internals.role = "presentation";
   }
 
   connectedCallback() {
@@ -7416,18 +7422,34 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #createEditorContentElement() {
-    const editorContentElement = createElement("div", { classList: "lexxy-editor__content", contenteditable: true, placeholder: this.getAttribute("placeholder") });
+    const editorContentElement = createElement("div", {
+      classList: "lexxy-editor__content",
+      contenteditable: true,
+      role: "textbox",
+      "aria-multiline": true,
+      "aria-label": this.#labelText,
+      placeholder: this.getAttribute("placeholder")
+    });
     editorContentElement.id = `${this.id}-content`;
+    this.#ariaAttributes.forEach(attribute => editorContentElement.setAttribute(attribute.name, attribute.value));
     this.appendChild(editorContentElement);
 
     if (this.getAttribute("tabindex")) {
-      this.editorContentElement.setAttribute("tabindex", this.getAttribute("tabindex"));
+      editorContentElement.setAttribute("tabindex", this.getAttribute("tabindex"));
       this.removeAttribute("tabindex");
     } else {
       editorContentElement.setAttribute("tabindex", 0);
     }
 
     return editorContentElement
+  }
+
+  get #labelText() {
+    return Array.from(this.internals.labels).map(label => label.textContent).join(" ")
+  }
+
+  get #ariaAttributes() {
+    return Array.from(this.attributes).filter(attribute => attribute.name.startsWith("aria-"))
   }
 
   set #internalFormValue(html) {
