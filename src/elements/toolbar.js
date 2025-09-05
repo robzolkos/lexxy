@@ -11,6 +11,12 @@ import { $isLinkNode } from "@lexical/link"
 import { getListType } from "../helpers/lexical_helper";
 
 export default class LexicalToolbarElement extends HTMLElement {
+  constructor() {
+    super()
+    this.internals = this.attachInternals()
+    this.internals.role = "toolbar"
+  }
+
   setEditor(editorElement) {
     this.editorElement = editorElement
     this.editor = editorElement.editor
