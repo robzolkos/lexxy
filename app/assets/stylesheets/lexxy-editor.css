@@ -11,8 +11,6 @@
   position: relative;
   transition: opacity 150ms;
 
-  /* width: 320px; */
-
   input,
   button {
     &:focus-visible {
