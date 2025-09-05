@@ -83,6 +83,7 @@
   font-size: inherit;
   gap: var(--lexxy-toolbar-gap);
   max-inline-size: 100%;
+  overflow-x: auto;
   padding: 2px;
   position: relative;
 
