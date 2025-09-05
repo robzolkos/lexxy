@@ -11,10 +11,6 @@
   position: relative;
   transition: opacity 150ms;
 
-  &:not(:has(lexxy-toolbar)) {
-    opacity: 0;
-  }
-
   input,
   button {
     &:focus-visible {
