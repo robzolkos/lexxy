@@ -46,7 +46,7 @@ Then import it in your JavaScript entry point:
 
 ```javascript
 // app/javascript/application.js
-import "@37signals/lexxy"
+import "lexxy"
 ```
 
 ### With javascript bundlers
