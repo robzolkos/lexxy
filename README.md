@@ -85,8 +85,6 @@ For applying the same styles to rendered Action Text content, you need to overri
 </div>
 ```
 
-##### Syntax Highlighting
-
 To apply syntax highlighting to rendered Action Text content, you need to call the `highlightAll` function from Lexxy. For example, create a Stimulus controller in `app/javascript/controllers/syntax_highlight_controller.js`:
 
 ```javascript
