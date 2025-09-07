@@ -32,7 +32,7 @@ And then execute:
 bundle install
 ```
 
-### Import maps
+### With import maps
 
 If you are using [propshaft](https://github.com/rails/propshaft) and [import maps](https://github.com/rails/importmap-rails):
 
@@ -49,7 +49,7 @@ Then import it in your JavaScript entry point:
 import "@37signals/lexxy"
 ```
 
-### JavaScript Bundling (jsbundling-rails, Vite, etc.)
+### With javascript bundlers
 
 If you're using [jsbundling-rails](https://github.com/rails/jsbundling-rails) with esbuild, webpack, or any other JavaScript bundler, you'll need to install the NPM package:
 
