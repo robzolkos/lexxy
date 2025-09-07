@@ -32,18 +32,40 @@ And then execute:
 bundle install
 ```
 
-Then, you need to import the lexxy source in your app. If you are using [propshaft](https://github.com/rails/propshaft) and [import maps](https://github.com/rails/importmap-rails) you can do:
+### Import maps
+
+If you are using [propshaft](https://github.com/rails/propshaft) and [import maps](https://github.com/rails/importmap-rails):
 
 ```ruby
 # importmap.rb
 pin "lexxy", to: "lexxy.js"
-pin "@rails/activestorage", to: "activestorage.esm.js" # if you want to support attachments
+pin "@rails/activestorage", to: "activestorage.esm.js" # to support attachments
 ```
 
+Then import it in your JavaScript entry point:
+
 ```javascript
-// application.js
-import "lexxy"
+// app/javascript/application.js
+import "@37signals/lexxy"
 ```
+
+### JavaScript Bundling (jsbundling-rails, Vite, etc.)
+
+If you're using [jsbundling-rails](https://github.com/rails/jsbundling-rails) with esbuild, webpack, or any other JavaScript bundler, you'll need to install the NPM package:
+
+```bash
+yarn add @37signals/lexxy
+yarn add @rails/activestorage # to support attachments
+```
+
+Then import it in your JavaScript entry point:
+
+```javascript
+// app/javascript/application.js
+import "@37signals/lexxy"
+```
+
+### CSS Setup
 
 For the CSS, you can include it with the standard Rails helper:
 
