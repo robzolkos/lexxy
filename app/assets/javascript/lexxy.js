@@ -3752,6 +3752,15 @@ class LexicalToolbarElement extends HTMLElement {
     this.internals.role = "toolbar";
   }
 
+  connectedCallback() {
+    this.#refreshToolbarOverflow();
+    window.addEventListener("resize", this.#refreshToolbarOverflow);
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener("resize", this.#refreshToolbarOverflow);
+  }
+
   setEditor(editorElement) {
     this.editorElement = editorElement;
     this.editor = editorElement.editor;
@@ -3816,13 +3825,12 @@ class LexicalToolbarElement extends HTMLElement {
       event.shiftKey ? 'shift' : null,
     ].filter(Boolean);
 
-    return [...modifiers, pressedKey].join('+')
+    return [ ...modifiers, pressedKey ].join('+')
   }
 
   #assignButtonTabindex() {
     const baseTabIndex = parseInt(this.editorElement.editorContentElement.getAttribute("tabindex") ?? "0");
-    const buttons = this.querySelectorAll("button");
-    buttons.forEach((button, index) => {
+    this.#buttons.forEach((button, index) => {
       button.setAttribute("tabindex", `${baseTabIndex + index + 1}`);
     });
   }
@@ -3899,6 +3907,50 @@ class LexicalToolbarElement extends HTMLElement {
     if (button) {
       button.setAttribute("aria-pressed", isPressed.toString());
     }
+  }
+
+  #toolbarIsOverflowing() {
+    return this.scrollWidth > this.clientWidth
+  }
+
+  #refreshToolbarOverflow = () => {
+    this.#resetToolbar();
+    this.#compactMenu();
+
+    this.#overflow.style.display = this.#overflowMenu.children.length ? "block" : "none";
+  }
+
+  get #overflow() {
+    return this.querySelector(".lexxy-editor__toolbar-overflow")
+  }
+
+  get #overflowMenu() {
+    return this.querySelector(".lexxy-editor__toolbar-overflow-menu")
+  }
+
+  #resetToolbar() {
+    while (this.#overflowMenu.children.length > 0) {
+      this.insertBefore(this.#overflowMenu.children[0], this.#overflow);
+    }
+  }
+
+  #compactMenu() {
+    const buttons = this.#buttons.reverse();
+    let movedToOverflow = false;
+
+    for (const button of buttons) {
+      if (this.#toolbarIsOverflowing()) {
+        this.#overflowMenu.appendChild(button);
+        movedToOverflow = true;
+      } else {
+        if (movedToOverflow) this.#overflowMenu.appendChild(button);
+        break
+      }
+    }
+  }
+
+  get #buttons() {
+    return Array.from(this.querySelectorAll(":scope > button"))
   }
 
   static get defaultTemplate() {
@@ -7384,7 +7436,6 @@ class LexicalEditorElement extends HTMLElement {
     this.#handleEnter();
     this.#attachDebugHooks();
     this.#attachToolbar();
-    this.#updateToolbarMenu();
     this.#loadInitialValue();
     this.#resetBeforeTurboCaches();
   }
@@ -7571,43 +7622,6 @@ class LexicalEditorElement extends HTMLElement {
     if (this.#hasToolbar) {
       this.toolbarElement.setEditor(this);
     }
-  }
-
-  #toolbarIsOverflowing() {
-    return this.toolbarElement.scrollWidth > this.toolbarElement.clientWidth
-  }
-
-  #moveToOverflow(menu) {
-    let buttons = Array.from(this.toolbarElement.querySelectorAll(":scope > button"));
-    let hasOverflowMenu = false;
-
-    for (const button of buttons.slice().reverse()) {
-      if (this.#toolbarIsOverflowing()) {
-        menu.appendChild(button);
-        hasOverflowMenu = true;
-      } else if (hasOverflowMenu) {
-        menu.appendChild(button);
-        break
-      } else {
-        break
-      }
-    }
-  }
-
-  #resetToolbar(menu) {
-    while (menu.children.length > 0) {
-      this.toolbarElement.appendChild(menu.children[0]);
-    }
-  }
-
-  #updateToolbarMenu() {
-    const overflow = this.toolbarElement.querySelector(".lexxy-editor__toolbar-overflow");
-    const overflowMenu = this.toolbarElement.querySelector(".lexxy-editor__toolbar-overflow-menu");
-
-    this.#resetToolbar(overflowMenu);
-    this.#moveToOverflow(overflowMenu);
-
-    overflow.style.display = overflowMenu.children.length ? "block" : "none";
   }
 
   #findOrCreateDefaultToolbar() {

@@ -17,6 +17,15 @@ export default class LexicalToolbarElement extends HTMLElement {
     this.internals.role = "toolbar"
   }
 
+  connectedCallback() {
+    this.#refreshToolbarOverflow()
+    window.addEventListener("resize", this.#refreshToolbarOverflow)
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener("resize", this.#refreshToolbarOverflow)
+  }
+
   setEditor(editorElement) {
     this.editorElement = editorElement
     this.editor = editorElement.editor
@@ -81,13 +90,12 @@ export default class LexicalToolbarElement extends HTMLElement {
       event.shiftKey ? 'shift' : null,
     ].filter(Boolean)
 
-    return [...modifiers, pressedKey].join('+')
+    return [ ...modifiers, pressedKey ].join('+')
   }
 
   #assignButtonTabindex() {
     const baseTabIndex = parseInt(this.editorElement.editorContentElement.getAttribute("tabindex") ?? "0")
-    const buttons = this.querySelectorAll("button")
-    buttons.forEach((button, index) => {
+    this.#buttons.forEach((button, index) => {
       button.setAttribute("tabindex", `${baseTabIndex + index + 1}`)
     })
   }
@@ -164,6 +172,50 @@ export default class LexicalToolbarElement extends HTMLElement {
     if (button) {
       button.setAttribute("aria-pressed", isPressed.toString())
     }
+  }
+
+  #toolbarIsOverflowing() {
+    return this.scrollWidth > this.clientWidth
+  }
+
+  #refreshToolbarOverflow = () => {
+    this.#resetToolbar()
+    this.#compactMenu()
+
+    this.#overflow.style.display = this.#overflowMenu.children.length ? "block" : "none";
+  }
+
+  get #overflow() {
+    return this.querySelector(".lexxy-editor__toolbar-overflow")
+  }
+
+  get #overflowMenu() {
+    return this.querySelector(".lexxy-editor__toolbar-overflow-menu")
+  }
+
+  #resetToolbar() {
+    while (this.#overflowMenu.children.length > 0) {
+      this.insertBefore(this.#overflowMenu.children[0], this.#overflow);
+    }
+  }
+
+  #compactMenu() {
+    const buttons = this.#buttons.reverse()
+    let movedToOverflow = false
+
+    for (const button of buttons) {
+      if (this.#toolbarIsOverflowing()) {
+        this.#overflowMenu.appendChild(button)
+        movedToOverflow = true
+      } else {
+        if (movedToOverflow) this.#overflowMenu.appendChild(button)
+        break
+      }
+    }
+  }
+
+  get #buttons() {
+    return Array.from(this.querySelectorAll(":scope > button"))
   }
 
   static get defaultTemplate() {

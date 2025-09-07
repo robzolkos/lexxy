@@ -137,7 +137,6 @@ export default class LexicalEditorElement extends HTMLElement {
     this.#handleEnter()
     this.#attachDebugHooks()
     this.#attachToolbar()
-    this.#updateToolbarMenu()
     this.#loadInitialValue()
     this.#resetBeforeTurboCaches()
   }
@@ -324,43 +323,6 @@ export default class LexicalEditorElement extends HTMLElement {
     if (this.#hasToolbar) {
       this.toolbarElement.setEditor(this)
     }
-  }
-
-  #toolbarIsOverflowing() {
-    return this.toolbarElement.scrollWidth > this.toolbarElement.clientWidth
-  }
-
-  #moveToOverflow(menu) {
-    let buttons = Array.from(this.toolbarElement.querySelectorAll(":scope > button"))
-    let hasOverflowMenu = false
-
-    for (const button of buttons.slice().reverse()) {
-      if (this.#toolbarIsOverflowing()) {
-        menu.appendChild(button)
-        hasOverflowMenu = true
-      } else if (hasOverflowMenu) {
-        menu.appendChild(button)
-        break
-      } else {
-        break
-      }
-    }
-  }
-
-  #resetToolbar(menu) {
-    while (menu.children.length > 0) {
-      this.toolbarElement.appendChild(menu.children[0]);
-    }
-  }
-
-  #updateToolbarMenu() {
-    const overflow = this.toolbarElement.querySelector(".lexxy-editor__toolbar-overflow")
-    const overflowMenu = this.toolbarElement.querySelector(".lexxy-editor__toolbar-overflow-menu")
-
-    this.#resetToolbar(overflowMenu)
-    this.#moveToOverflow(overflowMenu)
-
-    overflow.style.display = overflowMenu.children.length ? "block" : "none";
   }
 
   #findOrCreateDefaultToolbar() {
