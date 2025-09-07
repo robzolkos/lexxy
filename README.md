@@ -37,6 +37,7 @@ Then, you need to import the lexxy source in your app. If you are using [propsha
 ```ruby
 # importmap.rb
 pin "lexxy", to: "lexxy.js"
+pin "@rails/activestorage", to: "activestorage.esm.js" # if you want to support attachments
 ```
 
 ```javascript
@@ -83,9 +84,9 @@ Under the hood, this will insert a `<lexxy-editor>` tag, that will be a first-cl
 
 The `<lexxy-editor>` element supports these options:
 
-- `placeholder` - Text displayed when the editor is empty.
-- `toolbar` - Pass `"false"` to disable the toolbar entirely, or pass an element ID to render the toolbar in an external element. By default, the toolbar is bootstrapped and displayed above the editor.
-- `attachments` - Pass `"false"` to disable attachments completely. By default, attachments are supported, including paste and Drag & Drop support.
+- `placeholder`: Text displayed when the editor is empty.
+- `toolbar`: Pass `"false"` to disable the toolbar entirely, or pass an element ID to render the toolbar in an external element. By default, the toolbar is bootstrapped and displayed above the editor.
+- `attachments`: Pass `"false"` to disable attachments completely. By default, attachments are supported, including paste and Drag & Drop support.
 
 Lexxy uses the `ElementInternals` API to participate in HTML forms as any standard control. This means that you can use standard HTML attributes like `name`, `value`, `required`, `disabled`, etc.
 
@@ -238,31 +239,31 @@ By default, the `SPACE` key will select the current item in the prompt. If you w
 
 #### `<lexxy-prompt>`
 
-- `trigger` - The character that activates the prompt (e.g., "@", "#", "/").
-- `src` - Path or URL to load items remotely.
-- `name` - Identifier for the prompt type (determines attachment content type, e.g., `name= "mention"` creates `application/vnd.actiontext.mention`). Mandatory unless using `insert-editable-text`.
-- `empty-results` - Message shown when no matches found. By default it is "Nothing found".
-- `remote-filtering` - Enable server-side filtering instead of loading all options at once.
-- `insert-editable-text` - Insert prompt item HTML directly as editable text instead of Action Text attachments.
-- `supports-space-in-searches` - Allow spaces in search queries (useful with remote filtering for full name searches).
+- `trigger`: The character that activates the prompt (e.g., "@", "#", "/").
+- `src`: Path or URL to load items remotely.
+- `name`: Identifier for the prompt type (determines attachment content type, e.g., `name= "mention"` creates `application/vnd.actiontext.mention`). Mandatory unless using `insert-editable-text`.
+- `empty-results`: Message shown when no matches found. By default it is "Nothing found".
+- `remote-filtering`: Enable server-side filtering instead of loading all options at once.
+- `insert-editable-text`: Insert prompt item HTML directly as editable text instead of Action Text attachments.
+- `supports-space-in-searches`: Allow spaces in search queries (useful with remote filtering for full name searches).
 
 #### `<lexxy-prompt-item>`
 
-- `search` - The text to match against when filtering (can include multiple fields for better search).
-- `sgid` - The signed GlobalID for Action Text attachments (use `attachable_sgid` helper). Mandatory unless using `insert-editable-text`.
+- `search`: The text to match against when filtering (can include multiple fields for better search).
+- `sgid`: The signed GlobalID for Action Text attachments (use `attachable_sgid` helper). Mandatory unless using `insert-editable-text`.
 
 ## Roadmap
 
 This is an early beta. Here's what's coming next:
 
-- Configurable editors in Action Text - Choose your editor like you choose your database.
+- Configurable editors in Action Text: Choose your editor like you choose your database.
 - More editing features:
     - Tables
     - Text highlighting
-- Image galleries - The only remaining feature for full Action Text compatibility
+- Image galleries: The only remaining feature for full Action Text compatibility
 - Install task that generates the necessary JS and adds stylesheets.
 - Configuration hooks.
-- Standalone JS package - to use in non-Rails environments.
+- Standalone JS package: to use in non-Rails environments.
 
 ## Development
 
@@ -279,6 +280,10 @@ bin/rails server
 ```
 
 The sandbox app is available at http://localhost:3000. There is also a CRUD example at http://localhost:3000/posts.
+
+## Events
+
+* `lexxy:change`: Fired whenever the editor content changes.
 
 ## Contributing
 
