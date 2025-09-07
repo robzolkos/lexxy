@@ -106,9 +106,6 @@ Then update the Action Text Content template to include the `data-controller` at
 </div>
 ```
 
-> [!NOTE]  
-> We'll streamline the configuration process as we work towards a final release.
-
 ## Configuration
 
 You can add a Lexxy instance using the regular Action Text form helper:
