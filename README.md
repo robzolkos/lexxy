@@ -37,6 +37,7 @@ Then, you need to import the lexxy source in your app. If you are using [propsha
 ```ruby
 # importmap.rb
 pin "lexxy", to: "lexxy.js"
+pin "@rails/activestorage", to: "activestorage.esm.js" # if you want to support attachments
 ```
 
 ```javascript
