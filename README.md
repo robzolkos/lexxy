@@ -83,6 +83,27 @@ For applying the same styles to rendered Action Text content, you need to overri
 
 Of course, you can copy the CSS to your project and adapt it to your needs. 
 
+To apply syntax highlighting to rendered Action Text content, you need to call the `highlightAll` function from Lexxy. For example, create a Stimulus controller in `app/javascript/controllers/syntax_highlight_controller.js`:
+
+```javascript
+import { Controller } from "@hotwired/stimulus"
+import { highlightAll } from "lexxy"
+
+export default class extends Controller {
+  connect() {
+    highlightAll()
+  }
+}
+```
+
+Then update the Action Text Content template to include the `data-controller` attribute:
+
+```erb
+<div data-controller="syntax-highlight" class="lexxy-content">
+  <%= yield -%>
+</div>
+```
+
 > [!NOTE]  
 > We'll streamline the configuration process as we work towards a final release.
 
