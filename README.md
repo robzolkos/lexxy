@@ -51,7 +51,7 @@ import "@37signals/lexxy"
 
 ### With javascript bundlers
 
-If you're using [jsbundling-rails](https://github.com/rails/jsbundling-rails) with esbuild, webpack, or any other JavaScript bundler, you'll need to install the NPM package:
+If you're using [jsbundling-rails](https://github.com/rails/jsbundling-rails) with esbuild, webpack, or any other JavaScript bundler, you can install the NPM package:
 
 ```bash
 yarn add @37signals/lexxy
