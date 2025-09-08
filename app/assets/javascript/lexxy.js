@@ -7340,6 +7340,8 @@ class LexicalEditorElement extends HTMLElement {
 
     CommandDispatcher.configureFor(this);
     this.#initialize();
+
+    requestAnimationFrame(() => dispatch(this, "lexxy:initialized"));
     this.toggleAttribute("connected", true);
 
     this.valueBeforeDisconnect = null;
