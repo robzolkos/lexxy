@@ -60,7 +60,7 @@ export class CustomActionTextAttachmentNode extends DecoratorNode {
     const figure = createElement("action-text-attachment", { "content-type": this.contentType, "data-lexxy-decorator": true })
 
     figure.addEventListener("click", (event) => {
-      dispatchCustomEvent(figure, "lexxy:node-selected", { key: this.getKey() })
+      dispatchCustomEvent(figure, "lexxy:internal:node-selected", { key: this.getKey() })
     })
 
     figure.insertAdjacentHTML("beforeend", this.innerHtml)

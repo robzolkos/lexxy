@@ -5667,7 +5667,7 @@ class ActionTextAttachmentNode extends gi {
   }
 
   #select(figure) {
-    dispatchCustomEvent(figure, "lexxy:node-selected", { key: this.getKey() });
+    dispatchCustomEvent(figure, "lexxy:internal:node-selected", { key: this.getKey() });
   }
 
   #createEditableCaption() {
@@ -5699,13 +5699,13 @@ class ActionTextAttachmentNode extends gi {
   }
 
   #updateCaptionValueFromInput(input) {
-    dispatchCustomEvent(input, "lexxy:node-invalidated", { key: this.getKey(), values: { caption: input.value } });
+    dispatchCustomEvent(input, "lexxy:internal:node-invalidated", { key: this.getKey(), values: { caption: input.value } });
   }
 
   #handleCaptionInputKeydown(event) {
     if (event.key === "Enter") {
       this.#updateCaptionValueFromInput(event.target);
-      dispatchCustomEvent(event.target, "lexxy:move-to-next-line");
+      dispatchCustomEvent(event.target, "lexxy:internal:move-to-next-line");
       event.preventDefault();
     }
     event.stopPropagation();
@@ -6263,7 +6263,7 @@ class Selection {
   }
 
   #listenForNodeSelections() {
-    this.editor.getRootElement().addEventListener("lexxy:node-selected", async (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:internal:node-selected", async (event) => {
       await nextFrame();
 
       const { key } = event.detail;
@@ -6278,7 +6278,7 @@ class Selection {
       });
     });
 
-    this.editor.getRootElement().addEventListener("lexxy:move-to-next-line", (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:internal:move-to-next-line", (event) => {
       this.#selectOrAppendNextLine();
     });
   }
@@ -7277,7 +7277,7 @@ class CustomActionTextAttachmentNode extends gi {
     const figure = createElement("action-text-attachment", { "content-type": this.contentType, "data-lexxy-decorator": true });
 
     figure.addEventListener("click", (event) => {
-      dispatchCustomEvent(figure, "lexxy:node-selected", { key: this.getKey() });
+      dispatchCustomEvent(figure, "lexxy:internal:node-selected", { key: this.getKey() });
     });
 
     figure.insertAdjacentHTML("beforeend", this.innerHtml);
@@ -7572,7 +7572,7 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #listenForInvalidatedNodes() {
-    this.editor.getRootElement().addEventListener("lexxy:node-invalidated", (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:internal:node-invalidated", (event) => {
       const { key, values } = event.detail;
 
       this.editor.update(() => {

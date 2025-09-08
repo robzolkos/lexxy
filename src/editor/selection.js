@@ -156,7 +156,7 @@ export default class Selection {
   }
 
   #listenForNodeSelections() {
-    this.editor.getRootElement().addEventListener("lexxy:node-selected", async (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:internal:node-selected", async (event) => {
       await nextFrame()
 
       const { key } = event.detail
@@ -171,7 +171,7 @@ export default class Selection {
       })
     })
 
-    this.editor.getRootElement().addEventListener("lexxy:move-to-next-line", (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:internal:move-to-next-line", (event) => {
       this.#selectOrAppendNextLine()
     })
   }
