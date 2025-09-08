@@ -178,12 +178,16 @@ Where:
 
 Imagine you want to implement a *mentions* feature, where users can type "@" and select a person to mention. You want to save mentions as action text attachments for further server-side processing when the form is submitted.
 
-First, you need to include the `ActionText::Attachable` concern in your model.
+First, you need to include the `ActionText::Attachable` concern in your model, and you need to define the `#content_type` method to return a value like `application/vnd.actiontext.<prompt name>`, where `<prompt name>` is the value of the `name` attribute you will set in the `<lexxy-prompt>` element later. Let's use `mention` as the prompt name:
 
 ```ruby
 # app/models/person.rb
 class Person < ApplicationRecord
   include ActionText::Attachable
+  
+  def content_type
+    "application/vnd.actiontext.mention"
+  end
 end
 ```
 

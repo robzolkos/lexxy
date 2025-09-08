@@ -4,4 +4,8 @@ class Person < ApplicationRecord
   def initials
     name.split.map { |word| word[0] }.join.upcase
   end
+
+  def content_type
+    "application/vnd.actiontext.mention"
+  end
 end
