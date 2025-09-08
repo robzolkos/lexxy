@@ -6773,6 +6773,10 @@ class Contents {
       return
     }
 
+    if (!this.#shouldUploadFile(file)) {
+      return
+    }
+
     const uploadUrl = this.editorElement.directUploadUrl;
     const blobUrlTemplate = this.editorElement.blobUrlTemplate;
 
@@ -7060,6 +7064,10 @@ class Contents {
         paragraph.append(Pn());
       }
     }
+  }
+
+  #shouldUploadFile(file) {
+    return dispatch(this.editorElement, 'lexxy:file-accept', { file }, true)
   }
 }
 

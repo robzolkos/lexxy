@@ -6,7 +6,7 @@ import {
 import { $generateNodesFromDOM } from "@lexical/html"
 import { ActionTextAttachmentUploadNode } from "../nodes/action_text_attachment_upload_node"
 import { $createLinkNode } from "@lexical/link"
-import { parseHtml } from "../helpers/html_helper"
+import { dispatch, parseHtml } from "../helpers/html_helper"
 import { $isListItemNode, $isListNode } from "@lexical/list"
 import { getNearestListItemNode } from "../helpers/lexical_helper"
 
@@ -208,6 +208,10 @@ export default class Contents {
   uploadFile(file) {
     if (!this.editorElement.supportsAttachments) {
       console.warn("This editor does not supports attachments (it's configured with [attachments=false])")
+      return
+    }
+
+    if (!this.#shouldUploadFile(file)) {
       return
     }
 
@@ -498,5 +502,9 @@ export default class Contents {
         paragraph.append($createLineBreakNode())
       }
     }
+  }
+
+  #shouldUploadFile(file) {
+    return dispatch(this.editorElement, 'lexxy:file-accept', { file }, true)
   }
 }
