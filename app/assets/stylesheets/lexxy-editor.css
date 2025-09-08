@@ -78,40 +78,40 @@
 /* -------------------------------------------------------------------------- */
 
 :where(lexxy-toolbar) {
+  --lexxy-toolbar-icon-size: 1em;
+
   border-block-end: 1px solid var(--lexxy-color-ink-lighter);
   color: currentColor;
   display: flex;
   font-size: inherit;
   gap: var(--lexxy-toolbar-gap);
   max-inline-size: 100%;
-  /* overflow-x: auto; */
   padding: 2px;
   position: relative;
+}
 
-  button[data-command],
-  summary {
-    aspect-ratio: 1;
-    block-size: 2lh;
-    color: currentColor;
-    display: grid;
-    place-items: center;
+:where(.lexxy-editor__toolbar-button) {
+  aspect-ratio: 1;
+  block-size: 2lh;
+  color: currentColor;
+  display: grid;
+  place-items: center;
 
-    svg {
-      -webkit-touch-callout: none;
-      block-size: 0.85em;
-      fill: currentColor;
-      grid-area: 1/1;
-      inline-size: auto;
-      user-select: none;
-    }
+  &:is(:active) {
+    background-color: var(--lexxy-color-selected);
+  }
 
-    &:is(:active) {
-      background-color: var(--lexxy-color-selected);
-    }
+  &[aria-pressed="true"] {
+    background-color: var(--lexxy-color-selected);
+  }
 
-    &[aria-pressed="true"] {
-      background-color: var(--lexxy-color-selected);
-    }
+  svg {
+    -webkit-touch-callout: none;
+    block-size: var(--lexxy-toolbar-icon-size);
+    fill: currentColor;
+    grid-area: 1/1;
+    inline-size: var(--lexxy-toolbar-icon-size);
+    user-select: none;
   }
 }
 
@@ -147,6 +147,8 @@
 /* -------------------------------------------------------------------------- */
 
 :where(.lexxy-link-dialog) {
+  display: contents;
+
   dialog {
     background-color: var(--lexxy-color-canvas);
     border: 1px solid var(--lexxy-color-ink-lighter);
