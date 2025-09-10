@@ -1,6 +1,6 @@
 module Lexxy
   module TagHelper
-    def rich_textarea_tag(name, value = nil, options = {}, &block)
+    def lexxy_rich_textarea_tag(name, value = nil, options = {}, &block)
       options = options.symbolize_keys
       form = options.delete(:form)
 
@@ -18,7 +18,7 @@ module Lexxy
       editor_tag
     end
 
-    alias_method :rich_text_area_tag, :rich_textarea_tag
+    alias_method :lexxy_rich_text_area_tag, :lexxy_rich_textarea_tag
 
     private
       # Tempoary: we need to *adaptarize* action text

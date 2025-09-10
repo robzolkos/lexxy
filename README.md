@@ -65,6 +65,20 @@ Then import it in your JavaScript entry point:
 import "@37signals/lexxy"
 ```
 
+### Override Action Text defaults
+
+By default, the gem overrides Action Text form helpers, so that if you use `form.rich_text_area`, it will render a Lexxy editor instead of the default Trix editor.
+
+You can opt out of this behavior by disabling this option in `application.rb`:
+
+```ruby# config/application.rb
+config.lexxy.override_action_text_defaults = false
+```
+
+If you do this, you can invoke Lexxy explicitly using the same helpers with a `lexxy_preffix`: `lexxy_rich_textarea_tag` and `form.lexxy_rich_text_area`.
+
+This path is meant to let you incrementally move to Lexxy, or to use it in specific places while keeping Trix in others.
+
 ### CSS Setup
 
 For the CSS, you can include it with the standard Rails helper:

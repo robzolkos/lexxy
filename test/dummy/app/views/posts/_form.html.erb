@@ -1,6 +1,6 @@
 
 
-<%= form_with model: post, data: { controller: "events-logger file-acceptance", 
+<%= form_with model: post, data: { controller: "events-logger file-acceptance",
   file_acceptance_type_value: params[:attachment_type],
   action: "lexxy:change->events-logger#log lexxy:file-accept->file-acceptance#acceptFile" } do |form| %>
   <div>
