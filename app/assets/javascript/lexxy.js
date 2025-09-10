@@ -8549,4 +8549,9 @@ function highlightElement(preElement) {
   preElement.replaceWith(codeElement);
 }
 
+// Manual highlighting mode to prevent invocation on every page. See https://prismjs.com/docs/prism
+// This must happen before importing any Prism components
+window.Prism = window.Prism || {};
+Prism.manual = true;
+
 export { highlightAll };

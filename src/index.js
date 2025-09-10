@@ -1,3 +1,8 @@
+// Manual highlighting mode to prevent invocation on every page. See https://prismjs.com/docs/prism
+// This must happen before importing any Prism components
+window.Prism = window.Prism || {}
+Prism.manual = true
+
 import "./elements/toolbar"
 import "./elements/editor"
 import "./elements/link_dialog"
