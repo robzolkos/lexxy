@@ -40,6 +40,8 @@ export default class LexicalEditorElement extends HTMLElement {
 
     CommandDispatcher.configureFor(this)
     this.#initialize()
+
+    requestAnimationFrame(() => dispatch(this, "lexxy:initialize"))
     this.toggleAttribute("connected", true)
 
     this.valueBeforeDisconnect = null
@@ -272,7 +274,7 @@ export default class LexicalEditorElement extends HTMLElement {
   }
 
   #listenForInvalidatedNodes() {
-    this.editor.getRootElement().addEventListener("lexxy:node-invalidated", (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:internal:invalidate-node", (event) => {
       const { key, values } = event.detail
 
       this.editor.update(() => {

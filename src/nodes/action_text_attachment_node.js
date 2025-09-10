@@ -174,7 +174,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   #select(figure) {
-    dispatchCustomEvent(figure, "lexxy:node-selected", { key: this.getKey() })
+    dispatchCustomEvent(figure, "lexxy:internal:select-node", { key: this.getKey() })
   }
 
   #createEditableCaption() {
@@ -206,13 +206,13 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   #updateCaptionValueFromInput(input) {
-    dispatchCustomEvent(input, "lexxy:node-invalidated", { key: this.getKey(), values: { caption: input.value } })
+    dispatchCustomEvent(input, "lexxy:internal:invalidate-node", { key: this.getKey(), values: { caption: input.value } })
   }
 
   #handleCaptionInputKeydown(event) {
     if (event.key === "Enter") {
       this.#updateCaptionValueFromInput(event.target)
-      dispatchCustomEvent(event.target, "lexxy:move-to-next-line")
+      dispatchCustomEvent(event.target, "lexxy:internal:move-to-next-line")
       event.preventDefault()
     }
     event.stopPropagation()

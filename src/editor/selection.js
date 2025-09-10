@@ -156,7 +156,7 @@ export default class Selection {
   }
 
   #listenForNodeSelections() {
-    this.editor.getRootElement().addEventListener("lexxy:node-selected", async (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:internal:select-node", async (event) => {
       await nextFrame()
 
       const { key } = event.detail
@@ -171,7 +171,7 @@ export default class Selection {
       })
     })
 
-    this.editor.getRootElement().addEventListener("lexxy:move-to-next-line", (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:internal:move-to-next-line", (event) => {
       this.#selectOrAppendNextLine()
     })
   }
@@ -245,7 +245,7 @@ export default class Selection {
     if ($isNodeSelection(selection)) {
       return this.#getTopLevelFromNodeSelection(selection)
     }
-    
+
     if ($isRangeSelection(selection)) {
       return this.#getTopLevelFromRangeSelection(selection)
     }
@@ -324,7 +324,7 @@ export default class Selection {
 
   #getReliableRectFromRange(range) {
     let rect = range.getBoundingClientRect()
-    
+
     if (this.#isRectUnreliable(rect)) {
       const marker = this.#createAndInsertMarker(range)
       rect = marker.getBoundingClientRect()
@@ -381,12 +381,12 @@ export default class Selection {
     const nativeSelection = window.getSelection()
     const anchorNode = nativeSelection.anchorNode
     const parentElement = this.#getElementFromNode(anchorNode)
-    
+
     if (parentElement instanceof HTMLElement) {
       const computed = window.getComputedStyle(parentElement)
       return parseFloat(computed.fontSize)
     }
-    
+
     return 0
   }
 
