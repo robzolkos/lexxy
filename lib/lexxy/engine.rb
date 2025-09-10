@@ -9,6 +9,9 @@ module Lexxy
   class Engine < ::Rails::Engine
     isolate_namespace Lexxy
 
+    config.lexxy = ActiveSupport::OrderedOptions.new
+    config.lexxy.override_action_text_defaults = true
+
     initializer "lexxy.initialize" do |app|
       app.config.to_prepare do
         # TODO: We need to move these extensions to Action Text
@@ -16,6 +19,8 @@ module Lexxy
         ActionView::Helpers::FormHelper.prepend(Lexxy::FormHelper)
         ActionView::Helpers::FormBuilder.prepend(Lexxy::FormBuilder)
         ActionView::Helpers::Tags::ActionText.prepend(Lexxy::ActionTextTag)
+
+        Lexxy.override_action_text_defaults if app.config.lexxy.override_action_text_defaults
       end
     end
 
