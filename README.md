@@ -2,7 +2,7 @@
 
 A modern rich text editor for Rails.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > This is an early beta. It hasn't been battle-tested yet. Please try it out and report any issues you find.
 
 ## Features
@@ -243,7 +243,7 @@ We could define the controller action to serve the prompt items like this:
 class PeopleController < ApplicationController
   def index
     @people = Person.all
-    
+
     render layout: false
   end
 end
@@ -329,7 +329,7 @@ The sandbox app is available at http://localhost:3000. There is also a CRUD exam
 
 ## Events
 
-* `lexxy:initialized`: Fired whenever the `<lexxy-editor>` element is attached to the DOM and is ready for use.
+* `lexxy:initialize`: Fired whenever the `<lexxy-editor>` element is attached to the DOM and is ready for use.
 * `lexxy:change`: Fired whenever the editor content changes.
 * `lexxy:file-accept`: Fired whenever a file is dropped or inserted into the editor. You can access the `File` object through the `file` property. Call `preventDefault` on the event to cancel upload and prevent attaching the file.
 

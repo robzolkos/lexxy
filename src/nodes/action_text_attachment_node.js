@@ -174,7 +174,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   #select(figure) {
-    dispatchCustomEvent(figure, "lexxy:internal:node-selected", { key: this.getKey() })
+    dispatchCustomEvent(figure, "lexxy:internal:select-node", { key: this.getKey() })
   }
 
   #createEditableCaption() {
@@ -206,7 +206,7 @@ export class ActionTextAttachmentNode extends DecoratorNode {
   }
 
   #updateCaptionValueFromInput(input) {
-    dispatchCustomEvent(input, "lexxy:internal:node-invalidated", { key: this.getKey(), values: { caption: input.value } })
+    dispatchCustomEvent(input, "lexxy:internal:invalidate-node", { key: this.getKey(), values: { caption: input.value } })
   }
 
   #handleCaptionInputKeydown(event) {

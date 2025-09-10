@@ -5667,7 +5667,7 @@ class ActionTextAttachmentNode extends gi {
   }
 
   #select(figure) {
-    dispatchCustomEvent(figure, "lexxy:internal:node-selected", { key: this.getKey() });
+    dispatchCustomEvent(figure, "lexxy:internal:select-node", { key: this.getKey() });
   }
 
   #createEditableCaption() {
@@ -5699,7 +5699,7 @@ class ActionTextAttachmentNode extends gi {
   }
 
   #updateCaptionValueFromInput(input) {
-    dispatchCustomEvent(input, "lexxy:internal:node-invalidated", { key: this.getKey(), values: { caption: input.value } });
+    dispatchCustomEvent(input, "lexxy:internal:invalidate-node", { key: this.getKey(), values: { caption: input.value } });
   }
 
   #handleCaptionInputKeydown(event) {
@@ -6263,7 +6263,7 @@ class Selection {
   }
 
   #listenForNodeSelections() {
-    this.editor.getRootElement().addEventListener("lexxy:internal:node-selected", async (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:internal:select-node", async (event) => {
       await nextFrame();
 
       const { key } = event.detail;
@@ -6352,7 +6352,7 @@ class Selection {
     if (ur(selection)) {
       return this.#getTopLevelFromNodeSelection(selection)
     }
-    
+
     if (cr(selection)) {
       return this.#getTopLevelFromRangeSelection(selection)
     }
@@ -6431,7 +6431,7 @@ class Selection {
 
   #getReliableRectFromRange(range) {
     let rect = range.getBoundingClientRect();
-    
+
     if (this.#isRectUnreliable(rect)) {
       const marker = this.#createAndInsertMarker(range);
       rect = marker.getBoundingClientRect();
@@ -6488,12 +6488,12 @@ class Selection {
     const nativeSelection = window.getSelection();
     const anchorNode = nativeSelection.anchorNode;
     const parentElement = this.#getElementFromNode(anchorNode);
-    
+
     if (parentElement instanceof HTMLElement) {
       const computed = window.getComputedStyle(parentElement);
       return parseFloat(computed.fontSize)
     }
-    
+
     return 0
   }
 
@@ -7285,7 +7285,7 @@ class CustomActionTextAttachmentNode extends gi {
     const figure = createElement("action-text-attachment", { "content-type": this.contentType, "data-lexxy-decorator": true });
 
     figure.addEventListener("click", (event) => {
-      dispatchCustomEvent(figure, "lexxy:internal:node-selected", { key: this.getKey() });
+      dispatchCustomEvent(figure, "lexxy:internal:select-node", { key: this.getKey() });
     });
 
     figure.insertAdjacentHTML("beforeend", this.innerHtml);
@@ -7349,7 +7349,7 @@ class LexicalEditorElement extends HTMLElement {
     CommandDispatcher.configureFor(this);
     this.#initialize();
 
-    requestAnimationFrame(() => dispatch(this, "lexxy:initialized"));
+    requestAnimationFrame(() => dispatch(this, "lexxy:initialize"));
     this.toggleAttribute("connected", true);
 
     this.valueBeforeDisconnect = null;
@@ -7582,7 +7582,7 @@ class LexicalEditorElement extends HTMLElement {
   }
 
   #listenForInvalidatedNodes() {
-    this.editor.getRootElement().addEventListener("lexxy:internal:node-invalidated", (event) => {
+    this.editor.getRootElement().addEventListener("lexxy:internal:invalidate-node", (event) => {
       const { key, values } = event.detail;
 
       this.editor.update(() => {
