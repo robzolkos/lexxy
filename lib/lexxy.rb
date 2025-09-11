@@ -17,5 +17,9 @@ module Lexxy
       alias_method :rich_textarea, :lexxy_rich_textarea
       alias_method :rich_text_area, :lexxy_rich_textarea
     end
+
+    ActionView::Helpers::Tags::ActionText.module_eval do
+      alias_method :render, :lexxy_render
+    end
   end
 end
