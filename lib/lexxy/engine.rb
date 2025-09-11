@@ -14,13 +14,16 @@ module Lexxy
 
     initializer "lexxy.initialize" do |app|
       app.config.to_prepare do
-        # TODO: We need to move these extensions to Action Text
+        # Always include lexxy helpers so explicit lexxy_* methods are available
         ActionText::TagHelper.prepend(Lexxy::TagHelper)
         ActionView::Helpers::FormHelper.prepend(Lexxy::FormHelper)
         ActionView::Helpers::FormBuilder.prepend(Lexxy::FormBuilder)
-        ActionView::Helpers::Tags::ActionText.prepend(Lexxy::ActionTextTag)
 
-        Lexxy.override_action_text_defaults if app.config.lexxy.override_action_text_defaults
+        if app.config.lexxy.override_action_text_defaults
+          # Only override ActionText tags and create aliases when config is true
+          ActionView::Helpers::Tags::ActionText.prepend(Lexxy::ActionTextTag)
+          Lexxy.override_action_text_defaults
+        end
       end
     end
 
