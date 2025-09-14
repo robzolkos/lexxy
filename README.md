@@ -345,7 +345,7 @@ The sandbox app is available at http://localhost:3000. There is also a CRUD exam
 
 * `lexxy:initialize`: Fired whenever the `<lexxy-editor>` element is attached to the DOM and is ready for use.
 * `lexxy:change`: Fired whenever the editor content changes.
-* `lexxy:file-accept`: Fired whenever a file is dropped or inserted into the editor. You can access the `File` object through the `file` property. Call `preventDefault` on the event to cancel upload and prevent attaching the file.
+* `lexxy:file-accept`: Fired whenever a file is dropped or inserted into the editor. You can access the `File` object through the `event.detail.file` property. Call `preventDefault` on the event to cancel upload and prevent attaching the file.
 
 ## Contributing
 
