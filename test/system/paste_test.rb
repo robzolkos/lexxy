@@ -7,7 +7,7 @@ class PateTest < ApplicationSystemTestCase
 
   test "convert to markdown on paste" do
     find_editor.paste "Hello **there**"
-    assert_equal_html "<p>Hello <b><strong>there</strong></b></p>", find_editor.value
+    assert_equal_html "<p>Hello <b><strong class=\"lexxy-content__bold\">there</strong></b></p>", find_editor.value
   end
 
   test "create links when pasting URLs" do
