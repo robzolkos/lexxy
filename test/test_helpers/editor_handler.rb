@@ -78,7 +78,7 @@ class EditorHandler
     find("#{toolbar_selector} [data-command=\"#{command}\"]").click
   end
 
-  def content
+  def inner_html
     content_element.native.attribute("innerHTML")
   end
 
