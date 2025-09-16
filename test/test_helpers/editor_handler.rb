@@ -74,6 +74,10 @@ class EditorHandler
     page.within content_element, &block
   end
 
+  def toggle_command(command, toolbar_selector = "lexxy-toolbar")
+    find("#{toolbar_selector} [data-command=\"#{command}\"]").click
+  end
+
   private
     def content_element
       @content_element ||= editor_element.find(".lexxy-editor__content")
