@@ -25,7 +25,7 @@ export default class LexicalEditorElement extends HTMLElement {
 
   static observedAttributes = [ "connected" ]
 
-  #initialValue = ''
+  #initialValue = ""
 
   constructor() {
     super()
