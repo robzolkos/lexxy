@@ -7326,6 +7326,8 @@ class LexicalEditorElement extends HTMLElement {
 
   static observedAttributes = [ "connected" ]
 
+  #initialValue = ""
+
   constructor() {
     super();
     this.internals = this.attachInternals();
@@ -7357,6 +7359,11 @@ class LexicalEditorElement extends HTMLElement {
     if (name === "connected" && this.isConnected && oldValue != null && oldValue !== newValue) {
       requestAnimationFrame(() => this.#reconnect());
     }
+  }
+
+  formResetCallback() {
+    this.value = this.#initialValue;
+    this.editor.dispatchCommand(Ve, undefined);
   }
 
   get form() {
@@ -7530,7 +7537,7 @@ class LexicalEditorElement extends HTMLElement {
 
   #loadInitialValue() {
     const initialHtml = this.valueBeforeDisconnect || this.getAttribute("value") || "<p></p>";
-    this.value = initialHtml;
+    this.value = this.#initialValue = initialHtml;
   }
 
   #resetBeforeTurboCaches() {
