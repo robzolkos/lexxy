@@ -5,7 +5,10 @@ import {
   COMMAND_PRIORITY_LOW,
   FORMAT_TEXT_COMMAND,
   UNDO_COMMAND,
-  REDO_COMMAND
+  REDO_COMMAND,
+  KEY_TAB_COMMAND,
+  INDENT_CONTENT_COMMAND,
+  OUTDENT_CONTENT_COMMAND
 } from "lexical"
 
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list"
@@ -157,6 +160,26 @@ export class CommandDispatcher {
     this.editor.dispatchCommand(REDO_COMMAND, undefined)
   }
 
+  handleTabKey(event) {
+    const selection = $getSelection()
+    if (!$isRangeSelection(selection)) return false
+
+    // Only handle tab in lists
+    if (!this.selection.isInsideList) return false
+
+    event.preventDefault()
+
+    if (event.shiftKey) {
+      // Shift+Tab: Outdent
+      this.editor.dispatchCommand(OUTDENT_CONTENT_COMMAND, undefined)
+    } else {
+      // Tab: Indent
+      this.editor.dispatchCommand(INDENT_CONTENT_COMMAND, undefined)
+    }
+
+    return true
+  }
+
   #registerCommands() {
     for (const command of COMMANDS) {
       const methodName = `dispatch${capitalize(command)}`
@@ -164,6 +187,7 @@ export class CommandDispatcher {
     }
 
     this.#registerCommandHandler(PASTE_COMMAND, COMMAND_PRIORITY_LOW, this.dispatchPaste.bind(this))
+    this.#registerCommandHandler(KEY_TAB_COMMAND, COMMAND_PRIORITY_LOW, this.handleTabKey.bind(this))
   }
 
   #registerCommandHandler(command, priority, handler) {

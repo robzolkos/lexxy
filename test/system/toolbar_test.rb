@@ -116,4 +116,5 @@ class ToolbarTest < ApplicationSystemTestCase
     click_on "Redo"
     assert_equal_html "<p>Hello <b><strong>everyone</strong></b>", find_editor.value
   end
+
 end
