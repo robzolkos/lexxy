@@ -2,10 +2,10 @@
   "name": "@37signals/lexxy",
   "version": "0.1.6-beta",
   "description": "Lexxy - A modern rich text editor for Rails.",
-  "module": "app/assets/javascript/lexxy.esm.js",
-  "main": "app/assets/javascript/lexxy.esm.js",
+  "module": "app/assets/javascript/lexxy.js",
+  "main": "app/assets/javascript/lexxy.js",
   "type": "module",
-  "exports": "./app/assets/javascript/lexxy.esm.js",
+  "exports": "./app/assets/javascript/lexxy.js",
   "files": [
     "app/assets/javascript"
   ],
