@@ -1,6 +1,6 @@
 require "application_system_test_case"
 
-class PateTest < ApplicationSystemTestCase
+class PasteTest < ApplicationSystemTestCase
   setup do
     visit edit_post_path(posts(:empty))
   end
