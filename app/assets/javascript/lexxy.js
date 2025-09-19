@@ -7460,6 +7460,9 @@ class LexicalEditorElement extends HTMLElement {
     this.editorContentElement = this.editorContentElement || this.#createEditorContentElement();
 
     const editor = Wi({
+      html: {
+        export: this.#exportMap,
+      },
       namespace: "LexicalEditor",
       onError(error) {
         throw error
@@ -7471,6 +7474,13 @@ class LexicalEditorElement extends HTMLElement {
     editor.setRootElement(this.editorContentElement);
 
     return editor
+  }
+
+  get #exportMap() {
+    return new Map([
+      [Oi, this.#removeStylesExportDOM],
+      [Jn, this.#removeStylesExportDOM],
+    ])
   }
 
   get #lexicalNodes() {
@@ -7688,6 +7698,23 @@ class LexicalEditorElement extends HTMLElement {
   #reconnect() {
     this.disconnectedCallback();
     this.connectedCallback();
+  }
+
+  #removeStylesExportDOM(editor, target) {
+    const output = target.exportDOM(editor);
+
+    if (output && fo(output.element)) {
+      // Removes any inline styles or CSS classes from the output...
+      for (const el of [
+        output.element,
+        ...output.element.querySelectorAll('[style],[class]'),
+      ]) {
+        el.removeAttribute('class');
+        el.removeAttribute('style');
+      }
+    }
+
+    return output;
   }
 }
 
