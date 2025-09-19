@@ -3955,6 +3955,14 @@ class LexicalToolbarElement extends HTMLElement {
 
   static get defaultTemplate() {
     return `
+      <button class="lexxy-editor__toolbar-button" type="button" name="undo" data-command="undo" data-hotkey="cmd+z ctrl+z" title="Undo">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+      </button>
+
+      <button class="lexxy-editor__toolbar-button" type="button" name="redo" data-command="redo" data-hotkey="cmd+y ctrl+y cmd+shift+z ctrl+shift+z" title="Redo">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg>
+      </button>
+
       <button class="lexxy-editor__toolbar-button" type="button" name="bold" data-command="bold" title="Bold">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 22V2h8.183c1.764 0 3.174.435 4.228 1.304 1.055.87 1.582 2.076 1.582 3.62 0 .8-.148 1.503-.445 2.109a3.94 3.94 0 01-1.194 1.465 4.866 4.866 0 01-1.726.806v.176c.786.078 1.51.312 2.172.703a4.293 4.293 0 011.596 1.627c.403.693.604 1.543.604 2.549 0 1.192-.292 2.207-.877 3.048-.585.84-1.39 1.484-2.416 1.934-1.026.44-2.206.659-3.538.659H5zM8.854 4.974v5.348h2.56c.873 0 1.582-.107 2.129-.322.556-.215.963-.523 1.222-.923.269-.41.403-.904.403-1.48 0-.82-.254-1.46-.762-1.92-.499-.468-1.204-.703-2.115-.703H8.854zm0 8.103v5.949h2.877c1.534 0 2.636-.245 3.307-.733.671-.498 1.007-1.221 1.007-2.168 0-.635-.134-1.178-.403-1.627-.268-.459-.666-.81-1.193-1.055-.518-.244-1.156-.366-1.913-.366H8.854z"/></svg>
       </button>
@@ -5913,7 +5921,9 @@ const COMMANDS = [
   "insertOrderedList",
   "insertQuoteBlock",
   "insertCodeBlock",
-  "uploadAttachments"
+  "uploadAttachments",
+  "undo",
+  "redo"
 ];
 
 class CommandDispatcher {
@@ -6033,6 +6043,14 @@ class CommandDispatcher {
     document.body.appendChild(input); // Append and remove just for the sake of making it testeable
     input.click();
     setTimeout(() => input.remove(), 1000);
+  }
+
+  dispatchUndo() {
+    this.editor.dispatchCommand(xe, undefined);
+  }
+
+  dispatchRedo() {
+    this.editor.dispatchCommand(Ce, undefined);
   }
 
   #registerCommands() {

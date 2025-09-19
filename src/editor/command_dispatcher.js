@@ -3,7 +3,9 @@ import {
   $isRangeSelection,
   PASTE_COMMAND,
   COMMAND_PRIORITY_LOW,
-  FORMAT_TEXT_COMMAND
+  FORMAT_TEXT_COMMAND,
+  UNDO_COMMAND,
+  REDO_COMMAND
 } from "lexical"
 
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list"
@@ -23,7 +25,9 @@ const COMMANDS = [
   "insertOrderedList",
   "insertQuoteBlock",
   "insertCodeBlock",
-  "uploadAttachments"
+  "uploadAttachments",
+  "undo",
+  "redo"
 ]
 
 export class CommandDispatcher {
@@ -143,6 +147,14 @@ export class CommandDispatcher {
     document.body.appendChild(input) // Append and remove just for the sake of making it testeable
     input.click()
     setTimeout(() => input.remove(), 1000)
+  }
+
+  dispatchUndo() {
+    this.editor.dispatchCommand(UNDO_COMMAND, undefined)
+  }
+
+  dispatchRedo() {
+    this.editor.dispatchCommand(REDO_COMMAND, undefined)
   }
 
   #registerCommands() {
