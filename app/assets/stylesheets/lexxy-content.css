@@ -89,6 +89,60 @@
     margin-block-end: 0;
   }
 
+  /* List styling */
+  .lexxy-list__ul,
+  .lexxy-list__ol {
+    margin: var(--lexxy-content-margin) 0;
+    padding-inline-start: 2ch;
+  }
+
+  .lexxy-list__item {
+    margin: 0.25em 0;
+  }
+
+  /* Hide bullet/number for nested list items to prevent double bullets */
+  .lexxy-list__item--nested {
+    list-style-type: none;
+  }
+
+  /* Depth-based styling for ordered lists */
+  .lexxy-list__ol--level-1 { list-style-type: decimal; }
+  .lexxy-list__ol--level-2 { list-style-type: lower-alpha; }
+  .lexxy-list__ol--level-3 { list-style-type: lower-roman; }
+  .lexxy-list__ol--level-4 { list-style-type: decimal; }
+  .lexxy-list__ol--level-5 { list-style-type: lower-alpha; }
+
+  /* Checklist styling */
+  .lexxy-list__item--checked,
+  .lexxy-list__item--unchecked {
+    list-style-type: none;
+    position: relative;
+  }
+
+  .lexxy-list__item--checked::before,
+  .lexxy-list__item--unchecked::before {
+    content: '';
+    position: absolute;
+    left: -1.5ch;
+    top: 0.25em;
+    width: 1em;
+    height: 1em;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    background: var(--lexxy-color-canvas);
+  }
+
+  .lexxy-list__item--checked::before {
+    content: '✓';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+    background: var(--lexxy-color-accent-dark);
+    color: var(--lexxy-color-ink-inverted);
+    border-color: var(--lexxy-color-accent-dark);
+  }
+
   /* Keywords and attributes */
   .code-token__attr,
   .token.atrule,

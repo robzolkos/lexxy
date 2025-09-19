@@ -1,4 +1,4 @@
-import { createEditor, $getRoot, $createTextNode, $getNodeByKey, $addUpdateTag, SKIP_DOM_SELECTION_TAG, KEY_ENTER_COMMAND, COMMAND_PRIORITY_NORMAL, DecoratorNode, CLEAR_HISTORY_COMMAND } from "lexical"
+import { createEditor, $getRoot, $getSelection, $createTextNode, $getNodeByKey, $addUpdateTag, SKIP_DOM_SELECTION_TAG, KEY_ENTER_COMMAND, COMMAND_PRIORITY_NORMAL, DecoratorNode, CLEAR_HISTORY_COMMAND, TextNode, ParagraphNode, LineBreakNode } from "lexical"
 import { ListNode, ListItemNode, registerList } from "@lexical/list"
 import { LinkNode, AutoLinkNode } from "@lexical/link"
 import { registerRichText, QuoteNode, HeadingNode } from "@lexical/rich-text"
@@ -99,11 +99,84 @@ export default class LexicalEditorElement extends HTMLElement {
   get value() {
     if (!this.cachedValue) {
       this.editor?.getEditorState().read(() => {
+        // Don't try to modify selection in read operation - just export all content
         this.cachedValue = sanitize($generateHtmlFromNodes(this.editor, null))
       })
     }
 
     return this.cachedValue
+  }
+
+  /**
+   * Get the HTML value with theme CSS classes applied
+   * @returns {string} HTML with theme classes included
+   */
+  getStyledValue() {
+    let styledValue = ""
+    this.editor?.getEditorState().read(() => {
+      // Don't try to modify selection in read operation - just export all content
+      const html = $generateHtmlFromNodes(this.editor, null)
+      styledValue = sanitize(this.#applyThemeClassesToHtml(html))
+    })
+    return styledValue
+  }
+
+  /**
+   * Apply theme CSS classes to exported HTML
+   * @param {string} html - The HTML string to process
+   * @returns {string} HTML with theme classes applied
+   */
+  #applyThemeClassesToHtml(html) {
+    if (!html || !theme) return html
+
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+
+    // Apply list theme classes
+    if (theme.list) {
+      // Apply ul classes
+      if (theme.list.ul) {
+        const uls = doc.querySelectorAll('ul')
+        uls.forEach(ul => ul.classList.add(theme.list.ul))
+      }
+
+      // Apply ol classes
+      if (theme.list.ol) {
+        const ols = doc.querySelectorAll('ol')
+        ols.forEach(ol => ol.classList.add(theme.list.ol))
+      }
+
+      // Apply li classes
+      if (theme.list.listitem) {
+        const lis = doc.querySelectorAll('li')
+        lis.forEach(li => {
+          li.classList.add(theme.list.listitem)
+
+          // Check if this is a nested list item
+          if (theme.list.nested?.listitem && this.#isNestedListItem(li)) {
+            li.classList.add(theme.list.nested.listitem)
+          }
+        })
+      }
+    }
+
+    return doc.body.innerHTML
+  }
+
+  /**
+   * Check if a list item is nested (has a parent list item)
+   * @param {Element} li - The list item element
+   * @returns {boolean} True if the list item is nested
+   */
+  #isNestedListItem(li) {
+    let parent = li.parentElement
+    while (parent && parent !== document.body) {
+      if (parent.tagName === 'LI') {
+        return true
+      }
+      parent = parent.parentElement
+    }
+    return false
   }
 
   set value(html) {
@@ -169,6 +242,12 @@ export default class LexicalEditorElement extends HTMLElement {
 
   get #lexicalNodes() {
     const nodes = [
+      // Core nodes required for basic text editing and markdown conversion
+      TextNode,
+      ParagraphNode,
+      LineBreakNode,
+
+      // Rich text nodes
       QuoteNode,
       HeadingNode,
       ListNode,

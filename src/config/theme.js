@@ -1,4 +1,25 @@
 export default {
+  // List theming
+  list: {
+    ul: 'lexxy-list__ul',
+    ol: 'lexxy-list__ol',
+    listitem: 'lexxy-list__item',
+    listitemChecked: 'lexxy-list__item--checked',
+    listitemUnchecked: 'lexxy-list__item--unchecked',
+    nested: {
+      listitem: 'lexxy-list__item--nested'
+    },
+    olDepth: [
+      'lexxy-list__ol--level-1',
+      'lexxy-list__ol--level-2',
+      'lexxy-list__ol--level-3',
+      'lexxy-list__ol--level-4',
+      'lexxy-list__ol--level-5'
+    ],
+    checklist: 'lexxy-list__checklist'
+  },
+
+  // Code highlighting
   codeHighlight: {
     atrule: 'code-token__attr',
     attr: 'code-token__attr',

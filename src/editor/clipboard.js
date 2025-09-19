@@ -1,4 +1,5 @@
-import { marked } from "marked"
+import { $convertFromMarkdownString, TRANSFORMERS } from "@lexical/markdown"
+import { $getSelection, $isRangeSelection } from "lexical"
 import { isUrl } from "../helpers/string_helper";
 import { nextFrame } from "../helpers/timing_helpers";
 
@@ -40,8 +41,20 @@ export default class Clipboard {
   }
 
   #pasteMarkdown(text) {
-    const html = marked(text)
-    this.contents.insertHtml(html)
+    this.editor.update(() => {
+      const selection = $getSelection()
+      if (!$isRangeSelection(selection)) return
+
+      // Use Lexical's native markdown parser
+      const nodes = $convertFromMarkdownString(text, TRANSFORMERS)
+
+      if (nodes.length > 0) {
+        selection.insertNodes(nodes)
+      } else {
+        // Fallback: insert as plain text if markdown conversion fails
+        selection.insertText(text)
+      }
+    })
   }
 
   #handlePastedFiles(clipboardData) {

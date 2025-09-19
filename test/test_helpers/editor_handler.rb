@@ -60,12 +60,32 @@ class EditorHandler
   def paste(text)
     page.execute_script <<~JS, content_element
       arguments[0].focus()
+
+      // Create a proper mock clipboardData object
+      const mockClipboardData = {
+        types: ["text/plain"],
+        items: [{
+          type: "text/plain",
+          getAsString: function(callback) {
+            callback("#{text}")
+          }
+        }],
+        getData: function(type) {
+          return type === "text/plain" ? "#{text}" : ""
+        }
+      }
+
       const pasteEvent = new ClipboardEvent("paste", {
         bubbles: true,
-        cancelable: true,
-        clipboardData: new DataTransfer()
+        cancelable: true
       })
-      pasteEvent.clipboardData.setData("text/plain", "#{text}")
+
+      // Override the clipboardData property
+      Object.defineProperty(pasteEvent, 'clipboardData', {
+        value: mockClipboardData,
+        writable: false
+      })
+
       arguments[0].dispatchEvent(pasteEvent)
     JS
   end
