@@ -8,13 +8,13 @@ class ToolbarTest < ApplicationSystemTestCase
   test "bold" do
     find_editor.select("everyone")
     click_on "Bold"
-    assert_equal_html "<p>Hello <b><strong class=\"lexxy-content__bold\">everyone</strong></b></p>", find_editor.value
+    assert_equal_html "<p>Hello <b><strong>everyone</strong></b></p>", find_editor.value
   end
 
   test "italic" do
     find_editor.select("everyone")
     click_on "Italic"
-    assert_equal_html "<p>Hello <i><em class=\"lexxy-content__italic\">everyone</em></i></p>", find_editor.value
+    assert_equal_html "<p>Hello <i><em>everyone</em></i></p>", find_editor.value
   end
 
   test "rotate headers" do

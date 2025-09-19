@@ -1,4 +1,4 @@
-import { createEditor, $getRoot, $createTextNode, $getNodeByKey, $addUpdateTag, SKIP_DOM_SELECTION_TAG, KEY_ENTER_COMMAND, COMMAND_PRIORITY_NORMAL, DecoratorNode, CLEAR_HISTORY_COMMAND } from "lexical"
+import { createEditor, $getRoot, $getNodeByKey, $addUpdateTag, SKIP_DOM_SELECTION_TAG, KEY_ENTER_COMMAND, COMMAND_PRIORITY_NORMAL, DecoratorNode, CLEAR_HISTORY_COMMAND, TextNode, isHTMLElement, ParagraphNode } from "lexical"
 import { ListNode, ListItemNode, registerList } from "@lexical/list"
 import { LinkNode, AutoLinkNode } from "@lexical/link"
 import { registerRichText, QuoteNode, HeadingNode } from "@lexical/rich-text"
@@ -154,6 +154,9 @@ export default class LexicalEditorElement extends HTMLElement {
     this.editorContentElement = this.editorContentElement || this.#createEditorContentElement()
 
     const editor = createEditor({
+      html: {
+        export: this.#exportMap,
+      },
       namespace: "LexicalEditor",
       onError(error) {
         throw error
@@ -165,6 +168,13 @@ export default class LexicalEditorElement extends HTMLElement {
     editor.setRootElement(this.editorContentElement)
 
     return editor
+  }
+
+  get #exportMap() {
+    return new Map([
+      [ParagraphNode, this.#removeStylesExportDOM],
+      [TextNode, this.#removeStylesExportDOM],
+    ])
   }
 
   get #lexicalNodes() {
@@ -382,6 +392,23 @@ export default class LexicalEditorElement extends HTMLElement {
   #reconnect() {
     this.disconnectedCallback()
     this.connectedCallback()
+  }
+
+  #removeStylesExportDOM(editor, target) {
+    const output = target.exportDOM(editor);
+
+    if (output && isHTMLElement(output.element)) {
+      // Removes any inline styles or CSS classes from the output...
+      for (const el of [
+        output.element,
+        ...output.element.querySelectorAll('[style],[class]'),
+      ]) {
+        el.removeAttribute('class');
+        el.removeAttribute('style');
+      }
+    }
+
+    return output;
   }
 }
 
