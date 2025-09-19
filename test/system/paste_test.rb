@@ -22,6 +22,6 @@ class PasteTest < ApplicationSystemTestCase
     find_editor.select("everyone")
     find_editor.toggle_command("bold")
     find_editor.paste "https://37signals.com"
-    assert_equal_html %(<p>Hello <a href="https://37signals.com"><b><strong>everyone</strong></b></a></p>), find_editor.value
+    assert_equal_html %(<p>Hello <a href="https://37signals.com"><b><strong class="lexxy-content__bold">everyone</strong></b></a></p>), find_editor.value
   end
 end
