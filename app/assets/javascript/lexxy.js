@@ -6698,13 +6698,7 @@ class Contents {
     if (!this.hasSelectedText()) return
 
     this.editor.update(() => {
-      const selection = Nr();
-      const selectedText = selection.getTextContent();
-
-      const linkNode = d(url);
-      linkNode.append(Xn(selectedText));
-
-      selection.insertNodes([ linkNode ]);
+      v$2(url);
     });
   }
 
@@ -6758,7 +6752,7 @@ class Contents {
   }
 
   replaceTextBackUntil(stringToReplace, replacementNodes) {
-    replacementNodes = Array.isArray(replacementNodes) ? replacementNodes : [ replacementNodes ];
+    replacementNodes = Array.isArray(replacementNodes) ? replacementNodes : [replacementNodes];
 
     this.editor.update(() => {
       const { anchorNode, offset } = this.#getTextAnchorData();
@@ -6797,7 +6791,7 @@ class Contents {
       } else if (currentParagraph && di(currentParagraph)) {
         currentParagraph.insertAfter(uploadedImageNode);
       } else {
-        Fr([ uploadedImageNode ]);
+        Fr([uploadedImageNode]);
       }
     }, { tag: Ti });
   }
@@ -6841,7 +6835,7 @@ class Contents {
       wrappingNode.append(...topLevelElement.getChildren());
       topLevelElement.replace(wrappingNode);
     } else {
-      Fr([ newNodeFn() ]);
+      Fr([newNodeFn()]);
     }
   }
 
@@ -7337,6 +7331,8 @@ class LexicalEditorElement extends HTMLElement {
 
   static observedAttributes = [ "connected" ]
 
+  #initialValue = ""
+
   constructor() {
     super();
     this.internals = this.attachInternals();
@@ -7368,6 +7364,11 @@ class LexicalEditorElement extends HTMLElement {
     if (name === "connected" && this.isConnected && oldValue != null && oldValue !== newValue) {
       requestAnimationFrame(() => this.#reconnect());
     }
+  }
+
+  formResetCallback() {
+    this.value = this.#initialValue;
+    this.editor.dispatchCommand(Ve, undefined);
   }
 
   get form() {
@@ -7541,7 +7542,7 @@ class LexicalEditorElement extends HTMLElement {
 
   #loadInitialValue() {
     const initialHtml = this.valueBeforeDisconnect || this.getAttribute("value") || "<p></p>";
-    this.value = initialHtml;
+    this.value = this.#initialValue = initialHtml;
   }
 
   #resetBeforeTurboCaches() {
