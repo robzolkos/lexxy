@@ -1,4 +1,4 @@
-import { marked } from "marked"
+import { $convertFromMarkdownString, TRANSFORMERS } from "@lexical/markdown"
 import { isUrl } from "../helpers/string_helper";
 import { nextFrame } from "../helpers/timing_helpers";
 
@@ -40,8 +40,9 @@ export default class Clipboard {
   }
 
   #pasteMarkdown(text) {
-    const html = marked(text)
-    this.contents.insertHtml(html)
+    this.editor.update(() => {
+      $convertFromMarkdownString(text, TRANSFORMERS)
+    })
   }
 
   #handlePastedFiles(clipboardData) {
